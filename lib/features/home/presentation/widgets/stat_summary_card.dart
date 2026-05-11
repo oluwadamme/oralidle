@@ -19,11 +19,7 @@ class StatSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
-      ),
+      decoration: AppColors.glassCard(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -33,7 +29,7 @@ class StatSummaryCard extends StatelessWidget {
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color)),
           const SizedBox(height: 2),
           Text(label,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
               maxLines: 1,
               overflow: TextOverflow.ellipsis),
         ],

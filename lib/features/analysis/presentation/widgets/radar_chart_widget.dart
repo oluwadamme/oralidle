@@ -19,20 +19,21 @@ class SpeechRadarChart extends StatelessWidget {
           radarShape: RadarShape.polygon,
           tickCount: 4,
           ticksTextStyle: const TextStyle(color: Colors.transparent, fontSize: 0),
-          radarBorderData: BorderSide(color: Colors.grey.shade300, width: 1),
-          gridBorderData: BorderSide(color: Colors.grey.shade200, width: 1),
-          titleTextStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textDark),
+          radarBorderData: const BorderSide(color: AppColors.outlineVariant, width: 1),
+          gridBorderData: const BorderSide(color: AppColors.outlineVariant, width: 1),
+          tickBorderData: const BorderSide(color: AppColors.outlineVariant, width: 1),
+          titleTextStyle: const TextStyle(
+              fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMedium),
           getTitle: (index, angle) => RadarChartTitle(text: _labels[index], angle: 0),
           dataSets: [
             RadarDataSet(
               dataEntries: scores.asList.map((v) => RadarEntry(value: v)).toList(),
-              fillColor: AppColors.primary.withValues(alpha: 0.18),
+              fillColor: AppColors.primary.withValues(alpha: 0.15),
               borderColor: AppColors.primary,
               borderWidth: 2.5,
               entryRadius: 4,
             ),
           ],
-          tickBorderData: BorderSide(color: Colors.grey.shade200, width: 1),
         ),
       ),
     );

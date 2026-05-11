@@ -22,7 +22,7 @@ class SpeechCoachApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Speech Coach',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
+      theme: AppTheme.dark,
       routerConfig: appRouter,
     );
   }

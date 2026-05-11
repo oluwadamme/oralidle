@@ -24,20 +24,49 @@ class AppRoutes {
   static const history = '/history';
 }
 
+/// Lumina Speech dark design system colours.
 class AppColors {
-  static const good = Color(0xFF27AE60);
-  static const fair = Color(0xFFF39C12);
-  static const poor = Color(0xFFE74C3C);
-  static const primary = Color(0xFF3D5A99);
-  static const primaryLight = Color(0xFF6B8DD6);
-  static const background = Color(0xFFF0F2F5);
-  static const surface = Color(0xFFFFFFFF);
-  static const textDark = Color(0xFF1A1A2E);
-  static const textMedium = Color(0xFF6B7280);
+  // ── Semantic score colours ─────────────────────────────────────────────────
+  static const good = Color(0xFF4EDEA3);   // emerald – success / growth
+  static const fair = Color(0xFFFFB95F);   // amber   – caution / warmth
+  static const poor = Color(0xFFFFB4AB);   // soft-red – error
 
+  // ── Brand ──────────────────────────────────────────────────────────────────
+  static const primary = Color(0xFFDDB7FF);       // light purple (AI/CTA)
+  static const primaryLight = Color(0xFFB76DFF);  // mid-purple (gradient end)
+  static const amber = Color(0xFFFFB95F);         // alias for secondary
+
+  // ── Surfaces (dark layering: lowest → highest) ────────────────────────────
+  static const background = Color(0xFF131313);
+  static const surface = Color(0xFF201F1F);
+  static const surfaceHigh = Color(0xFF2A2A2A);
+  static const surfaceHighest = Color(0xFF353534);
+
+  // ── Text ───────────────────────────────────────────────────────────────────
+  static const textDark = Color(0xFFE5E2E1);
+  static const textMedium = Color(0xFFCFC2D6);
+
+  // ── Borders ────────────────────────────────────────────────────────────────
+  static const outline = Color(0xFF988D9F);
+  static const outlineVariant = Color(0xFF4D4354);
+  static const cardBorder = Color(0x1AFFFFFF); // 10 % white – glass card edge
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
   static Color scoreColor(int score) {
     if (score >= 75) return good;
     if (score >= 50) return fair;
     return poor;
   }
+
+  /// Glass-morphism card decoration used throughout the app.
+  static BoxDecoration glassCard({
+    double radius = 16,
+    Color? borderColor,
+    Color? bgColor,
+  }) =>
+      BoxDecoration(
+        color: bgColor ?? surface,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: borderColor ?? cardBorder),
+      );
 }

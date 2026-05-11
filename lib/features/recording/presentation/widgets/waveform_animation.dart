@@ -1,15 +1,12 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_constants.dart';
 
 class WaveformAnimation extends StatefulWidget {
   final bool isActive;
-  final Color color;
 
-  const WaveformAnimation({
-    super.key,
-    required this.isActive,
-    this.color = const Color(0xFF3D5A99),
-  });
+  const WaveformAnimation({super.key, required this.isActive});
 
   @override
   State<WaveformAnimation> createState() => _WaveformAnimationState();
@@ -22,6 +19,10 @@ class _WaveformAnimationState extends State<WaveformAnimation>
   late List<double> _heights;
 
   static const _barCount = 28;
+
+  // Gradient: primary purple → amber (Lumina design spec)
+  static const _colorStart = AppColors.primary; // #DDB7FF
+  static const _colorEnd = AppColors.amber;      // #FFB95F
 
   @override
   void initState() {
@@ -40,9 +41,7 @@ class _WaveformAnimationState extends State<WaveformAnimation>
     setState(() {
       _heights = List.generate(
         _barCount,
-        (i) => widget.isActive
-            ? 0.15 + _rng.nextDouble() * 0.85
-            : 0.2,
+        (i) => widget.isActive ? 0.15 + _rng.nextDouble() * 0.85 : 0.2,
       );
     });
   }
@@ -64,6 +63,15 @@ class _WaveformAnimationState extends State<WaveformAnimation>
     super.dispose();
   }
 
+  Color _barColor(int index, double height) {
+    final t = index / (_barCount - 1);
+    final r = lerpDouble(_colorStart.r, _colorEnd.r, t)!;
+    final g = lerpDouble(_colorStart.g, _colorEnd.g, t)!;
+    final b = lerpDouble(_colorStart.b, _colorEnd.b, t)!;
+    final alpha = widget.isActive ? 0.55 + height * 0.45 : 0.25;
+    return Color.from(alpha: alpha, red: r, green: g, blue: b);
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -78,9 +86,7 @@ class _WaveformAnimationState extends State<WaveformAnimation>
             width: 4,
             height: 60 * _heights[i],
             decoration: BoxDecoration(
-              color: widget.color.withValues(
-                alpha: widget.isActive ? 0.6 + _heights[i] * 0.4 : 0.3,
-              ),
+              color: _barColor(i, _heights[i]),
               borderRadius: BorderRadius.circular(4),
             ),
           );

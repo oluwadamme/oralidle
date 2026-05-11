@@ -21,11 +21,7 @@ class SessionTile extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.shade100),
-        ),
+        decoration: AppColors.glassCard(radius: 14),
         child: Row(
           children: [
             Container(
@@ -35,7 +31,8 @@ class SessionTile extends StatelessWidget {
               alignment: Alignment.center,
               child: Text(
                 '$score',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15),
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15),
               ),
             ),
             const SizedBox(width: 12),
@@ -55,30 +52,31 @@ class SessionTile extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: categoryColor.withValues(alpha: 0.1),
+                          color: categoryColor.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           record.topicCategory,
-                          style: TextStyle(fontSize: 10, color: categoryColor, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              fontSize: 10, color: categoryColor, fontWeight: FontWeight.w600),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         '${record.formattedDuration} • ${record.result.wpm} wpm',
-                        style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                        style: const TextStyle(fontSize: 11, color: AppColors.textMedium),
                       ),
                     ],
                   ),
                   const SizedBox(height: 2),
                   Text(
                     DateFormat('MMM d, h:mm a').format(record.timestamp),
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade400),
+                    style: const TextStyle(fontSize: 11, color: AppColors.outline),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.outline),
           ],
         ),
       ),

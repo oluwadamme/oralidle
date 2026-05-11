@@ -5,6 +5,7 @@ import '../../../topic_selection/data/models/topic.dart';
 import '../../providers/recording_provider.dart';
 import '../widgets/waveform_animation.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/widgets/glass_card.dart';
 
 class RecordingScreen extends ConsumerStatefulWidget {
   final Topic topic;
@@ -15,8 +16,6 @@ class RecordingScreen extends ConsumerStatefulWidget {
 }
 
 class _RecordingScreenState extends ConsumerState<RecordingScreen> {
-  final _scrollController = ScrollController();
-
   @override
   void initState() {
     super.initState();
@@ -26,19 +25,13 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
   }
 
   @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final state = ref.watch(recordingProvider);
 
     ref.listen(recordingProvider, (prev, next) {
       if (next.status == RecordingStatus.stopped && next.completedSession != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
+          if (!context.mounted) return;
           context.pushReplacement(AppRoutes.processing, extra: next.completedSession);
           ref.read(recordingProvider.notifier).reset();
         });
@@ -54,14 +47,8 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
     });
 
     final elapsed = state.elapsedSeconds;
-    final progress = elapsed / AppConstants.maxRecordingSeconds;
-    final timerColor = elapsed < 60
-        ? AppColors.good
-        : elapsed < 90
-            ? AppColors.fair
-            : AppColors.poor;
-
-    final transcript = state.fullTranscript;
+    final minutes = elapsed ~/ 60;
+    final seconds = elapsed % 60;
 
     return PopScope(
       canPop: false,
@@ -69,96 +56,216 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
         if (!didPop) _confirmStop(context);
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.topic.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => _confirmStop(context),
-          ),
-        ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                _CircularTimer(elapsed: elapsed, progress: progress, color: timerColor),
-                const SizedBox(height: 8),
-                Text(
-                  elapsed < AppConstants.minRecordingSeconds
-                      ? 'Keep speaking…'
-                      : 'You can stop anytime',
-                  style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
-                ),
-                const SizedBox(height: 20),
-                WaveformAnimation(
-                  isActive: state.isRecording,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(height: 20),
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: transcript.isEmpty
-                        ? Center(
-                            child: Text(
-                              'Start speaking — your transcript will appear here',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                            ),
-                          )
-                        : SingleChildScrollView(
-                            controller: _scrollController,
-                            child: Text(
-                              transcript,
-                              style: const TextStyle(fontSize: 15, height: 1.6),
+        body: Stack(
+          children: [
+            const Positioned(
+              top: -60,
+              right: -40,
+              child: AmbientOrb(color: AppColors.primary, size: 240),
+            ),
+            const Positioned(
+              bottom: 80,
+              left: -60,
+              child: AmbientOrb(color: AppColors.amber, size: 200),
+            ),
+            SafeArea(
+              child: Column(
+                children: [
+                  // ── Header ─────────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 4, 16, 0),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded,
+                              color: AppColors.textMedium),
+                          onPressed: () => _confirmStop(context),
+                        ),
+                        const Expanded(
+                          child: Text(
+                            'Lumina Speech',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textDark,
                             ),
                           ),
+                        ),
+                        const SizedBox(width: 48),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _WordCountBadge(
-                        count: state.fullTranscript
-                            .trim()
-                            .split(RegExp(r'\s+'))
-                            .where((w) => w.isNotEmpty)
-                            .length,
+
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 28),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 16),
+
+                          // ── Category badge ──────────────────────────────
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppColors.amber.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                  color: AppColors.amber.withValues(alpha: 0.35)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.amber,
+                                  ),
+                                ),
+                                const SizedBox(width: 7),
+                                Text(
+                                  widget.topic.category.toUpperCase(),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.amber,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+
+                          // ── Topic title ─────────────────────────────────
+                          Text(
+                            widget.topic.title,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textDark,
+                              height: 1.35,
+                            ),
+                          ),
+
+                          const Spacer(),
+
+                          // ── AI listening indicator ──────────────────────
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.graphic_eq_rounded,
+                                size: 14,
+                                color: state.isRecording
+                                    ? AppColors.primary
+                                    : AppColors.outline,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                state.isRecording
+                                    ? 'AI Listening & Analysing…'
+                                    : 'Initialising…',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: state.isRecording
+                                      ? AppColors.primary
+                                      : AppColors.outline,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+
+                          // ── Large timer ─────────────────────────────────
+                          Text(
+                            '$minutes:${seconds.toString().padLeft(2, '0')}',
+                            style: const TextStyle(
+                              fontSize: 72,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textDark,
+                              letterSpacing: -3,
+                              height: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            elapsed < AppConstants.minRecordingSeconds
+                                ? 'Min 1:00 to stop'
+                                : 'Tap the mic to stop',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textMedium,
+                            ),
+                          ),
+                          const SizedBox(height: 28),
+
+                          // ── Waveform ────────────────────────────────────
+                          WaveformAnimation(isActive: state.isRecording),
+
+                          const Spacer(),
+
+                          // ── Mic / stop button ───────────────────────────
+                          GestureDetector(
+                            onTap: state.canStop
+                                ? () => ref
+                                    .read(recordingProvider.notifier)
+                                    .stopManually()
+                                : null,
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: state.canStop
+                                    ? AppColors.poor
+                                    : AppColors.primary,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (state.canStop
+                                            ? AppColors.poor
+                                            : AppColors.primary)
+                                        .withValues(alpha: 0.45),
+                                    blurRadius: 32,
+                                    spreadRadius: 6,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                state.canStop
+                                    ? Icons.stop_rounded
+                                    : Icons.mic_rounded,
+                                color: state.canStop
+                                    ? Colors.white
+                                    : const Color(0xFF490080),
+                                size: 38,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            state.canStop
+                                ? 'Tap to stop recording'
+                                : 'Keep speaking…',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textMedium,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 2,
-                      child: ElevatedButton.icon(
-                        onPressed: state.canStop
-                            ? () => ref.read(recordingProvider.notifier).stopManually()
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.poor,
-                          disabledBackgroundColor: Colors.grey.shade300,
-                        ),
-                        icon: const Icon(Icons.stop_rounded),
-                        label: Text(
-                          state.canStop ? 'Stop Recording' : 'Min 60s to stop',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -168,13 +275,18 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceHigh,
         title: const Text('Stop Recording?'),
         content: const Text('Your current recording will be discarded.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel',
+                  style: TextStyle(color: AppColors.textMedium))),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Discard', style: TextStyle(color: Colors.red)),
+            child:
+                const Text('Discard', style: TextStyle(color: AppColors.poor)),
           ),
         ],
       ),
@@ -183,69 +295,5 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
       ref.read(recordingProvider.notifier).reset();
       context.go(AppRoutes.home);
     }
-  }
-}
-
-class _CircularTimer extends StatelessWidget {
-  final int elapsed;
-  final double progress;
-  final Color color;
-
-  const _CircularTimer({required this.elapsed, required this.progress, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    final m = elapsed ~/ 60;
-    final s = (elapsed % 60).toString().padLeft(2, '0');
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        SizedBox(
-          width: 110,
-          height: 110,
-          child: CircularProgressIndicator(
-            value: progress,
-            strokeWidth: 7,
-            backgroundColor: Colors.grey.shade200,
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-          ),
-        ),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '$m:$s',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: color),
-            ),
-            Text('/ 2:00', style: TextStyle(fontSize: 11, color: Colors.grey.shade400)),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _WordCountBadge extends StatelessWidget {
-  final int count;
-  const _WordCountBadge({required this.count});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Text(
-            '$count',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-          ),
-          Text('words', style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
-        ],
-      ),
-    );
   }
 }

@@ -18,10 +18,9 @@ class MetricScoreCard extends StatelessWidget {
     final color = AppColors.scoreColor(score);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
+      decoration: AppColors.glassCard(
+        radius: 14,
+        borderColor: color.withValues(alpha: 0.25),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -36,7 +35,8 @@ class MetricScoreCard extends StatelessWidget {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+                fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textMedium),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),

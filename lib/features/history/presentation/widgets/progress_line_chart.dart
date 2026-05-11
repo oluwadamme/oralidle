@@ -20,7 +20,7 @@ class ProgressLineChart extends StatelessWidget {
         ),
         child: Text(
           'Complete 2+ sessions to see your progress trend',
-          style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+          style: const TextStyle(color: AppColors.outline, fontSize: 13),
           textAlign: TextAlign.center,
         ),
       );
@@ -41,7 +41,7 @@ class ProgressLineChart extends StatelessWidget {
           maxY: 100,
           gridData: FlGridData(
             drawVerticalLine: false,
-            getDrawingHorizontalLine: (_) => FlLine(color: Colors.grey.shade100, strokeWidth: 1),
+            getDrawingHorizontalLine: (_) => FlLine(color: AppColors.outlineVariant, strokeWidth: 1),
           ),
           borderData: FlBorderData(show: false),
           titlesData: FlTitlesData(
@@ -79,7 +79,7 @@ class ProgressLineChart extends StatelessWidget {
                   radius: 4,
                   color: AppColors.primary,
                   strokeWidth: 2,
-                  strokeColor: Colors.white,
+                  strokeColor: AppColors.background,
                 ),
               ),
               belowBarData: BarAreaData(

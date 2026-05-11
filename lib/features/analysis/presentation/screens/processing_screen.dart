@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../providers/analysis_provider.dart';
 import '../../../recording/data/models/recording_session.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/widgets/glass_card.dart';
 
 class ProcessingScreen extends ConsumerStatefulWidget {
   final RecordingSession session;
@@ -22,7 +23,7 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen>
     super.initState();
     _pulse = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -36,15 +37,12 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen>
     super.dispose();
   }
 
-  void _retry() {
-    ref.read(analysisProvider.notifier).analyse(widget.session);
-  }
+  void _retry() => ref.read(analysisProvider.notifier).analyse(widget.session);
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(analysisProvider);
 
-    // Navigate on success — only inside build via listener so context is always valid
     ref.listen(analysisProvider, (_, next) {
       next.whenOrNull(
         data: (record) {
@@ -56,71 +54,110 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen>
     });
 
     return Scaffold(
-      body: SafeArea(
-        child: state.hasError
-            ? _ErrorView(
-                message: _friendlyMessage(state.error),
-                onRetry: _retry,
-                onBack: () => context.go(AppRoutes.home),
-              )
-            : Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(40),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AnimatedBuilder(
-                        animation: _pulse,
-                        builder: (context, _) => Container(
-                          width: 100 + _pulse.value * 20,
-                          height: 100 + _pulse.value * 20,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.primary.withValues(alpha: 0.1 + _pulse.value * 0.1),
-                          ),
-                          child: const Icon(
-                            Icons.psychology_rounded,
-                            size: 48,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      Text(
-                        widget.session.isAudioUpload
-                            ? 'Transcribing & Analysing'
-                            : 'Analysing Your Speech',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        widget.session.isAudioUpload
-                            ? 'Gemini is transcribing "${widget.session.audioFileName ?? "your audio"}" and reviewing your fluency, grammar, vocabulary, and more…'
-                            : 'Gemini is reviewing your fluency, grammar, vocabulary, and more…',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 40),
-                      const LinearProgressIndicator(),
-                      const SizedBox(height: 40),
-                      const Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        alignment: WrapAlignment.center,
+      body: Stack(
+        children: [
+          // Ambient orbs
+          const Positioned(
+            top: -60,
+            left: -60,
+            child: AmbientOrb(color: AppColors.primary, size: 260),
+          ),
+          const Positioned(
+            bottom: 80,
+            right: -50,
+            child: AmbientOrb(color: AppColors.amber, size: 180),
+          ),
+          SafeArea(
+            child: state.hasError
+                ? _ErrorView(
+                    message: _friendlyMessage(state.error),
+                    onRetry: _retry,
+                    onBack: () => context.go(AppRoutes.home),
+                  )
+                : Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(40),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _CheckItem(label: 'Fluency'),
-                          _CheckItem(label: 'Vocabulary'),
-                          _CheckItem(label: 'Grammar'),
-                          _CheckItem(label: 'Coherence'),
-                          _CheckItem(label: 'Confidence'),
-                          _CheckItem(label: 'Topic Relevance'),
+                          // Pulsing glow orb
+                          AnimatedBuilder(
+                            animation: _pulse,
+                            builder: (context, _) {
+                              final scale = 1.0 + _pulse.value * 0.08;
+                              return Transform.scale(
+                                scale: scale,
+                                child: Container(
+                                  width: 120,
+                                  height: 120,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.primary.withValues(
+                                        alpha: 0.08 + _pulse.value * 0.06),
+                                    border: Border.all(
+                                      color: AppColors.primary.withValues(
+                                          alpha: 0.3 + _pulse.value * 0.2),
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.primary.withValues(
+                                            alpha: 0.2 + _pulse.value * 0.2),
+                                        blurRadius: 30 + _pulse.value * 20,
+                                        spreadRadius: 4,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.psychology_rounded,
+                                    size: 52,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 36),
+                          Text(
+                            widget.session.isAudioUpload
+                                ? 'Transcribing & Analysing'
+                                : 'Analysing Your Speech',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            widget.session.isAudioUpload
+                                ? 'Gemini is transcribing "${widget.session.audioFileName ?? "your audio"}" and coaching your fluency, grammar, and more…'
+                                : 'Gemini is reviewing your fluency, grammar, vocabulary, and more…',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 36),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: const LinearProgressIndicator(minHeight: 3),
+                          ),
+                          const SizedBox(height: 36),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            alignment: WrapAlignment.center,
+                            children: const [
+                              _CheckChip(label: 'Fluency'),
+                              _CheckChip(label: 'Vocabulary'),
+                              _CheckChip(label: 'Grammar'),
+                              _CheckChip(label: 'Coherence'),
+                              _CheckChip(label: 'Confidence'),
+                              _CheckChip(label: 'Topic'),
+                            ],
+                          ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+          ),
+        ],
       ),
     );
   }
@@ -130,9 +167,26 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen>
     final raw = error is Exception
         ? error.toString().replaceFirst('Exception: ', '')
         : error.toString();
-    // Truncate if overly long (e.g. unexpected HTML or stack trace)
     if (raw.length > 200) return 'Analysis failed. Please check your connection and try again.';
     return raw;
+  }
+}
+
+class _CheckChip extends StatelessWidget {
+  final String label;
+  const _CheckChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      radius: 20,
+      borderColor: AppColors.primary.withValues(alpha: 0.25),
+      child: Text(
+        label,
+        style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500),
+      ),
+    );
   }
 }
 
@@ -151,26 +205,36 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline_rounded, size: 64, color: AppColors.poor),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.poor.withValues(alpha: 0.1),
+                border: Border.all(color: AppColors.poor.withValues(alpha: 0.3)),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.poor.withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    spreadRadius: 3,
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.error_outline_rounded, size: 36, color: AppColors.poor),
+            ),
             const SizedBox(height: 24),
             Text(
               'Analysis Failed',
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineSmall
-                  ?.copyWith(color: AppColors.textDark),
+              style: Theme.of(context).textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Text(
               message,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: AppColors.textMedium),
+              style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 36),
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
@@ -179,28 +243,11 @@ class _ErrorView extends StatelessWidget {
             const SizedBox(height: 12),
             TextButton(
               onPressed: onBack,
-              child: const Text('Go to Home'),
+              child: const Text('Go to Home', style: TextStyle(color: AppColors.textMedium)),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _CheckItem extends StatelessWidget {
-  final String label;
-  const _CheckItem({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(label, style: const TextStyle(fontSize: 12, color: AppColors.primary)),
     );
   }
 }

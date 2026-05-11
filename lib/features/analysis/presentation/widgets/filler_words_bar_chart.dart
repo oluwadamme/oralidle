@@ -72,7 +72,7 @@ class FillerWordsBarChart extends StatelessWidget {
           gridData: FlGridData(
             drawVerticalLine: true,
             drawHorizontalLine: false,
-            getDrawingVerticalLine: (_) => FlLine(color: Colors.grey.shade200, strokeWidth: 1),
+            getDrawingVerticalLine: (_) => FlLine(color: AppColors.outlineVariant, strokeWidth: 1),
           ),
           borderData: FlBorderData(show: false),
           maxY: maxVal + 1,

@@ -40,6 +40,9 @@ dependencies:
   # File picker for audio upload
   file_picker: ^8.1.6
 
+  # Google Fonts (Plus Jakarta Sans, Manrope, Space Grotesk)
+  google_fonts: ^6.2.1
+
   # Utilities
   intl: ^0.20.2
   uuid: ^4.5.1
