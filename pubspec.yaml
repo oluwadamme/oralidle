@@ -1,0 +1,67 @@
+name: widget_overlay_outside
+description: "Speech Fluency Coach - improve oral English communication skills."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Speech to text (on-device)
+  speech_to_text: ^7.0.0
+
+  # Charts
+  fl_chart: ^0.70.2
+
+  # Navigation
+  go_router: ^14.8.1
+
+  # HTTP for Claude API
+  http: ^1.2.2
+
+  # Local storage
+  hive_flutter: ^1.1.0
+
+  # Permissions
+  permission_handler: ^11.4.0
+
+  # Animations
+  lottie: ^3.1.3
+
+  # Env config
+  flutter_dotenv: ^5.2.1
+
+  # Data models
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Utilities
+  intl: ^0.20.2
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  # Code generation
+  riverpod_generator: ^2.6.1
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  build_runner: ^2.4.14
+  hive_generator: ^2.0.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - .env
