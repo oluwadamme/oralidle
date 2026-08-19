@@ -6,6 +6,7 @@ class AnalysisResult {
   final List<String> strengths;
   final List<ImprovementTip> improvements;
   final String summary;
+  final String transcript;
 
   const AnalysisResult({
     required this.scores,
@@ -15,14 +16,17 @@ class AnalysisResult {
     required this.strengths,
     required this.improvements,
     required this.summary,
+    this.transcript = '',
   });
 
   factory AnalysisResult.fromJson(Map<String, dynamic> json) {
     return AnalysisResult(
-      scores: SpeechScores.fromJson(json['scores'] as Map<String, dynamic>),
+      scores: SpeechScores.fromJson(
+        Map<String, dynamic>.from(json['scores'] as Map),
+      ),
       overallScore: (json['overall_score'] as num).toInt(),
-      fillerWords: (json['filler_words'] as Map<String, dynamic>).map(
-        (k, v) => MapEntry(k, (v as num).toInt()),
+      fillerWords: (json['filler_words'] as Map).map(
+        (k, v) => MapEntry(k.toString(), (v as num).toInt()),
       ),
       wpm: (json['wpm'] as num).toInt(),
       strengths: List<String>.from(json['strengths'] as List),
@@ -30,6 +34,7 @@ class AnalysisResult {
           .map((e) => ImprovementTip.fromJson(e as Map<String, dynamic>))
           .toList(),
       summary: json['summary'] as String,
+      transcript: (json['transcript'] as String?)?.trim() ?? '',
     );
   }
 
@@ -41,6 +46,7 @@ class AnalysisResult {
     'strengths': strengths,
     'improvements': improvements.map((e) => e.toJson()).toList(),
     'summary': summary,
+    'transcript': transcript,
   };
 }
 

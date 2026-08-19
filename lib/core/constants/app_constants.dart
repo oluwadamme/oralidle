@@ -7,6 +7,7 @@ class AppConstants {
   static const int idealWpmMin = 110;
   static const int idealWpmMax = 160;
   static const String hiveSessionsBox = 'sessions';
+  static const String hiveInterviewsBox = 'interview_sessions';
 
   static const List<String> fillerWords = [
     'um', 'uh', 'er', 'like', 'basically', 'actually', 'literally',
@@ -22,6 +23,9 @@ class AppRoutes {
   static const processing = '/processing';
   static const results = '/results';
   static const history = '/history';
+  static const interview = '/interview';
+  static const interviewSession = '/interview/session';
+  static const interviewResults = '/interview/results';
 }
 
 /// Lumina Speech dark design system colours.
@@ -34,10 +38,12 @@ class AppColors {
   // ── Brand ──────────────────────────────────────────────────────────────────
   static const primary = Color(0xFFDDB7FF);       // light purple (AI/CTA)
   static const primaryLight = Color(0xFFB76DFF);  // mid-purple (gradient end)
+  static const onPrimary = Color(0xFF490080);     // dark purple — text/icons on primary surface
   static const amber = Color(0xFFFFB95F);         // alias for secondary
 
   // ── Surfaces (dark layering: lowest → highest) ────────────────────────────
   static const background = Color(0xFF131313);
+  static const surfaceLow = Color(0xFF1C1B1B);   // sidebar / drawer bg
   static const surface = Color(0xFF201F1F);
   static const surfaceHigh = Color(0xFF2A2A2A);
   static const surfaceHighest = Color(0xFF353534);

@@ -11,6 +11,10 @@ import 'features/analysis/presentation/screens/processing_screen.dart';
 import 'features/analysis/presentation/screens/results_screen.dart';
 import 'features/analysis/data/models/session_record.dart';
 import 'features/history/presentation/screens/history_screen.dart';
+import 'features/interview/presentation/screens/interview_home_screen.dart';
+import 'features/interview/presentation/screens/interview_session_screen.dart';
+import 'features/interview/presentation/screens/interview_results_screen.dart';
+import 'features/interview/data/models/interview_models.dart';
 
 final appRouter = GoRouter(
   initialLocation: AppRoutes.home,
@@ -27,6 +31,9 @@ final appRouter = GoRouter(
         ]),
         StatefulShellBranch(routes: [
           GoRoute(path: AppRoutes.history, builder: (_, __) => const HistoryScreen()),
+        ]),
+        StatefulShellBranch(routes: [
+          GoRoute(path: AppRoutes.interview, builder: (_, __) => const InterviewHomeScreen()),
         ]),
       ],
     ),
@@ -49,6 +56,16 @@ final appRouter = GoRouter(
       path: AppRoutes.results,
       builder: (context, state) =>
           ResultsScreen(record: state.extra as SessionRecord),
+    ),
+    GoRoute(
+      path: AppRoutes.interviewSession,
+      builder: (context, state) =>
+          InterviewSessionScreen(setup: state.extra as InterviewSetup),
+    ),
+    GoRoute(
+      path: AppRoutes.interviewResults,
+      builder: (context, state) =>
+          InterviewResultsScreen(interview: state.extra as CompletedInterview),
     ),
   ],
 );
