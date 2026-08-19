@@ -5,7 +5,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.0
+  sdk: ">=3.10.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -43,6 +43,11 @@ dependencies:
   # Google Fonts (Plus Jakarta Sans, Manrope, Space Grotesk)
   google_fonts: ^6.2.1
 
+  # Audio recording and playback
+  record: ^6.2.0
+  audioplayers: ^6.7.1
+  path_provider: ^2.1.5
+
   # Utilities
   intl: ^0.20.2
   uuid: ^4.5.1
@@ -57,3 +62,5 @@ flutter:
 
   assets:
     - .env
+    - assets/cv.md
+    - assets/interview-prep-skills.md

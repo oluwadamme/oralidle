@@ -12,8 +12,13 @@ class SpeechService {
     _initialized = await _speech.initialize(
       onError: (error) => debugPrint('STT error: ${error.errorMsg}'),
       onStatus: (status) {
-        if (status == SpeechToText.notListeningStatus && _shouldContinue) {
-          Future.delayed(const Duration(milliseconds: 300), _listen);
+        // Some engines (especially Android) emit 'done' instead of, or in
+        // addition to, 'notListening'. Catching both prevents the continuous
+        // listener from silently going dark mid-answer.
+        final ended = status == SpeechToText.notListeningStatus ||
+            status == SpeechToText.doneStatus;
+        if (ended && _shouldContinue) {
+          Future.delayed(const Duration(milliseconds: 500), _listen);
         }
       },
     );
@@ -31,8 +36,8 @@ class SpeechService {
     if (_speech.isListening) return;
     await _speech.listen(
       onResult: (result) => _onResult!(result.recognizedWords, result.finalResult),
-      listenFor: const Duration(seconds: 30),
-      pauseFor: const Duration(seconds: 5),
+      listenFor: const Duration(seconds: 60),
+      pauseFor: const Duration(seconds: 10),
       localeId: 'en_US',
       listenOptions: SpeechListenOptions(partialResults: true),
     );

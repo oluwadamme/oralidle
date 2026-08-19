@@ -11,6 +11,7 @@ void main() async {
   await dotenv.load();
   await Hive.initFlutter();
   await Hive.openBox<String>(AppConstants.hiveSessionsBox);
+  await Hive.openBox<String>(AppConstants.hiveInterviewsBox);
   runApp(const ProviderScope(child: SpeechCoachApp()));
 }
 
