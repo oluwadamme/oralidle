@@ -349,7 +349,7 @@ class _MobileResults extends StatelessWidget {
                     const SizedBox(width: 48),
                     Expanded(
                       child: Text(
-                        'Lumina Speech',
+                        'Oralidle',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),

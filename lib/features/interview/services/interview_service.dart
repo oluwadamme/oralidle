@@ -7,7 +7,9 @@ import '../data/models/interview_models.dart';
 import '../../../core/config/ai_endpoint.dart';
 
 class InterviewService {
-  static const _timeout = Duration(seconds: 60);
+  // Longer than the proxy's own 60s ceiling. At exactly 60 the two race, and
+  // the client can give up a moment before the server's real error arrives.
+  static const _timeout = Duration(seconds: 75);
 
   // Max history entries (user + model pairs). Keeps payload manageable for long
   // sessions while retaining enough context for coherent question generation.

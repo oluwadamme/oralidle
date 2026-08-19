@@ -30,7 +30,7 @@ class SpeechCoachApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Speech Coach',
+      title: 'Oralidle',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       routerConfig: appRouter,

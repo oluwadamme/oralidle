@@ -96,7 +96,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                         ),
                         const Expanded(
                           child: Text(
-                            'Lumina Speech',
+                            'Oralidle',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 16,

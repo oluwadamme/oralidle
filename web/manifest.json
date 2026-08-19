@@ -1,11 +1,11 @@
 {
-    "name": "Lumina Speech",
-    "short_name": "Lumina",
+    "name": "Oralidle — AI Speech & Interview Coach",
+    "short_name": "Oralidle",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#131313",
     "theme_color": "#131313",
-    "description": "AI coaching for spoken English fluency and mock interviews.",
+    "description": "AI coaching for spoken English fluency, speech analysis, and technical mock interviews.",
     "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
