@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/interview_models.dart';
 import '../data/repositories/interview_repository.dart';
 import '../services/interview_service.dart';
+import '../../../core/config/ai_endpoint.dart';
 import '../../../core/services/speech/audio_capture_service.dart';
 import '../../../core/services/speech/speech_providers.dart';
 import '../../../core/services/speech/speech_recognition_service.dart';
@@ -144,8 +145,19 @@ class InterviewState {
 
 class InterviewNotifier extends StateNotifier<InterviewState> {
   InterviewNotifier({
-    required this._recognition, required this._capture, required this._repository, required this._ref})
-    : super(const InterviewState());
+    required this._recognition,
+    required this._capture,
+    required this._repository,
+    required this._ref,
+  }) : super(const InterviewState());
+
+  /// Hard cap on a single answer.
+  ///
+  /// Not a product preference: the answer is uploaded as base64 audio, and the
+  /// serverless proxy rejects request bodies over 4.5 MB. Three minutes of
+  /// µ-law comes to ~3.7 MB encoded, which fits with room for the conversation
+  /// history; five minutes would be ~6.1 MB and fail.
+  static const maxAnswerSeconds = 180;
 
   final SpeechRecognitionService _recognition;
   final AudioCaptureService _capture;
@@ -177,8 +189,11 @@ class InterviewNotifier extends StateNotifier<InterviewState> {
     unawaited(_recognition.prepare());
 
     try {
-      final apiKey = dotenv.env['GEMINI_API_KEY'];
-      if (apiKey == null || apiKey.isEmpty) {
+      // Only the direct-to-Google path needs a key on the client. On web the
+      // request goes through our own proxy, which holds it server-side —
+      // demanding one here would fail every browser session.
+      final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+      if (AiEndpoint.requiresApiKey && apiKey.isEmpty) {
         throw Exception('GEMINI_API_KEY is not configured in .env');
       }
 
@@ -262,7 +277,13 @@ class InterviewNotifier extends StateNotifier<InterviewState> {
         t.cancel();
         return;
       }
-      state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
+      final next = state.elapsedSeconds + 1;
+      if (next >= maxAnswerSeconds) {
+        t.cancel();
+        unawaited(stopAnswering());
+      } else {
+        state = state.copyWith(elapsedSeconds: next);
+      }
     });
   }
 

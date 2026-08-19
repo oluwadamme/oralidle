@@ -407,6 +407,8 @@ class _QuestionView extends ConsumerWidget {
                       ? 'Finishing up…'
                       : isRecording
                       ? 'Recording  $minutes:${seconds.toString().padLeft(2, '0')}'
+                            ' / ${InterviewNotifier.maxAnswerSeconds ~/ 60}:'
+                            '${(InterviewNotifier.maxAnswerSeconds % 60).toString().padLeft(2, '0')}'
                       : 'Tap the mic to answer',
                   textAlign: TextAlign.center,
                   style: TextStyle(

@@ -46,34 +46,19 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
       //   // On native platforms (iOS, Android, macOS), attempt Gemini first, then fallback to Ollama
 
       // }
+      Object? geminiError;
       try {
-          if (session.hasAudio) {
-            result = await _gemini.analyseAudioFile(
-              topic: session.topicTitle,
-              audioBytes: session.audioBytes!,
-              mimeType: session.audioMimeType ?? 'audio/wav',
-              durationSeconds: session.durationSeconds > 0
-                  ? session.durationSeconds
-                  : null,
-            );
-          } else if (session.hasTranscript) {
-            result = await _gemini.analyseTranscript(
-              topic: session.topicTitle,
-              transcript: session.transcript,
-              durationSeconds: session.durationSeconds,
-              metrics: SpeechAnalyser.analyse(
-                session.transcript,
-                session.durationSeconds,
-              ),
-            );
-          }
-        } catch (geminiError) {
-          log('GeminiService analysis failed: $geminiError. Attempting fallback to Ollama...');
-        }
-
-        if (result == null && session.hasTranscript) {
-          log('Falling back to Ollama local LLM for transcript analysis...');
-          result = await _ollama.analyseTranscript(
+        if (session.hasAudio) {
+          result = await _gemini.analyseAudioFile(
+            topic: session.topicTitle,
+            audioBytes: session.audioBytes!,
+            mimeType: session.audioMimeType ?? 'audio/wav',
+            durationSeconds: session.durationSeconds > 0
+                ? session.durationSeconds
+                : null,
+          );
+        } else if (session.hasTranscript) {
+          result = await _gemini.analyseTranscript(
             topic: session.topicTitle,
             transcript: session.transcript,
             durationSeconds: session.durationSeconds,
@@ -82,12 +67,36 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
               session.durationSeconds,
             ),
           );
+        }
+      } catch (error) {
+        geminiError = error;
+        log('GeminiService analysis failed: $error');
+      }
+
+      // Ollama runs on a local address, so it is only reachable from a device
+      // on the same machine or network — never from a deployed web build.
+      // Attempting it there would just stall and then report the wrong cause.
+      if (result == null && !kIsWeb && session.hasTranscript) {
+        log('Falling back to Ollama local LLM for transcript analysis...');
+        result = await _ollama.analyseTranscript(
+          topic: session.topicTitle,
+          transcript: session.transcript,
+          durationSeconds: session.durationSeconds,
+          metrics: SpeechAnalyser.analyse(
+            session.transcript,
+            session.durationSeconds,
+          ),
+        );
       }
 
       if (result == null) {
+        // Report what actually went wrong rather than pointing at Ollama on a
+        // platform that never tried it.
         throw Exception(
-          'Analysis failed: Neither Gemini nor Ollama could analyze this session. '
-          'Check your network connection, API key, or make sure Ollama is running locally.',
+          geminiError != null
+              ? 'Analysis failed: $geminiError'
+              : 'Analysis failed: this session had neither audio nor a '
+                    'transcript to analyse.',
         );
       }
 

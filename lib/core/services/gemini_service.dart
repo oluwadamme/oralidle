@@ -3,13 +3,11 @@ import 'dart:developer' show log;
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import '../../features/analysis/data/models/analysis_result.dart';
+import '../config/ai_endpoint.dart';
 import '../utils/speech_analyser.dart';
 
 class GeminiService {
-  static const _model = 'gemini-2.5-flash';
-  static const _baseUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent';
-
+  /// Empty on the proxy path, where the key lives on the server instead.
   final String _apiKey;
   GeminiService(this._apiKey);
 
@@ -156,13 +154,9 @@ Return ONLY a JSON object — no markdown, no explanation. Use this exact schema
   ) async {
     try {
       final response = await http.post(
-        Uri.parse(_baseUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          // Key goes in a header, never in the URL, to keep it out of proxy
-          // logs, crash reporters and browser network panels.
-          'x-goog-api-key': _apiKey,
-        },
+        // Google directly on native, our own proxy on web — see AiEndpoint.
+        AiEndpoint.generateContent,
+        headers: AiEndpoint.headers(_apiKey),
         body: jsonEncode({
           'system_instruction': {
             'parts': [

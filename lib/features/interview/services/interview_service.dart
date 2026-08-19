@@ -4,11 +4,9 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show compute;
 import 'package:http/http.dart' as http;
 import '../data/models/interview_models.dart';
+import '../../../core/config/ai_endpoint.dart';
 
 class InterviewService {
-  static const _model = 'gemini-2.5-flash';
-  static const _baseUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent';
   static const _timeout = Duration(seconds: 60);
 
   // Max history entries (user + model pairs). Keeps payload manageable for long
@@ -100,9 +98,7 @@ class InterviewService {
           {
             'inline_data': {'mime_type': audioMimeType, 'data': encoded},
           },
-          {
-            'text': textInstruction,
-          },
+          {'text': textInstruction},
         ];
       } catch (e) {
         log(
@@ -192,7 +188,9 @@ class InterviewService {
     // Replace the placeholder with the real transcript so future turns have
     // meaningful context without re-sending the audio bytes.
     final geminiTranscript = (json['transcript'] as String?)?.trim();
-    final transcript = (sttFallback.trim().isNotEmpty) ? sttFallback.trim() : (geminiTranscript ?? '');
+    final transcript = (sttFallback.trim().isNotEmpty)
+        ? sttFallback.trim()
+        : (geminiTranscript ?? '');
     _history.last = {
       'role': 'user',
       'parts': [
@@ -338,13 +336,10 @@ class InterviewService {
       try {
         final response = await _client
             .post(
-              Uri.parse(_baseUrl),
-              headers: {
-                'Content-Type': 'application/json',
-                // Key goes in a header, never in the URL, to keep it out of
-                // proxy logs, crash reporters, and network-traffic captures.
-                'x-goog-api-key': _apiKey,
-              },
+              // Google directly on native, our own proxy on web — see
+              // AiEndpoint.
+              AiEndpoint.generateContent,
+              headers: AiEndpoint.headers(_apiKey),
               body: requestBody,
             )
             .timeout(
