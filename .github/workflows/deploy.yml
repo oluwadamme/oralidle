@@ -1,0 +1,123 @@
+name: Test & Deploy
+
+# Production comes from `main`; opening a PR into `main` (typically from
+# `develop`) gets a preview URL to check before merging.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  # A newer push supersedes an in-flight run for the same ref. Production is
+  # exempt so a queued release is never cancelled halfway.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  FLUTTER_VERSION: 3.44.1
+
+jobs:
+  deploy:
+    name: ${{ github.ref == 'refs/heads/main' && 'Production' || 'Preview' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install Dart dependencies
+        run: flutter pub get
+
+      # `.env` is a declared Flutter asset, so the build fails outright if the
+      # file is missing. The example is empty by design — the Gemini key lives
+      # on the server behind api/gemini.js, never in the bundle.
+      - name: Create empty .env
+        run: cp .env.example .env
+
+      # The gate. Nothing deploys unless the suite is green.
+      - name: Run tests
+        run: flutter test
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@48
+
+      - name: Pull Vercel environment
+        run: >-
+          vercel pull --yes
+          --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+          --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      # Flutter lives on this runner, so the web build happens here and Vercel
+      # only receives the finished output — it never needs a Flutter toolchain.
+      - name: Build
+        run: >-
+          vercel build
+          ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
+          --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      # A bundled key would defeat the whole proxy. Cheap to check, and the
+      # failure mode is silent otherwise.
+      - name: Assert no secrets in the bundle
+        run: |
+          set -euo pipefail
+          if grep -rlE '(AIza[0-9A-Za-z_-]{20,}|sk-ant-)' .vercel/output/static; then
+            echo "::error::An API key is present in the web bundle. Refusing to deploy."
+            exit 1
+          fi
+          echo "No API keys found in the build output."
+
+      - name: Deploy
+        id: deploy
+        run: >-
+          echo "url=$(vercel deploy --prebuilt
+          ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
+          --token=${{ secrets.VERCEL_TOKEN }})" >> "$GITHUB_OUTPUT"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Comment preview URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const url = '${{ steps.deploy.outputs.url }}';
+            const marker = '<!-- vercel-preview -->';
+            const body = `${marker}\n**Preview deployed:** ${url}`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            // Update in place so a busy PR does not collect one comment per push.
+            const existing = comments.find((c) => c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                comment_id: existing.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              });
+            }

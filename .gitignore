@@ -48,3 +48,7 @@ app.*.map.json
 ios/Runner.xcworkspace/
 ios/Runner.xcodeproj/
 .DS_Store
+
+# Vercel
+.vercel
+node_modules/

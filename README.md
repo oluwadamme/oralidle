@@ -103,11 +103,56 @@ afconvert -f WAVE -d LEI16@16000 -c 1 /tmp/s.aiff /tmp/s.wav
 flutter run -d <device> -t tool/verify_stt.dart --dart-define=WAV=/tmp/s.wav
 ```
 
-## Deploying to web
+## Deploying to Vercel
 
-`flutter build web --release`
+Pushing to `main` deploys production; a PR into `main` gets a preview URL
+commented on the PR. Both run `flutter test` first and refuse to deploy if it
+fails. See [.github/workflows/deploy.yml](.github/workflows/deploy.yml).
 
-**Before deploying publicly:** `.env` is bundled as a Flutter asset, so
-`build/web/assets/.env` — including `GEMINI_API_KEY` — is served to anyone who
-visits the site. Proxy Gemini through a backend so the key never reaches the
-client.
+Flutter runs on the GitHub runner, not on Vercel: the workflow does
+`vercel build` there and ships the finished output with
+`vercel deploy --prebuilt`, so Vercel never needs a Flutter toolchain.
+
+### Where the API key lives
+
+A web build is static files in a browser, so anything it carries is public.
+`.env` is a declared Flutter asset, which means a bundled key would be served
+at `/assets/.env` to anyone who visits.
+
+So the key is **not in the app**. [`api/gemini.js`](api/gemini.js) holds it
+server-side and forwards requests to Google; the web app posts to
+`/api/gemini` instead. [`AiEndpoint`](lib/core/config/ai_endpoint.dart) is the
+single place that decides this:
+
+| Build | Endpoint | Carries a key |
+|-------|----------|---------------|
+| Web | `/api/gemini` (same origin) | no |
+| Native, default | Google directly | yes, from `.env` |
+| Native with `--dart-define=API_PROXY_BASE=…` | that proxy | no |
+
+CI copies `.env.example` over `.env` before building — the file must exist
+because it is a declared asset, and an empty one ships nothing. The workflow
+then greps the build output for key-shaped strings and fails the deploy if it
+finds any.
+
+### One-time setup
+
+1. `vercel link` to create the project.
+2. GitHub repo secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+   (the last two come from `.vercel/project.json`).
+3. Vercel environment variables, for **both** Production and Preview:
+   - `GEMINI_API_KEY` — the real key
+   - `ALLOWED_ORIGIN` — your production origin, e.g. `https://your-app.vercel.app`
+4. Add a **rate-limit rule on `/api/gemini`** in the Vercel WAF. The origin
+   check in the function only filters other websites; `Origin` is trivially
+   forged outside a browser, so rate limiting is what actually stops someone
+   who finds the URL from spending your quota.
+5. Rotate `GEMINI_API_KEY` if it was ever committed or bundled.
+
+### Answer length is capped at 3 minutes
+
+Vercel rejects request bodies over 4.5 MB, and answers upload as base64 audio:
+three minutes of µ-law is ~3.7 MB encoded, five minutes would be ~6.1 MB and
+fail. `InterviewNotifier.maxAnswerSeconds` enforces the limit and the session
+timer shows it. Raising it means sending raw binary instead of base64 (saves
+33%) or moving to Gemini's Files API.

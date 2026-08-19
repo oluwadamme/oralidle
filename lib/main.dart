@@ -9,7 +9,9 @@ import 'router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load();
+  // Optional: web builds ship an empty .env because the API key lives on the
+  // server behind api/gemini.js, and CI has no secrets to write into it.
+  await dotenv.load(isOptional: true);
   await Hive.initFlutter();
   await Hive.openBox<String>(AppConstants.hiveSessionsBox);
   await Hive.openBox<String>(AppConstants.hiveInterviewsBox);
