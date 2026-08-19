@@ -6,7 +6,23 @@ import '../../../../core/constants/app_constants.dart';
 class WaveformAnimation extends StatefulWidget {
   final bool isActive;
 
-  const WaveformAnimation({super.key, required this.isActive});
+  /// Live microphone level, 0..1.
+  ///
+  /// The bars are driven by real loudness rather than pure animation, so the
+  /// waveform doubles as proof the microphone is actually picking something
+  /// up — a flat line now means silence rather than a stopped animation.
+  final double level;
+
+  /// Bar height in logical pixels; the row scales with the available space on
+  /// larger screens.
+  final double height;
+
+  const WaveformAnimation({
+    super.key,
+    required this.isActive,
+    this.level = 0,
+    this.height = 60,
+  });
 
   @override
   State<WaveformAnimation> createState() => _WaveformAnimationState();
@@ -22,7 +38,7 @@ class _WaveformAnimationState extends State<WaveformAnimation>
 
   // Gradient: primary purple → amber (Lumina design spec)
   static const _colorStart = AppColors.primary; // #DDB7FF
-  static const _colorEnd = AppColors.amber;      // #FFB95F
+  static const _colorEnd = AppColors.amber; // #FFB95F
 
   @override
   void initState() {
@@ -39,9 +55,16 @@ class _WaveformAnimationState extends State<WaveformAnimation>
   void _updateBars() {
     if (!mounted) return;
     setState(() {
+      if (!widget.isActive) {
+        _heights = List.generate(_barCount, (_) => 0.2);
+        return;
+      }
+      // Real level sets the ceiling; the random term only adds the jitter
+      // that makes a row of bars read as a waveform rather than a bar chart.
+      final ceiling = 0.12 + widget.level.clamp(0.0, 1.0) * 0.88;
       _heights = List.generate(
         _barCount,
-        (i) => widget.isActive ? 0.15 + _rng.nextDouble() * 0.85 : 0.2,
+        (_) => (0.35 + _rng.nextDouble() * 0.65) * ceiling,
       );
     });
   }
@@ -75,7 +98,7 @@ class _WaveformAnimationState extends State<WaveformAnimation>
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 60,
+      height: widget.height,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -84,7 +107,7 @@ class _WaveformAnimationState extends State<WaveformAnimation>
             duration: const Duration(milliseconds: 100),
             margin: const EdgeInsets.symmetric(horizontal: 1.5),
             width: 4,
-            height: 60 * _heights[i],
+            height: widget.height * _heights[i],
             decoration: BoxDecoration(
               color: _barColor(i, _heights[i]),
               borderRadius: BorderRadius.circular(4),

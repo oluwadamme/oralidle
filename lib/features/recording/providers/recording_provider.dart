@@ -1,15 +1,30 @@
 import 'dart:async';
+import 'dart:developer' show log;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../data/models/recording_session.dart';
 import '../../topic_selection/data/models/topic.dart';
-import '../../../core/services/speech_service.dart';
+import '../../../core/services/speech/audio_capture_service.dart';
+import '../../../core/services/speech/speech_providers.dart';
+import '../../../core/services/speech/speech_recognition_service.dart';
 
-enum RecordingStatus { idle, recording, stopped, error }
+enum RecordingStatus {
+  idle,
+  recording,
+
+  /// Microphone released, last audio still being transcribed on device.
+  finalising,
+  stopped,
+  error,
+}
 
 class RecordingState {
   final RecordingStatus status;
+
+  /// Live on-device transcript. Empty where no on-device engine exists (web)
+  /// or while the model is still downloading — the recording is unaffected.
   final String transcript;
-  final String partialText;
   final int elapsedSeconds;
   final String topicId;
   final String topicTitle;
@@ -20,7 +35,6 @@ class RecordingState {
   const RecordingState({
     this.status = RecordingStatus.idle,
     this.transcript = '',
-    this.partialText = '',
     this.elapsedSeconds = 0,
     this.topicId = '',
     this.topicTitle = '',
@@ -32,47 +46,65 @@ class RecordingState {
   RecordingState copyWith({
     RecordingStatus? status,
     String? transcript,
-    String? partialText,
     int? elapsedSeconds,
     String? topicId,
     String? topicTitle,
     String? topicCategory,
     RecordingSession? completedSession,
     String? errorMessage,
-  }) =>
-      RecordingState(
-        status: status ?? this.status,
-        transcript: transcript ?? this.transcript,
-        partialText: partialText ?? this.partialText,
-        elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
-        topicId: topicId ?? this.topicId,
-        topicTitle: topicTitle ?? this.topicTitle,
-        topicCategory: topicCategory ?? this.topicCategory,
-        completedSession: completedSession ?? this.completedSession,
-        errorMessage: errorMessage ?? this.errorMessage,
-      );
+  }) => RecordingState(
+    status: status ?? this.status,
+    transcript: transcript ?? this.transcript,
+    elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
+    topicId: topicId ?? this.topicId,
+    topicTitle: topicTitle ?? this.topicTitle,
+    topicCategory: topicCategory ?? this.topicCategory,
+    completedSession: completedSession ?? this.completedSession,
+    errorMessage: errorMessage ?? this.errorMessage,
+  );
 
-  String get fullTranscript => '$transcript $partialText'.trim();
   bool get canStop => elapsedSeconds >= 60;
   bool get isRecording => status == RecordingStatus.recording;
+  bool get isFinalising => status == RecordingStatus.finalising;
 }
 
 class RecordingNotifier extends StateNotifier<RecordingState> {
-  RecordingNotifier(this._speechService) : super(const RecordingState());
+  RecordingNotifier({
+    required AudioCaptureService capture,
+    required SpeechRecognitionService recognition,
+  }) : _capture = capture,
+       _recognition = recognition,
+       super(const RecordingState());
 
-  final SpeechService _speechService;
+  /// Hard cap on a single take, matching the coaching format.
+  static const _maxSeconds = 120;
+
+  final AudioCaptureService _capture;
+  final SpeechRecognitionService _recognition;
   Timer? _timer;
 
+  /// Guards against `stopManually` racing the 120 s auto-stop, which would
+  /// otherwise build two sessions from one recording.
+  bool _finalising = false;
+
   Future<void> startRecording(Topic topic) async {
-    final initialized = await _speechService.initialize();
-    if (!initialized) {
+    // Warm the on-device recogniser in the background; the recording never
+    // waits on it, and works without it.
+    unawaited(_recognition.prepare());
+
+    final started = await _capture.start();
+    if (!mounted) return;
+
+    if (!started) {
       state = state.copyWith(
         status: RecordingStatus.error,
-        errorMessage: 'Speech recognition is not available on this device.',
+        errorMessage:
+            'Microphone unavailable. Grant microphone access and try again.',
       );
       return;
     }
 
+    _finalising = false;
     state = RecordingState(
       status: RecordingStatus.recording,
       topicId: topic.id,
@@ -80,66 +112,113 @@ class RecordingNotifier extends StateNotifier<RecordingState> {
       topicCategory: topic.category,
     );
 
+    if (_recognition.state.isReady) {
+      await _recognition.listen(_capture.pcmStream, (transcript) {
+        if (!mounted || state.status != RecordingStatus.recording) return;
+        state = state.copyWith(transcript: transcript);
+      });
+    }
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
       final next = state.elapsedSeconds + 1;
-      if (next >= 120) {
+      if (next >= _maxSeconds) {
         timer.cancel();
-        _finalise(120);
+        unawaited(_finalise(_maxSeconds));
       } else {
         state = state.copyWith(elapsedSeconds: next);
       }
     });
-
-    await _speechService.startContinuous((text, isFinal) {
-      if (!mounted || state.status != RecordingStatus.recording) return;
-      if (isFinal) {
-        final accumulated = state.transcript.isEmpty ? text : '${state.transcript} $text';
-        state = state.copyWith(transcript: accumulated.trim(), partialText: '');
-      } else {
-        state = state.copyWith(partialText: text);
-      }
-    });
   }
 
-  void stopManually() => _finalise(state.elapsedSeconds);
+  Future<void> stopManually() => _finalise(state.elapsedSeconds);
 
-  void _finalise(int seconds) {
-    _speechService.stop();
+  Future<void> _finalise(int seconds) async {
+    if (_finalising) return;
+    _finalising = true;
+
+    _timer?.cancel();
+    _timer = null;
+
+    if (mounted) {
+      state = state.copyWith(
+        status: RecordingStatus.finalising,
+        elapsedSeconds: seconds,
+      );
+    }
+
+    // Release the microphone first, then drain the recogniser's last window.
+    final audio = await _capture.stop();
+    final transcript = await _recognition.finish();
+
+    if (!mounted) {
+      log('RecordingNotifier: disposed while finalising — take discarded');
+      return;
+    }
+
+    // Treat a burst too short to hold speech as no audio at all, matching the
+    // interview flow — sending 30 ms of noise to Gemini wastes a request and
+    // produces a nonsense analysis.
+    final usableAudio = (audio == null || audio.isEmpty) ? null : audio;
+
+    if (usableAudio == null && transcript.isEmpty) {
+      state = state.copyWith(
+        status: RecordingStatus.error,
+        errorMessage: 'No audio was captured. Please check your microphone.',
+      );
+      return;
+    }
+
     final session = RecordingSession(
       topicId: state.topicId,
       topicTitle: state.topicTitle,
       topicCategory: state.topicCategory,
-      transcript: state.fullTranscript,
-      durationSeconds: seconds,
+      transcript: transcript,
+      // Prefer the measured length of the audio over the wall-clock timer:
+      // it is what the words-per-minute figure is actually divided by.
+      durationSeconds: usableAudio?.duration.inSeconds ?? seconds,
+      // Upload form: these bytes go straight to Gemini and are never
+      // played back locally.
+      audioBytes: usableAudio?.uploadBytes,
+      audioMimeType: usableAudio?.mimeType,
     );
+
     state = state.copyWith(
       status: RecordingStatus.stopped,
-      elapsedSeconds: seconds,
-      partialText: '',
       completedSession: session,
     );
   }
 
   void reset() {
     _timer?.cancel();
-    _speechService.stop();
+    _timer = null;
+    _finalising = false;
+    unawaited(_capture.cancel());
+    unawaited(_recognition.abort());
     state = const RecordingState();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    unawaited(_capture.cancel());
+    unawaited(_recognition.abort());
     super.dispose();
   }
 }
 
-final speechServiceProvider = Provider<SpeechService>((_) => SpeechService());
-
 final recordingProvider =
-    StateNotifierProvider<RecordingNotifier, RecordingState>((ref) {
-  return RecordingNotifier(ref.watch(speechServiceProvider));
+    StateNotifierProvider.autoDispose<RecordingNotifier, RecordingState>((ref) {
+      return RecordingNotifier(
+        capture: ref.watch(audioCaptureServiceProvider),
+        recognition: ref.watch(speechRecognitionServiceProvider),
+      );
+    });
+
+/// Live microphone level, 0..1, for the recording waveform.
+final micLevelProvider = StreamProvider.autoDispose<double>((ref) {
+  return ref.watch(audioCaptureServiceProvider).amplitudeStream;
 });

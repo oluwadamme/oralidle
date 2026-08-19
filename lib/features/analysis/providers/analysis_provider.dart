@@ -9,7 +9,8 @@ import '../../../core/utils/speech_analyser.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
-  AnalysisNotifier(this._gemini, this._storage) : super(const AsyncValue.data(null));
+  AnalysisNotifier(this._gemini, this._storage)
+    : super(const AsyncValue.data(null));
 
   final GeminiService _gemini;
   final StorageService _storage;
@@ -17,20 +18,32 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
   Future<void> analyse(RecordingSession session) async {
     state = const AsyncValue.loading();
     try {
+      // Audio is always the better input — it carries pace, hesitation and
+      // delivery that a transcript throws away — so it wins whenever it
+      // exists, whether it was recorded live or uploaded. The transcript path
+      // remains for sessions that somehow produced text but no audio.
       final AnalysisResult result;
-      if (session.isAudioUpload) {
+      if (session.hasAudio) {
         result = await _gemini.analyseAudioFile(
           topic: session.topicTitle,
-          audioBytes: session.audioFileBytes!,
-          mimeType: session.audioFileMimeType ?? 'audio/mpeg',
+          audioBytes: session.audioBytes!,
+          mimeType: session.audioMimeType ?? 'audio/wav',
+          // Known for live takes (measured from the captured PCM), unknown
+          // for uploads — which is what decides whether pace is measured or
+          // estimated.
+          durationSeconds: session.durationSeconds > 0
+              ? session.durationSeconds
+              : null,
         );
       } else {
-        final metrics = SpeechAnalyser.analyse(session.transcript, session.durationSeconds);
         result = await _gemini.analyseTranscript(
           topic: session.topicTitle,
           transcript: session.transcript,
           durationSeconds: session.durationSeconds,
-          metrics: metrics,
+          metrics: SpeechAnalyser.analyse(
+            session.transcript,
+            session.durationSeconds,
+          ),
         );
       }
       final record = SessionRecord(
@@ -51,7 +64,9 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
   void reset() => state = const AsyncValue.data(null);
 }
 
-final storageServiceProvider = Provider<StorageService>((_) => StorageService());
+final storageServiceProvider = Provider<StorageService>(
+  (_) => StorageService(),
+);
 
 final geminiServiceProvider = Provider<GeminiService>((ref) {
   final key = dotenv.env['GEMINI_API_KEY'] ?? '';
@@ -60,8 +75,8 @@ final geminiServiceProvider = Provider<GeminiService>((ref) {
 
 final analysisProvider =
     StateNotifierProvider<AnalysisNotifier, AsyncValue<SessionRecord?>>((ref) {
-  return AnalysisNotifier(
-    ref.watch(geminiServiceProvider),
-    ref.watch(storageServiceProvider),
-  );
-});
+      return AnalysisNotifier(
+        ref.watch(geminiServiceProvider),
+        ref.watch(storageServiceProvider),
+      );
+    });

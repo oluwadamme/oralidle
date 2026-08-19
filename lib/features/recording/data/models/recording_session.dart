@@ -1,5 +1,12 @@
 import 'dart:typed_data';
 
+/// One completed speaking session, on its way to analysis.
+///
+/// Audio and transcript are independent: a live recording normally carries
+/// both (the clip plus the on-device transcript), an uploaded file carries
+/// only audio, and a live recording on a platform without an on-device
+/// recogniser also carries only audio. Analysis prefers audio whenever it is
+/// present, because Gemini hears delivery that no transcript preserves.
 class RecordingSession {
   final String topicId;
   final String topicTitle;
@@ -7,9 +14,12 @@ class RecordingSession {
   final String transcript;
   final int durationSeconds;
 
-  // Set when the session comes from an uploaded audio file rather than live recording
-  final Uint8List? audioFileBytes;
-  final String? audioFileMimeType;
+  /// The recorded or uploaded clip. Held in memory rather than on disk so the
+  /// same representation works on web.
+  final Uint8List? audioBytes;
+  final String? audioMimeType;
+
+  /// Set only when the audio came from the file picker.
   final String? audioFileName;
 
   const RecordingSession({
@@ -18,10 +28,12 @@ class RecordingSession {
     required this.topicCategory,
     required this.transcript,
     required this.durationSeconds,
-    this.audioFileBytes,
-    this.audioFileMimeType,
+    this.audioBytes,
+    this.audioMimeType,
     this.audioFileName,
   });
 
-  bool get isAudioUpload => audioFileBytes != null;
+  bool get hasAudio => audioBytes != null && audioBytes!.isNotEmpty;
+  bool get hasTranscript => transcript.trim().isNotEmpty;
+  bool get isAudioUpload => audioFileName != null;
 }

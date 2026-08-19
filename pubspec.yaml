@@ -5,7 +5,8 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.10.0 <4.0.0"
+  # 3.12 is the floor for flutter_gemma_litertlm (native assets build hook).
+  sdk: ">=3.12.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -14,9 +15,6 @@ dependencies:
 
   # State management
   flutter_riverpod: ^2.6.1
-
-  # Speech to text (on-device, free)
-  speech_to_text: ^7.0.0
 
   # Charts
   fl_chart: ^0.70.2
@@ -43,10 +41,16 @@ dependencies:
   # Google Fonts (Plus Jakarta Sans, Manrope, Space Grotesk)
   google_fonts: ^6.2.1
 
-  # Audio recording and playback
+  # Microphone capture. The single owner of the mic app-wide — see
+  # core/services/speech/audio_capture_service.dart.
   record: ^6.2.0
   audioplayers: ^6.7.1
   path_provider: ^2.1.5
+
+  # On-device speech-to-text (Moonshine via LiteRT). Primary transcription
+  # engine on native platforms; web falls back to server-side transcription.
+  flutter_gemma: ^1.5.9
+  flutter_gemma_speech: ^0.4.3
 
   # Utilities
   intl: ^0.20.2

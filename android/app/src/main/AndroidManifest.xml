@@ -3,7 +3,8 @@
     <!-- Network access for Gemini API calls -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
-    <!-- Microphone for live speech recording (speech_to_text) -->
+    <!-- Microphone. Captured by `record` only — see AudioCaptureService,
+         which is the single microphone owner app-wide. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
     <!-- Audio file picker: Android 13+ (API 33+) -->
@@ -56,9 +57,6 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
-        </intent>
-        <intent>
-            <action android:name="android.speech.RecognitionService"/>
         </intent>
     </queries>
 

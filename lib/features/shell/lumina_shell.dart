@@ -2,8 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/responsive.dart';
 
-const _kWideBreakpoint = 900.0;
 const _kSidebarWidth = 220.0;
 
 class LuminaShell extends StatelessWidget {
@@ -12,7 +12,8 @@ class LuminaShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.sizeOf(context).width >= _kWideBreakpoint;
+    // Sidebar replaces the bottom bar once there is room for it.
+    final isWide = MediaQuery.sizeOf(context).width >= Breakpoints.medium;
 
     if (isWide) {
       return Scaffold(
@@ -219,8 +220,7 @@ class _SideNavItem extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight:
-                      active ? FontWeight.w600 : FontWeight.w400,
+                  fontWeight: active ? FontWeight.w600 : FontWeight.w400,
                   color: active ? AppColors.primary : AppColors.textMedium,
                 ),
               ),

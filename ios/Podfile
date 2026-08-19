@@ -1,5 +1,7 @@
-# Uncomment this line to define a global platform for your project
-# platform :ios, '13.0'
+# iOS 16 is the floor imposed by flutter_gemma, which delivers on-device
+# speech-to-text. Raising it drops iPhone 6s/7/SE(1st gen); lowering it again
+# means giving up on-device transcription.
+platform :ios, '16.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'

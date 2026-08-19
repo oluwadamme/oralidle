@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' show log;
-import 'dart:io';
-import 'dart:isolate';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:http/http.dart' as http;
 import '../data/models/interview_models.dart';
 
@@ -38,8 +38,8 @@ class InterviewService {
     required InterviewMode mode,
     required int questionCount,
     http.Client? client,
-  })  : _apiKey = apiKey,
-        _client = client ?? http.Client() {
+  }) : _apiKey = apiKey,
+       _client = client ?? http.Client() {
     _systemPrompt = _buildPrompt(
       cvContent: cvContent,
       skillsContent: skillsContent,
@@ -54,58 +54,57 @@ class InterviewService {
     final text = await _call('Start the interview. Ask me the first question.');
     final json = _parseJson(text);
     return InterviewQuestion.fromJson(
-        json['first_question'] as Map<String, dynamic>);
+      json['first_question'] as Map<String, dynamic>,
+    );
   }
 
   /// Submits an answer and returns the evaluation.
   ///
-  /// When [audioPath] is provided the audio file is encoded in a background
-  /// isolate (to avoid blocking the UI thread) and sent to Gemini inline as
-  /// base64.  Gemini evaluates the audio directly (better accuracy than
-  /// on-device STT) and returns a [transcript] in its response.  That
-  /// transcript — not the audio bytes — is stored in conversation history, so
-  /// subsequent turns stay compact.
+  /// When [audioBytes] is provided the clip is base64-encoded off the UI
+  /// thread and sent to Gemini inline.  Gemini evaluates the audio directly
+  /// (more accurate than any on-device transcript) and returns a
+  /// [transcript] in its response.  That transcript — not the audio bytes —
+  /// is stored in conversation history, so subsequent turns stay compact.
   ///
-  /// Falls back to the text-only [sttFallback] path if the audio file is
-  /// unavailable or encoding fails.
-  Future<({
-    String transcript,
-    TurnEvaluation eval,
-    InterviewQuestion? nextQuestion,
-    InterviewEvaluation? finalEval,
-  })> submitAnswer({
+  /// Falls back to the text-only [sttFallback] path when no audio was
+  /// captured or encoding fails.  On web, where there is no on-device
+  /// recogniser, the audio path is the only one that produces a transcript.
+  Future<
+    ({
+      String transcript,
+      TurnEvaluation eval,
+      InterviewQuestion? nextQuestion,
+      InterviewEvaluation? finalEval,
+    })
+  >
+  submitAnswer({
     required bool isLastQuestion,
-    String? audioPath,
+    Uint8List? audioBytes,
+    String audioMimeType = 'audio/wav',
     String sttFallback = '',
   }) async {
-    // ── Try to encode audio in a background isolate ───────────────────────────
-    // File I/O + base64 encoding can block for 50–200 ms on a typical
-    // interview recording; running it off the main isolate keeps the UI smooth.
+    // ── Encode audio off the UI thread ────────────────────────────────────────
+    // base64 of a two-minute 16 kHz clip is a few MB of string building —
+    // enough to drop frames if done inline.  `compute` runs it in an isolate
+    // on native and inline on web, where isolates are unavailable.
     List<Map<String, dynamic>>? audioParts;
-    if (audioPath != null) {
-      final file = File(audioPath);
-      if (file.existsSync()) {
-        try {
-          final encoded = await Isolate.run(() async {
-            final bytes = await File(audioPath).readAsBytes();
-            return base64Encode(bytes);
-          });
-          audioParts = [
-            {
-              'inline_data': {
-                'mime_type': 'audio/mp4',
-                'data': encoded,
-              },
-            },
-            {
-              'text': isLastQuestion
-                  ? 'That was my final answer. Please evaluate it and provide the comprehensive final evaluation.'
-                  : 'That is my answer.',
-            },
-          ];
-        } catch (e) {
-          log('InterviewService: audio encoding failed — falling back to STT: $e');
-        }
+    if (audioBytes != null && audioBytes.isNotEmpty) {
+      try {
+        final encoded = await compute(base64Encode, audioBytes);
+        audioParts = [
+          {
+            'inline_data': {'mime_type': audioMimeType, 'data': encoded},
+          },
+          {
+            'text': isLastQuestion
+                ? 'That was my final answer. Please evaluate it and provide the comprehensive final evaluation.'
+                : 'That is my answer.',
+          },
+        ];
+      } catch (e) {
+        log(
+          'InterviewService: audio encoding failed — falling back to STT: $e',
+        );
       }
     }
 
@@ -125,23 +124,20 @@ class InterviewService {
     _history.add({
       'role': 'user',
       'parts': [
-        {'text': '[audio answer]'}
+        {'text': '[audio answer]'},
       ],
     });
 
     final requestBody = jsonEncode({
       'system_instruction': {
         'parts': [
-          {'text': _systemPrompt}
+          {'text': _systemPrompt},
         ],
       },
       // Send all prior history as text, then the current turn with audio inline.
       'contents': [
         ..._history.sublist(0, _history.length - 1),
-        {
-          'role': 'user',
-          'parts': audioParts,
-        },
+        {'role': 'user', 'parts': audioParts},
       ],
       'generationConfig': _generationConfig,
     });
@@ -156,7 +152,9 @@ class InterviewService {
 
     if (response.statusCode != 200) {
       _history.removeLast();
-      log('InterviewService HTTP error ${response.statusCode}: ${response.body}');
+      log(
+        'InterviewService HTTP error ${response.statusCode}: ${response.body}',
+      );
       throw Exception(_extractApiError(response.body, response.statusCode));
     }
 
@@ -190,18 +188,17 @@ class InterviewService {
 
     // Replace the placeholder with the real transcript so future turns have
     // meaningful context without re-sending the audio bytes.
-    final transcript =
-        (json['transcript'] as String?)?.trim() ?? sttFallback;
+    final transcript = (json['transcript'] as String?)?.trim() ?? sttFallback;
     _history.last = {
       'role': 'user',
       'parts': [
-        {'text': 'My answer: "$transcript"'}
+        {'text': 'My answer: "$transcript"'},
       ],
     };
     _history.add({
       'role': 'model',
       'parts': [
-        {'text': text}
+        {'text': text},
       ],
     });
     _trimHistoryIfNeeded();
@@ -215,7 +212,8 @@ class InterviewService {
     TurnEvaluation eval,
     InterviewQuestion? nextQuestion,
     InterviewEvaluation? finalEval,
-  }) _parseSubmitResponse(
+  })
+  _parseSubmitResponse(
     String rawText,
     String fallbackTranscript, {
     Map<String, dynamic>? precomputedJson,
@@ -223,15 +221,18 @@ class InterviewService {
     final json = precomputedJson ?? _parseJson(rawText);
     final transcript =
         (json['transcript'] as String?)?.trim() ?? fallbackTranscript;
-    final eval =
-        TurnEvaluation.fromJson(json['evaluation'] as Map<String, dynamic>);
+    final eval = TurnEvaluation.fromJson(
+      json['evaluation'] as Map<String, dynamic>,
+    );
     final nextQuestion = json.containsKey('next_question')
         ? InterviewQuestion.fromJson(
-            json['next_question'] as Map<String, dynamic>)
+            json['next_question'] as Map<String, dynamic>,
+          )
         : null;
     final finalEval = json.containsKey('final_evaluation')
         ? InterviewEvaluation.fromJson(
-            json['final_evaluation'] as Map<String, dynamic>)
+            json['final_evaluation'] as Map<String, dynamic>,
+          )
         : null;
     return (
       transcript: transcript,
@@ -251,14 +252,14 @@ class InterviewService {
     _history.add({
       'role': 'user',
       'parts': [
-        {'text': userText}
+        {'text': userText},
       ],
     });
 
     final requestBody = jsonEncode({
       'system_instruction': {
         'parts': [
-          {'text': _systemPrompt}
+          {'text': _systemPrompt},
         ],
       },
       'contents': _history,
@@ -276,7 +277,9 @@ class InterviewService {
 
     if (response.statusCode != 200) {
       _history.removeLast();
-      log('InterviewService HTTP error ${response.statusCode}: ${response.body}');
+      log(
+        'InterviewService HTTP error ${response.statusCode}: ${response.body}',
+      );
       throw Exception(_extractApiError(response.body, response.statusCode));
     }
 
@@ -306,7 +309,7 @@ class InterviewService {
     _history.add({
       'role': 'model',
       'parts': [
-        {'text': text}
+        {'text': text},
       ],
     });
 
@@ -352,12 +355,16 @@ class InterviewService {
 
         // 5xx = server error — retry if attempts remain
         if (attempt == _maxRetries) return response;
-        log('InterviewService: server error ${response.statusCode}, '
-            'retrying (attempt ${attempt + 1}/$_maxRetries)…');
+        log(
+          'InterviewService: server error ${response.statusCode}, '
+          'retrying (attempt ${attempt + 1}/$_maxRetries)…',
+        );
       } catch (e) {
         if (attempt == _maxRetries) rethrow;
-        log('InterviewService: request failed ($e), '
-            'retrying (attempt ${attempt + 1}/$_maxRetries)…');
+        log(
+          'InterviewService: request failed ($e), '
+          'retrying (attempt ${attempt + 1}/$_maxRetries)…',
+        );
       }
     }
 

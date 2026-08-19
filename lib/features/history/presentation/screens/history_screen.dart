@@ -6,6 +6,7 @@ import '../widgets/session_tile.dart';
 import '../widgets/progress_line_chart.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/utils/responsive.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -34,12 +35,20 @@ class HistoryScreen extends ConsumerWidget {
                     slivers: [
                       SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                          padding: centeredPagePadding(
+                            MediaQuery.sizeOf(context).width,
+                            top: 16,
+                            bottom: 8,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('My Progress',
-                                  style: Theme.of(context).textTheme.headlineSmall),
+                              Text(
+                                'My Progress',
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineSmall,
+                              ),
                               const SizedBox(height: 16),
                               GlassCard(
                                 padding: const EdgeInsets.all(16),
@@ -52,7 +61,9 @@ class HistoryScreen extends ConsumerWidget {
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelMedium
-                                          ?.copyWith(color: AppColors.textMedium),
+                                          ?.copyWith(
+                                            color: AppColors.textMedium,
+                                          ),
                                     ),
                                     const SizedBox(height: 12),
                                     ProgressLineChart(sessions: sessions),
@@ -74,11 +85,15 @@ class HistoryScreen extends ConsumerWidget {
                       SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, index) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: centeredPagePadding(
+                              MediaQuery.sizeOf(context).width,
+                            ),
                             child: SessionTile(
                               record: sessions[index],
-                              onTap: () =>
-                                  context.push(AppRoutes.results, extra: sessions[index]),
+                              onTap: () => context.push(
+                                AppRoutes.results,
+                                extra: sessions[index],
+                              ),
                             ),
                           ),
                           childCount: sessions.length,
@@ -109,9 +124,15 @@ class _EmptyState extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.primary.withValues(alpha: 0.1),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.25),
+                ),
               ),
-              child: const Icon(Icons.history_rounded, size: 32, color: AppColors.primary),
+              child: const Icon(
+                Icons.history_rounded,
+                size: 32,
+                color: AppColors.primary,
+              ),
             ),
             const SizedBox(height: 20),
             Text(
@@ -138,17 +159,28 @@ class _StatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scores = sessions.map((s) => s.result.overallScore as int).toList();
-    final avg = scores.isEmpty ? 0 : scores.reduce((a, b) => a + b) ~/ scores.length;
+    final avg = scores.isEmpty
+        ? 0
+        : scores.reduce((a, b) => a + b) ~/ scores.length;
     final best = scores.isEmpty ? 0 : scores.reduce((a, b) => a > b ? a : b);
 
     return Row(
       children: [
-        Expanded(child: _StatChip(label: 'Sessions', value: '${sessions.length}')),
-        const SizedBox(width: 10),
-        Expanded(child: _StatChip(label: 'Avg Score', value: '$avg')),
+        Expanded(
+          child: _StatChip(label: 'Sessions', value: '${sessions.length}'),
+        ),
         const SizedBox(width: 10),
         Expanded(
-            child: _StatChip(label: 'Best Score', value: '$best', color: AppColors.good)),
+          child: _StatChip(label: 'Avg Score', value: '$avg'),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _StatChip(
+            label: 'Best Score',
+            value: '$best',
+            color: AppColors.good,
+          ),
+        ),
       ],
     );
   }
@@ -159,7 +191,11 @@ class _StatChip extends StatelessWidget {
   final String value;
   final Color color;
 
-  const _StatChip({required this.label, required this.value, this.color = AppColors.primary});
+  const _StatChip({
+    required this.label,
+    required this.value,
+    this.color = AppColors.primary,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +217,11 @@ class _StatChip extends StatelessWidget {
         children: [
           Text(
             value,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color),
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
           ),
           const SizedBox(height: 2),
           Text(

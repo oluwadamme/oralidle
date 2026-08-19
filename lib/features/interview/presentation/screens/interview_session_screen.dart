@@ -6,9 +6,12 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../recording/presentation/widgets/waveform_animation.dart';
+import '../../../recording/providers/recording_provider.dart';
 import '../../data/models/interview_models.dart';
+import '../../../../core/services/speech/audio_capture_service.dart';
 import '../../providers/interview_provider.dart';
 import '../utils/interview_ui_utils.dart';
+import '../../../../core/utils/responsive.dart';
 
 class InterviewSessionScreen extends ConsumerStatefulWidget {
   final InterviewSetup setup;
@@ -26,7 +29,9 @@ class _InterviewSessionScreenState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(interviewProvider.notifier).initialize(
+      ref
+          .read(interviewProvider.notifier)
+          .initialize(
             mode: widget.setup.mode,
             questionCount: widget.setup.questionCount,
           );
@@ -76,8 +81,7 @@ class _InterviewSessionScreenState
     // Show the number of the question that was just answered instead.
     final current = switch (state.phase) {
       InterviewPhase.loading => 1,
-      InterviewPhase.feedback =>
-        state.completedTurns.length.clamp(1, total),
+      InterviewPhase.feedback => state.completedTurns.length.clamp(1, total),
       _ => state.currentQuestionNumber.clamp(1, total),
     };
 
@@ -132,17 +136,17 @@ class _InterviewSessionScreenState
       case InterviewPhase.error:
         return _ErrorView(
           message: state.error ?? 'Something went wrong.',
-          onRetry: () =>
-              ref.read(interviewProvider.notifier).retryFromError(),
+          onRetry: () => ref.read(interviewProvider.notifier).retryFromError(),
         );
 
       case InterviewPhase.waiting:
       case InterviewPhase.recording:
+      case InterviewPhase.finalising:
       case InterviewPhase.processing:
         return _QuestionView(
           question: state.currentQuestion,
           phase: state.phase,
-          fullTranscript: state.fullTranscript,
+          transcript: state.transcript,
           elapsedSeconds: state.elapsedSeconds,
         );
 
@@ -157,11 +161,12 @@ class _InterviewSessionScreenState
           turn: lastTurn,
           evaluation: eval,
           isFinal: state.finalEvaluation != null,
-          recordingPath: state.lastRecordingPath,
+          recordingAudio: state.lastRecordingAudio,
           onNext: state.finalEvaluation != null
               ? () => _navigateToResults(state)
-              : () =>
-                  ref.read(interviewProvider.notifier).proceedToNextQuestion(),
+              : () => ref
+                    .read(interviewProvider.notifier)
+                    .proceedToNextQuestion(),
         );
     }
   }
@@ -170,7 +175,8 @@ class _InterviewSessionScreenState
     // Use the persisted instance so the results screen carries the same id
     // as the Hive record, enabling direct re-entry from history.
     // Falls back to a fresh instance only if persistence failed.
-    final completed = state.completedInterview ??
+    final completed =
+        state.completedInterview ??
         CompletedInterview(
           mode: state.mode,
           targetQuestions: state.targetQuestions,
@@ -187,12 +193,15 @@ class _InterviewSessionScreenState
         backgroundColor: AppColors.surfaceHigh,
         title: const Text('End Interview?'),
         content: const Text(
-            'Your progress will be lost and the interview will end.'),
+          'Your progress will be lost and the interview will end.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Continue',
-                style: TextStyle(color: AppColors.textMedium)),
+            child: const Text(
+              'Continue',
+              style: TextStyle(color: AppColors.textMedium),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -262,14 +271,20 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded,
-                size: 48, color: AppColors.poor),
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: AppColors.poor,
+            ),
             const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  fontSize: 14, color: AppColors.textDark, height: 1.5),
+                fontSize: 14,
+                color: AppColors.textDark,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -292,13 +307,16 @@ class _ErrorView extends StatelessWidget {
 class _QuestionView extends ConsumerWidget {
   final InterviewQuestion? question;
   final InterviewPhase phase;
-  final String fullTranscript;
+
+  /// Live on-device preview; empty where no on-device engine exists (web) or
+  /// while the model is still downloading.
+  final String transcript;
   final int elapsedSeconds;
 
   const _QuestionView({
     required this.question,
     required this.phase,
-    required this.fullTranscript,
+    required this.transcript,
     required this.elapsedSeconds,
   });
 
@@ -307,10 +325,14 @@ class _QuestionView extends ConsumerWidget {
     final minutes = elapsedSeconds ~/ 60;
     final seconds = elapsedSeconds % 60;
     final isRecording = phase == InterviewPhase.recording;
+    final isFinalising = phase == InterviewPhase.finalising;
     final isProcessing = phase == InterviewPhase.processing;
+    // The mic is already closed while finalising, so the controls behave as
+    // they do during processing: visible progress, nothing to tap.
+    final isBusy = isFinalising || isProcessing;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+    return ResponsiveContainer(
+      horizontalPadding: 24,
       child: Column(
         children: [
           const SizedBox(height: 12),
@@ -334,7 +356,7 @@ class _QuestionView extends ConsumerWidget {
 
           const Spacer(),
 
-          if (isRecording && fullTranscript.isNotEmpty)
+          if ((isRecording || isFinalising) && transcript.isNotEmpty)
             Container(
               constraints: const BoxConstraints(maxHeight: 100),
               width: double.infinity,
@@ -347,7 +369,7 @@ class _QuestionView extends ConsumerWidget {
               child: SingleChildScrollView(
                 reverse: true,
                 child: Text(
-                  fullTranscript,
+                  transcript,
                   style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.textMedium,
@@ -357,7 +379,7 @@ class _QuestionView extends ConsumerWidget {
               ),
             ),
 
-          if (isRecording && fullTranscript.isNotEmpty)
+          if ((isRecording || isFinalising) && transcript.isNotEmpty)
             const SizedBox(height: 12),
 
           Row(
@@ -366,38 +388,49 @@ class _QuestionView extends ConsumerWidget {
               Icon(
                 isRecording
                     ? Icons.graphic_eq_rounded
-                    : isProcessing
-                        ? Icons.hourglass_top_rounded
-                        : Icons.mic_none_rounded,
+                    : isBusy
+                    ? Icons.hourglass_top_rounded
+                    : Icons.mic_none_rounded,
                 size: 14,
-                color: isRecording ? AppColors.primary : AppColors.outline,
+                color: isRecording || isFinalising
+                    ? AppColors.primary
+                    : AppColors.outline,
               ),
               const SizedBox(width: 6),
-              Text(
-                isProcessing
-                    ? 'Evaluating your answer…'
-                    : isRecording
-                        ? 'Recording  $minutes:${seconds.toString().padLeft(2, '0')}'
-                        : 'Tap the mic to answer',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isRecording ? AppColors.primary : AppColors.outline,
+              Flexible(
+                child: Text(
+                  isProcessing
+                      ? 'Evaluating your answer…'
+                      : isFinalising
+                      ? 'Finishing up…'
+                      : isRecording
+                      ? 'Recording  $minutes:${seconds.toString().padLeft(2, '0')}'
+                      : 'Tap the mic to answer',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isRecording || isFinalising
+                        ? AppColors.primary
+                        : AppColors.outline,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 14),
 
-          WaveformAnimation(isActive: isRecording),
+          WaveformAnimation(
+            isActive: isRecording,
+            level: ref.watch(micLevelProvider).valueOrNull ?? 0,
+          ),
 
           const SizedBox(height: 20),
 
-          if (!isProcessing)
+          if (!isBusy)
             GestureDetector(
               onTap: isRecording
                   ? () => ref.read(interviewProvider.notifier).stopAnswering()
-                  : () =>
-                      ref.read(interviewProvider.notifier).startAnswering(),
+                  : () => ref.read(interviewProvider.notifier).startAnswering(),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 width: 76,
@@ -428,19 +461,21 @@ class _QuestionView extends ConsumerWidget {
               child: Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                 ),
               ),
             ),
 
           const SizedBox(height: 10),
           Text(
-            isProcessing
+            // isBusy, not isProcessing: while finalising there is a spinner
+            // where the button was, so "Tap to start answering" would be
+            // telling the user to press something that isn't there.
+            isBusy
                 ? 'Please wait…'
                 : isRecording
-                    ? 'Tap to stop when done'
-                    : 'Tap to start answering',
+                ? 'Tap to stop when done'
+                : 'Tap to start answering',
             style: const TextStyle(fontSize: 13, color: AppColors.textMedium),
           ),
 
@@ -459,14 +494,14 @@ class _FeedbackView extends StatelessWidget {
   final InterviewTurn turn;
   final TurnEvaluation evaluation;
   final bool isFinal;
-  final String? recordingPath;
+  final CapturedAudio? recordingAudio;
   final VoidCallback onNext;
 
   const _FeedbackView({
     required this.turn,
     required this.evaluation,
     required this.isFinal,
-    this.recordingPath,
+    this.recordingAudio,
     required this.onNext,
   });
 
@@ -475,7 +510,13 @@ class _FeedbackView extends StatelessWidget {
     final scoreColor = AppColors.scoreColor(evaluation.contentScore);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+      padding: centeredPagePadding(
+        MediaQuery.sizeOf(context).width,
+        maxContentWidth: Breakpoints.contentMaxWidth,
+        minHorizontal: 24,
+        top: 12,
+        bottom: 32,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -545,8 +586,11 @@ class _FeedbackView extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.chat_bubble_outline_rounded,
-                        size: 14, color: scoreColor),
+                    Icon(
+                      Icons.chat_bubble_outline_rounded,
+                      size: 14,
+                      color: scoreColor,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -585,21 +629,27 @@ class _FeedbackView extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (recordingPath != null)
+                    if (recordingAudio != null)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.25)),
+                            color: AppColors.primary.withValues(alpha: 0.25),
+                          ),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.headphones_rounded,
-                                size: 10, color: AppColors.primary),
+                            Icon(
+                              Icons.headphones_rounded,
+                              size: 10,
+                              color: AppColors.primary,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'Recording',
@@ -614,9 +664,9 @@ class _FeedbackView extends StatelessWidget {
                       ),
                   ],
                 ),
-                if (recordingPath != null) ...[
+                if (recordingAudio != null) ...[
                   const SizedBox(height: 14),
-                  _AudioPlayerWidget(path: recordingPath!),
+                  _AudioPlayerWidget(audio: recordingAudio!),
                   const SizedBox(height: 14),
                   const Divider(color: AppColors.cardBorder, height: 1),
                 ],
@@ -769,8 +819,8 @@ class _ProgressDots extends StatelessWidget {
             color: isDone
                 ? AppColors.good
                 : isCurrent
-                    ? AppColors.primary
-                    : AppColors.outlineVariant,
+                ? AppColors.primary
+                : AppColors.outlineVariant,
           ),
         );
       }),
@@ -781,9 +831,9 @@ class _ProgressDots extends StatelessWidget {
 // ── Audio playback ────────────────────────────────────────────────────────────
 
 class _AudioPlayerWidget extends StatefulWidget {
-  final String path;
+  final CapturedAudio audio;
 
-  const _AudioPlayerWidget({required this.path});
+  const _AudioPlayerWidget({required this.audio});
 
   @override
   State<_AudioPlayerWidget> createState() => _AudioPlayerWidgetState();
@@ -846,7 +896,14 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
 
   Future<void> _loadSource() async {
     try {
-      await _player.setSource(DeviceFileSource(widget.path));
+      // Bytes rather than a file: the clip never touches disk, so the same
+      // path works on web, where there is no filesystem to point at.
+      await _player.setSource(
+        BytesSource(
+          widget.audio.playbackBytes,
+          mimeType: widget.audio.mimeType,
+        ),
+      );
       if (mounted) setState(() => _isReady = true);
     } catch (_) {
       if (mounted) setState(() => _hasError = true);
@@ -885,8 +942,11 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
     if (_hasError) {
       return const Row(
         children: [
-          Icon(Icons.error_outline_rounded,
-              size: 15, color: AppColors.textMedium),
+          Icon(
+            Icons.error_outline_rounded,
+            size: 15,
+            color: AppColors.textMedium,
+          ),
           SizedBox(width: 6),
           Text(
             'Playback unavailable',
@@ -914,8 +974,9 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
 
     final isPlaying = _playerState == PlayerState.playing;
     final maxMs = _duration.inMilliseconds;
-    final progress =
-        maxMs > 0 ? (_position.inMilliseconds / maxMs).clamp(0.0, 1.0) : 0.0;
+    final progress = maxMs > 0
+        ? (_position.inMilliseconds / maxMs).clamp(0.0, 1.0)
+        : 0.0;
 
     return Row(
       children: [
@@ -927,8 +988,9 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.primary.withValues(alpha: 0.15),
-              border:
-                  Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.4),
+              ),
             ),
             child: Icon(
               isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
@@ -945,10 +1007,12 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   trackHeight: 3,
-                  thumbShape:
-                      const RoundSliderThumbShape(enabledThumbRadius: 6),
-                  overlayShape:
-                      const RoundSliderOverlayShape(overlayRadius: 14),
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 6,
+                  ),
+                  overlayShape: const RoundSliderOverlayShape(
+                    overlayRadius: 14,
+                  ),
                   activeTrackColor: AppColors.primary,
                   inactiveTrackColor: AppColors.outlineVariant,
                   thumbColor: AppColors.primary,
@@ -957,14 +1021,13 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
                 child: Slider(
                   value: _isSeeking ? _seekValue : progress,
                   onChangeStart: (double v) => setState(() {
-                        _isSeeking = true;
-                        _seekValue = v;
-                      }),
+                    _isSeeking = true;
+                    _seekValue = v;
+                  }),
                   onChanged: (double v) => setState(() => _seekValue = v),
                   onChangeEnd: (double v) {
                     setState(() => _isSeeking = false);
-                    _player.seek(
-                        Duration(milliseconds: (v * maxMs).round()));
+                    _player.seek(Duration(milliseconds: (v * maxMs).round()));
                   },
                 ),
               ),
@@ -976,12 +1039,16 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
                     Text(
                       _fmt(_position),
                       style: const TextStyle(
-                          fontSize: 10, color: AppColors.textMedium),
+                        fontSize: 10,
+                        color: AppColors.textMedium,
+                      ),
                     ),
                     Text(
                       _fmt(_duration),
                       style: const TextStyle(
-                          fontSize: 10, color: AppColors.textMedium),
+                        fontSize: 10,
+                        color: AppColors.textMedium,
+                      ),
                     ),
                   ],
                 ),
@@ -1029,8 +1096,11 @@ class _ModelAnswerCardState extends State<_ModelAnswerCard> {
                     shape: BoxShape.circle,
                     color: AppColors.primary.withValues(alpha: 0.15),
                   ),
-                  child: const Icon(Icons.auto_awesome_rounded,
-                      size: 13, color: AppColors.primary),
+                  child: const Icon(
+                    Icons.auto_awesome_rounded,
+                    size: 13,
+                    color: AppColors.primary,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 const Expanded(
@@ -1047,8 +1117,11 @@ class _ModelAnswerCardState extends State<_ModelAnswerCard> {
                 AnimatedRotation(
                   turns: _expanded ? 0.5 : 0.0,
                   duration: const Duration(milliseconds: 200),
-                  child: const Icon(Icons.keyboard_arrow_down_rounded,
-                      size: 18, color: AppColors.primary),
+                  child: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
                 ),
               ],
             ),

@@ -6,6 +6,7 @@ import '../../../topic_selection/data/models/topic.dart';
 import '../../data/models/recording_session.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/utils/responsive.dart';
 
 class PreparationScreen extends StatefulWidget {
   final Topic topic;
@@ -94,8 +95,8 @@ class _PreparationScreenState extends State<PreparationScreen> {
         topicCategory: widget.topic.category,
         transcript: '',
         durationSeconds: 0,
-        audioFileBytes: bytes,
-        audioFileMimeType: _mimeType(file.extension),
+        audioBytes: bytes,
+        audioMimeType: _mimeType(file.extension),
         audioFileName: file.name,
       );
 
@@ -165,8 +166,8 @@ class _PreparationScreenState extends State<PreparationScreen> {
             child: AmbientOrb(color: AppColors.primary, size: 180),
           ),
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
+            child: ResponsiveContainer(
+              extraPadding: const EdgeInsets.symmetric(vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -174,7 +175,10 @@ class _PreparationScreenState extends State<PreparationScreen> {
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: AppColors.textMedium),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: AppColors.textMedium,
+                        ),
                         onPressed: () => context.go(AppRoutes.topics),
                       ),
                       const Spacer(),
@@ -185,7 +189,10 @@ class _PreparationScreenState extends State<PreparationScreen> {
                         },
                         child: const Text(
                           'Skip →',
-                          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
@@ -196,7 +203,10 @@ class _PreparationScreenState extends State<PreparationScreen> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: color.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(20),
@@ -204,7 +214,11 @@ class _PreparationScreenState extends State<PreparationScreen> {
                       ),
                       child: Text(
                         widget.topic.category,
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: color,
+                        ),
                       ),
                     ),
                   ),
@@ -213,8 +227,10 @@ class _PreparationScreenState extends State<PreparationScreen> {
                   // ── Topic title ──────────────────────────────────────────
                   Text(
                     widget.topic.title,
-                    style:
-                        Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800, height: 1.2),
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      height: 1.2,
+                    ),
                   ),
                   const SizedBox(height: 16),
 
@@ -227,7 +243,11 @@ class _PreparationScreenState extends State<PreparationScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.lightbulb_rounded, color: AppColors.amber, size: 18),
+                        const Icon(
+                          Icons.lightbulb_rounded,
+                          color: AppColors.amber,
+                          size: 18,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
@@ -291,7 +311,10 @@ class _PreparationScreenState extends State<PreparationScreen> {
                             ),
                             Text(
                               'seconds',
-                              style: const TextStyle(fontSize: 11, color: AppColors.outline),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.outline,
+                              ),
                             ),
                           ],
                         ),
@@ -328,7 +351,11 @@ class _PreparationScreenState extends State<PreparationScreen> {
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.mic_rounded, color: Color(0xFF490080), size: 20),
+                          Icon(
+                            Icons.mic_rounded,
+                            color: Color(0xFF490080),
+                            size: 20,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             "I'm Ready — Start Now",
@@ -352,7 +379,9 @@ class _PreparationScreenState extends State<PreparationScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.surface,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.4),
+                        ),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -363,13 +392,21 @@ class _PreparationScreenState extends State<PreparationScreen> {
                                   height: 16,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppColors.primary,
+                                    ),
                                   ),
                                 )
-                              : const Icon(Icons.upload_file_rounded, color: AppColors.primary, size: 20),
+                              : const Icon(
+                                  Icons.upload_file_rounded,
+                                  color: AppColors.primary,
+                                  size: 20,
+                                ),
                           const SizedBox(width: 8),
                           Text(
-                            _pickingFile ? 'Opening file picker…' : 'Upload Audio File',
+                            _pickingFile
+                                ? 'Opening file picker…'
+                                : 'Upload Audio File',
                             style: const TextStyle(
                               color: AppColors.primary,
                               fontSize: 15,
@@ -410,20 +447,28 @@ class _TipsList extends StatelessWidget {
     ];
     return Column(
       children: tips
-          .map((tip) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5),
-                child: Row(
-                  children: [
-                    const Icon(Icons.check_circle_rounded,
-                        size: 16, color: AppColors.good),
-                    const SizedBox(width: 10),
-                    Text(
-                      tip,
-                      style: const TextStyle(fontSize: 14, color: AppColors.textDark),
+          .map(
+            (tip) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    size: 16,
+                    color: AppColors.good,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    tip,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textDark,
                     ),
-                  ],
-                ),
-              ))
+                  ),
+                ],
+              ),
+            ),
+          )
           .toList(),
     );
   }

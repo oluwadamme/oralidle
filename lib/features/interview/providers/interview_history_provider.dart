@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:permission_handler/permission_handler.dart';
+import '../../../core/services/speech/mic_permission.dart';
 import '../data/models/interview_models.dart';
 import '../data/repositories/interview_repository.dart';
 import '../data/repositories/interview_repository_impl.dart';
@@ -12,8 +12,7 @@ final interviewRepositoryProvider = Provider<InterviewRepository>(
 
 // ── Interview history ───────────────────────────────────────────────────────
 
-class InterviewHistoryNotifier
-    extends StateNotifier<List<CompletedInterview>> {
+class InterviewHistoryNotifier extends StateNotifier<List<CompletedInterview>> {
   InterviewHistoryNotifier(this._repository) : super([]) {
     _load();
   }
@@ -30,16 +29,16 @@ class InterviewHistoryNotifier
   }
 }
 
-final interviewHistoryProvider = StateNotifierProvider<
-    InterviewHistoryNotifier, List<CompletedInterview>>(
-  (ref) => InterviewHistoryNotifier(ref.watch(interviewRepositoryProvider)),
-);
+final interviewHistoryProvider =
+    StateNotifierProvider<InterviewHistoryNotifier, List<CompletedInterview>>(
+      (ref) => InterviewHistoryNotifier(ref.watch(interviewRepositoryProvider)),
+    );
 
 // ── Microphone permission ───────────────────────────────────────────────────
 //
 // autoDispose so that re-entering the interview tab after granting permission
 // causes the provider to re-evaluate rather than serving a stale cached value.
 
-final micPermissionProvider = FutureProvider.autoDispose<PermissionStatus>(
-  (_) => Permission.microphone.status,
+final micPermissionProvider = FutureProvider.autoDispose<MicPermission>(
+  (_) => MicPermissions.status(),
 );

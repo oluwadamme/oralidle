@@ -7,6 +7,7 @@ import '../../data/models/analysis_result.dart';
 import '../../../history/providers/history_provider.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/utils/responsive.dart';
 
 class ResultsScreen extends ConsumerWidget {
   final SessionRecord record;
@@ -17,8 +18,12 @@ class ResultsScreen extends ConsumerWidget {
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
-          if (constraints.maxWidth >= 700) {
-            return _WebResults(record: record, ref: ref);
+          if (constraints.maxWidth >= Breakpoints.twoColumn) {
+            return _WebResults(
+              record: record,
+              ref: ref,
+              availableWidth: constraints.maxWidth,
+            );
           }
           return _MobileResults(record: record, ref: ref);
         },
@@ -33,7 +38,14 @@ class _WebResults extends StatelessWidget {
   final SessionRecord record;
   final WidgetRef ref;
 
-  const _WebResults({required this.record, required this.ref});
+  /// Width of the content area, excluding the shell's sidebar.
+  final double availableWidth;
+
+  const _WebResults({
+    required this.record,
+    required this.ref,
+    required this.availableWidth,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +55,16 @@ class _WebResults extends StatelessWidget {
 
     return Stack(
       children: [
-        Positioned(top: -40, right: -40, child: AmbientOrb(color: color, size: 220)),
-        const Positioned(bottom: 80, left: -50, child: AmbientOrb(color: AppColors.primary, size: 160)),
+        Positioned(
+          top: -40,
+          right: -40,
+          child: AmbientOrb(color: color, size: 220),
+        ),
+        const Positioned(
+          bottom: 80,
+          left: -50,
+          child: AmbientOrb(color: AppColors.primary, size: 160),
+        ),
         SafeArea(
           child: Column(
             children: [
@@ -53,8 +73,10 @@ class _WebResults extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(32, 16, 32, 0),
                 child: Row(
                   children: [
-                    Text('Speech Analysis',
-                        style: Theme.of(context).textTheme.headlineSmall),
+                    Text(
+                      'Speech Analysis',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
                     const SizedBox(width: 12),
                     Text(
                       'Session from ${DateFormat('MMM d, y').format(record.timestamp)}  •  ${record.topicTitle}',
@@ -63,8 +85,10 @@ class _WebResults extends StatelessWidget {
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.home_rounded,
-                          color: AppColors.textMedium),
+                      icon: const Icon(
+                        Icons.home_rounded,
+                        color: AppColors.textMedium,
+                      ),
                       onPressed: () {
                         ref.read(historyProvider.notifier).refresh();
                         context.go(AppRoutes.home);
@@ -77,8 +101,15 @@ class _WebResults extends StatelessWidget {
 
               // ── Two-column body ─────────────────────────────────────
               Expanded(
+                // Side margins grow on wide windows so the two-column
+                // body stops widening while the backdrop stays full-bleed.
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(32, 8, 32, 32),
+                  padding: centeredPagePadding(
+                    availableWidth,
+                    minHorizontal: 32,
+                    top: 8,
+                    bottom: 32,
+                  ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -94,10 +125,11 @@ class _WebResults extends StatelessWidget {
                                   const Text(
                                     'CLARITY SCORE',
                                     style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.textMedium,
-                                        letterSpacing: 1.0),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textMedium,
+                                      letterSpacing: 1.0,
+                                    ),
                                   ),
                                   const SizedBox(height: 16),
                                   ScoreRing(
@@ -110,9 +142,10 @@ class _WebResults extends StatelessWidget {
                                   Text(
                                     _scoreLabel(overall),
                                     style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: color),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: color,
+                                    ),
                                   ),
                                   const SizedBox(height: 12),
                                   Text(
@@ -131,21 +164,27 @@ class _WebResults extends StatelessWidget {
                             // Meta
                             GlassCard(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceAround,
                                 children: [
                                   _MetaChip(
-                                      icon: Icons.timer_outlined,
-                                      label: record.formattedDuration),
+                                    icon: Icons.timer_outlined,
+                                    label: record.formattedDuration,
+                                  ),
                                   _MetaChip(
-                                      icon: Icons.speed_rounded,
-                                      label: '${r.wpm} wpm'),
+                                    icon: Icons.speed_rounded,
+                                    label: '${r.wpm} wpm',
+                                  ),
                                   _MetaChip(
-                                      icon: Icons.calendar_today_outlined,
-                                      label: DateFormat('MMM d')
-                                          .format(record.timestamp)),
+                                    icon: Icons.calendar_today_outlined,
+                                    label: DateFormat(
+                                      'MMM d',
+                                    ).format(record.timestamp),
+                                  ),
                                 ],
                               ),
                             ),
@@ -168,28 +207,51 @@ class _WebResults extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Performance Breakdown',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium),
+                                  Text(
+                                    'Performance Breakdown',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
+                                  ),
                                   const SizedBox(height: 20),
-                                  _ScoreBar(label: 'Fluency', score: r.scores.fluency),
-                                  _ScoreBar(label: 'Vocabulary', score: r.scores.vocabulary),
-                                  _ScoreBar(label: 'Grammar', score: r.scores.grammar),
-                                  _ScoreBar(label: 'Coherence', score: r.scores.coherence),
-                                  _ScoreBar(label: 'Confidence', score: r.scores.confidence),
-                                  _ScoreBar(label: 'Topic', score: r.scores.topicRelevance, isLast: true),
+                                  _ScoreBar(
+                                    label: 'Fluency',
+                                    score: r.scores.fluency,
+                                  ),
+                                  _ScoreBar(
+                                    label: 'Vocabulary',
+                                    score: r.scores.vocabulary,
+                                  ),
+                                  _ScoreBar(
+                                    label: 'Grammar',
+                                    score: r.scores.grammar,
+                                  ),
+                                  _ScoreBar(
+                                    label: 'Coherence',
+                                    score: r.scores.coherence,
+                                  ),
+                                  _ScoreBar(
+                                    label: 'Confidence',
+                                    score: r.scores.confidence,
+                                  ),
+                                  _ScoreBar(
+                                    label: 'Topic',
+                                    score: r.scores.topicRelevance,
+                                    isLast: true,
+                                  ),
                                 ],
                               ),
                             ),
                             if (r.improvements.isNotEmpty) ...[
                               const SizedBox(height: 20),
-                              Text('Coaching Tips',
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium),
+                              Text(
+                                'Coaching Tips',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
                               const SizedBox(height: 12),
-                              ...r.improvements
-                                  .map((tip) => _CoachingTipCard(tip: tip)),
+                              ...r.improvements.map(
+                                (tip) => _CoachingTipCard(tip: tip),
+                              ),
                             ],
                             const SizedBox(height: 20),
                             Row(
@@ -201,28 +263,41 @@ class _WebResults extends StatelessWidget {
                                       height: 48,
                                       decoration: BoxDecoration(
                                         gradient: const LinearGradient(
-                                          colors: [AppColors.primaryLight, AppColors.primary],
+                                          colors: [
+                                            AppColors.primaryLight,
+                                            AppColors.primary,
+                                          ],
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                         ),
                                         borderRadius: BorderRadius.circular(12),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: AppColors.primary.withValues(alpha: 0.3),
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.3,
+                                            ),
                                             blurRadius: 14,
                                             offset: const Offset(0, 4),
                                           ),
                                         ],
                                       ),
                                       child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.mic_rounded, color: Color(0xFF490080), size: 18),
+                                          Icon(
+                                            Icons.mic_rounded,
+                                            color: Color(0xFF490080),
+                                            size: 18,
+                                          ),
                                           SizedBox(width: 8),
-                                          Text('Try a New Topic',
-                                              style: TextStyle(
-                                                  color: Color(0xFF490080),
-                                                  fontWeight: FontWeight.w700)),
+                                          Text(
+                                            'Try a New Topic',
+                                            style: TextStyle(
+                                              color: Color(0xFF490080),
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -232,7 +307,9 @@ class _WebResults extends StatelessWidget {
                                 Expanded(
                                   child: OutlinedButton.icon(
                                     onPressed: () {
-                                      ref.read(historyProvider.notifier).refresh();
+                                      ref
+                                          .read(historyProvider.notifier)
+                                          .refresh();
                                       context.go(AppRoutes.home);
                                     },
                                     icon: const Icon(Icons.home_outlined),
@@ -280,8 +357,16 @@ class _MobileResults extends StatelessWidget {
 
     return Stack(
       children: [
-        Positioned(top: -40, right: -40, child: AmbientOrb(color: color, size: 200)),
-        const Positioned(bottom: 100, left: -50, child: AmbientOrb(color: AppColors.primary, size: 160)),
+        Positioned(
+          top: -40,
+          right: -40,
+          child: AmbientOrb(color: color, size: 200),
+        ),
+        const Positioned(
+          bottom: 100,
+          left: -50,
+          child: AmbientOrb(color: AppColors.primary, size: 160),
+        ),
         SafeArea(
           child: Column(
             children: [
@@ -291,13 +376,17 @@ class _MobileResults extends StatelessWidget {
                   children: [
                     const SizedBox(width: 48),
                     Expanded(
-                      child: Text('Lumina Speech',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleMedium),
+                      child: Text(
+                        'Lumina Speech',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.home_rounded,
-                          color: AppColors.textMedium),
+                      icon: const Icon(
+                        Icons.home_rounded,
+                        color: AppColors.textMedium,
+                      ),
                       onPressed: () {
                         ref.read(historyProvider.notifier).refresh();
                         context.go(AppRoutes.home);
@@ -313,14 +402,22 @@ class _MobileResults extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Center(
-                          child: ScoreRing(
-                              score: overall, color: color, size: 140, strokeWidth: 9)),
+                        child: ScoreRing(
+                          score: overall,
+                          color: color,
+                          size: 140,
+                          strokeWidth: 9,
+                        ),
+                      ),
                       const SizedBox(height: 10),
                       Center(
                         child: Text(
                           _scoreLabel(overall),
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w700, color: color),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: color,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -337,27 +434,47 @@ class _MobileResults extends StatelessWidget {
                         borderColor: color.withValues(alpha: 0.2),
                         child: Text(
                           r.summary,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(height: 1.5),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(height: 1.5),
                           textAlign: TextAlign.center,
                         ),
                       ),
                       const SizedBox(height: 24),
-                      Text('Performance Breakdown',
-                          style: Theme.of(context).textTheme.titleMedium),
+                      Text(
+                        'Performance Breakdown',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 14),
                       GlassCard(
                         padding: const EdgeInsets.all(18),
                         child: Column(
                           children: [
-                            _ScoreBar(label: 'Fluency', score: r.scores.fluency),
-                            _ScoreBar(label: 'Vocabulary', score: r.scores.vocabulary),
-                            _ScoreBar(label: 'Grammar', score: r.scores.grammar),
-                            _ScoreBar(label: 'Coherence', score: r.scores.coherence),
-                            _ScoreBar(label: 'Confidence', score: r.scores.confidence),
-                            _ScoreBar(label: 'Topic', score: r.scores.topicRelevance, isLast: true),
+                            _ScoreBar(
+                              label: 'Fluency',
+                              score: r.scores.fluency,
+                            ),
+                            _ScoreBar(
+                              label: 'Vocabulary',
+                              score: r.scores.vocabulary,
+                            ),
+                            _ScoreBar(
+                              label: 'Grammar',
+                              score: r.scores.grammar,
+                            ),
+                            _ScoreBar(
+                              label: 'Coherence',
+                              score: r.scores.coherence,
+                            ),
+                            _ScoreBar(
+                              label: 'Confidence',
+                              score: r.scores.confidence,
+                            ),
+                            _ScoreBar(
+                              label: 'Topic',
+                              score: r.scores.topicRelevance,
+                              isLast: true,
+                            ),
                           ],
                         ),
                       ),
@@ -365,10 +482,14 @@ class _MobileResults extends StatelessWidget {
                       _KeyInsightsSection(result: r),
                       const SizedBox(height: 24),
                       if (r.improvements.isNotEmpty) ...[
-                        Text('Coaching Tips',
-                            style: Theme.of(context).textTheme.titleMedium),
+                        Text(
+                          'Coaching Tips',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
                         const SizedBox(height: 12),
-                        ...r.improvements.map((tip) => _CoachingTipCard(tip: tip)),
+                        ...r.improvements.map(
+                          (tip) => _CoachingTipCard(tip: tip),
+                        ),
                         const SizedBox(height: 8),
                       ],
                       ElevatedButton.icon(
@@ -419,8 +540,10 @@ class _MetaChip extends StatelessWidget {
       children: [
         Icon(icon, size: 13, color: AppColors.outline),
         const SizedBox(width: 5),
-        Text(label,
-            style: const TextStyle(fontSize: 12, color: AppColors.textMedium)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
+        ),
       ],
     );
   }
@@ -431,7 +554,11 @@ class _ScoreBar extends StatelessWidget {
   final int score;
   final bool isLast;
 
-  const _ScoreBar({required this.label, required this.score, this.isLast = false});
+  const _ScoreBar({
+    required this.label,
+    required this.score,
+    this.isLast = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -444,15 +571,23 @@ class _ScoreBar extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(label,
-                    style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textDark)),
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
+                  ),
+                ),
               ),
-              Text('$score%',
-                  style: TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w700, color: color)),
+              Text(
+                '$score%',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 6),
@@ -493,7 +628,8 @@ class _KeyInsightsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasFillers = result.fillerWords.isNotEmpty;
-    final ideal = result.wpm >= AppConstants.idealWpmMin &&
+    final ideal =
+        result.wpm >= AppConstants.idealWpmMin &&
         result.wpm <= AppConstants.idealWpmMax;
     final wpmColor = ideal ? AppColors.good : AppColors.fair;
 
@@ -510,24 +646,30 @@ class _KeyInsightsSection extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: wpmColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),
-                      border:
-                          Border.all(color: wpmColor.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: wpmColor.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.speed_rounded, size: 12, color: wpmColor),
                         const SizedBox(width: 5),
-                        Text('${result.wpm} WPM',
-                            style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: wpmColor)),
+                        Text(
+                          '${result.wpm} WPM',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: wpmColor,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -537,10 +679,12 @@ class _KeyInsightsSection extends StatelessWidget {
                       ideal
                           ? 'Great pace! (${AppConstants.idealWpmMin}–${AppConstants.idealWpmMax} ideal)'
                           : result.wpm < AppConstants.idealWpmMin
-                              ? 'A little slow — aim for ${AppConstants.idealWpmMin}+ WPM'
-                              : 'A little fast — try to slow down',
+                          ? 'A little slow — aim for ${AppConstants.idealWpmMin}+ WPM'
+                          : 'A little fast — try to slow down',
                       style: const TextStyle(
-                          fontSize: 12, color: AppColors.textMedium),
+                        fontSize: 12,
+                        color: AppColors.textMedium,
+                      ),
                     ),
                   ),
                 ],
@@ -549,16 +693,20 @@ class _KeyInsightsSection extends StatelessWidget {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    const Icon(Icons.warning_amber_rounded,
-                        size: 14, color: AppColors.amber),
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      size: 14,
+                      color: AppColors.amber,
+                    ),
                     const SizedBox(width: 6),
                     const Text(
                       'FILLER WORDS DETECTED',
                       style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.amber,
-                          letterSpacing: 0.5),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.amber,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ],
                 ),
@@ -575,14 +723,20 @@ class _KeyInsightsSection extends StatelessWidget {
                 const SizedBox(height: 12),
                 const Row(
                   children: [
-                    Icon(Icons.check_circle_rounded,
-                        size: 14, color: AppColors.good),
+                    Icon(
+                      Icons.check_circle_rounded,
+                      size: 14,
+                      color: AppColors.good,
+                    ),
                     SizedBox(width: 6),
-                    Text('No filler words detected — excellent!',
-                        style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.good,
-                            fontWeight: FontWeight.w600)),
+                    Text(
+                      'No filler words detected — excellent!',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.good,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -614,16 +768,18 @@ class _FillerChip extends StatelessWidget {
             TextSpan(
               text: '"$word"',
               style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textDark),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark,
+              ),
             ),
             TextSpan(
               text: '  $count×',
               style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.amber),
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.amber,
+              ),
             ),
           ],
         ),
@@ -656,26 +812,38 @@ class _CoachingTipCard extends StatelessWidget {
               shape: BoxShape.circle,
               color: AppColors.primary.withValues(alpha: 0.12),
               border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.25)),
+                color: AppColors.primary.withValues(alpha: 0.25),
+              ),
             ),
-            child: const Icon(Icons.arrow_upward_rounded,
-                size: 16, color: AppColors.primary),
+            child: const Icon(
+              Icons.arrow_upward_rounded,
+              size: 16,
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(tip.area,
-                    style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                        letterSpacing: 0.2)),
+                Text(
+                  tip.area,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                    letterSpacing: 0.2,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(tip.tip,
-                    style: const TextStyle(
-                        fontSize: 13, height: 1.45, color: AppColors.textDark)),
+                Text(
+                  tip.tip,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    height: 1.45,
+                    color: AppColors.textDark,
+                  ),
+                ),
               ],
             ),
           ),

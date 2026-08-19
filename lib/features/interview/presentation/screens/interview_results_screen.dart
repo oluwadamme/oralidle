@@ -5,6 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../data/models/interview_models.dart';
 import '../utils/interview_ui_utils.dart';
+import '../../../../core/utils/responsive.dart';
 
 class InterviewResultsScreen extends StatelessWidget {
   final CompletedInterview interview;
@@ -22,8 +23,12 @@ class InterviewResultsScreen extends StatelessWidget {
       },
       child: Scaffold(
         body: LayoutBuilder(
-          builder: (context, constraints) => constraints.maxWidth >= 700
-              ? _WideResults(interview: interview)
+          builder: (context, constraints) =>
+              constraints.maxWidth >= Breakpoints.twoColumn
+              ? _WideResults(
+                  interview: interview,
+                  availableWidth: constraints.maxWidth,
+                )
               : _MobileResults(interview: interview),
         ),
       ),
@@ -68,7 +73,10 @@ class _ResultsScaffold extends StatelessWidget {
 class _WideResults extends StatelessWidget {
   final CompletedInterview interview;
 
-  const _WideResults({required this.interview});
+  /// Width of the content area, excluding the shell's sidebar.
+  final double availableWidth;
+
+  const _WideResults({required this.interview, required this.availableWidth});
 
   @override
   Widget build(BuildContext context) {
@@ -83,8 +91,10 @@ class _WideResults extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(32, 16, 32, 0),
             child: Row(
               children: [
-                Text('Interview Debrief',
-                    style: Theme.of(context).textTheme.headlineSmall),
+                Text(
+                  'Interview Debrief',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
                 const SizedBox(width: 12),
                 Text(
                   '${interview.mode.label}  ·  ${DateFormat('MMM d, y').format(interview.timestamp)}',
@@ -92,8 +102,10 @@ class _WideResults extends StatelessWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.home_rounded,
-                      color: AppColors.textMedium),
+                  icon: const Icon(
+                    Icons.home_rounded,
+                    color: AppColors.textMedium,
+                  ),
                   onPressed: () => context.go(AppRoutes.home),
                 ),
               ],
@@ -102,7 +114,14 @@ class _WideResults extends StatelessWidget {
           const SizedBox(height: 8),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(32, 8, 32, 32),
+              // Side margins grow on wide windows so the two-column body
+              // stops widening while the backdrop stays full-bleed.
+              padding: centeredPagePadding(
+                availableWidth,
+                minHorizontal: 32,
+                top: 8,
+                bottom: 32,
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -159,13 +178,17 @@ class _MobileResults extends StatelessWidget {
               children: [
                 const SizedBox(width: 48),
                 Expanded(
-                  child: Text('Interview Debrief',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleMedium),
+                  child: Text(
+                    'Interview Debrief',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.home_rounded,
-                      color: AppColors.textMedium),
+                  icon: const Icon(
+                    Icons.home_rounded,
+                    color: AppColors.textMedium,
+                  ),
                   onPressed: () => context.go(AppRoutes.home),
                 ),
               ],
@@ -221,23 +244,26 @@ class _OverallCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           ScoreRing(
-              score: eval.overallScore,
-              color: color,
-              size: 140,
-              strokeWidth: 9),
+            score: eval.overallScore,
+            color: color,
+            size: 140,
+            strokeWidth: 9,
+          ),
           const SizedBox(height: 12),
           Text(
             _overallLabel(eval.overallScore),
             style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w700, color: color),
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             eval.summary,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(height: 1.55),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(height: 1.55),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -291,18 +317,22 @@ class _InsightsCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.star_rounded,
-                      size: 16, color: AppColors.good),
+                  const Icon(
+                    Icons.star_rounded,
+                    size: 16,
+                    color: AppColors.good,
+                  ),
                   const SizedBox(width: 8),
-                  Text('Strengths',
-                      style: Theme.of(context).textTheme.titleSmall),
+                  Text(
+                    'Strengths',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
-              ...eval.strengths.map((s) => _BulletItem(
-                    text: s,
-                    color: AppColors.good,
-                  )),
+              ...eval.strengths.map(
+                (s) => _BulletItem(text: s, color: AppColors.good),
+              ),
             ],
           ),
         ),
@@ -314,18 +344,22 @@ class _InsightsCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.arrow_upward_rounded,
-                      size: 16, color: AppColors.primary),
+                  const Icon(
+                    Icons.arrow_upward_rounded,
+                    size: 16,
+                    color: AppColors.primary,
+                  ),
                   const SizedBox(width: 8),
-                  Text('Areas to Improve',
-                      style: Theme.of(context).textTheme.titleSmall),
+                  Text(
+                    'Areas to Improve',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
-              ...eval.improvements.map((s) => _BulletItem(
-                    text: s,
-                    color: AppColors.primary,
-                  )),
+              ...eval.improvements.map(
+                (s) => _BulletItem(text: s, color: AppColors.primary),
+              ),
             ],
           ),
         ),
@@ -344,14 +378,13 @@ class _QuestionBreakdown extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Question Breakdown',
-            style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          'Question Breakdown',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 12),
         ...turns.indexed.map(
-          (entry) => _TurnTile(
-            index: entry.$1,
-            turn: entry.$2,
-          ),
+          (entry) => _TurnTile(index: entry.$1, turn: entry.$2),
         ),
       ],
     );
@@ -419,8 +452,7 @@ class _TurnTileState extends State<_TurnTile> {
                         Text(
                           widget.turn.question.text,
                           maxLines: _expanded ? null : 2,
-                          overflow:
-                              _expanded ? null : TextOverflow.ellipsis,
+                          overflow: _expanded ? null : TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -464,9 +496,11 @@ class _TurnTileState extends State<_TurnTile> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.chat_bubble_outline_rounded,
-                          size: 13,
-                          color: AppColors.scoreColor(eval.contentScore)),
+                      Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        size: 13,
+                        color: AppColors.scoreColor(eval.contentScore),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -552,8 +586,11 @@ class _ActionButtons extends StatelessWidget {
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.replay_rounded,
-                    color: AppColors.onPrimary, size: 18),
+                Icon(
+                  Icons.replay_rounded,
+                  color: AppColors.onPrimary,
+                  size: 18,
+                ),
                 SizedBox(width: 8),
                 Text(
                   'Practice Again',
@@ -592,9 +629,10 @@ class _MetaChip extends StatelessWidget {
       children: [
         Icon(icon, size: 13, color: AppColors.outline),
         const SizedBox(width: 5),
-        Text(label,
-            style: const TextStyle(
-                fontSize: 12, color: AppColors.textMedium)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
+        ),
       ],
     );
   }
@@ -624,7 +662,10 @@ class _BulletItem extends StatelessWidget {
             child: Text(
               text,
               style: const TextStyle(
-                  fontSize: 13, color: AppColors.textDark, height: 1.45),
+                fontSize: 13,
+                color: AppColors.textDark,
+                height: 1.45,
+              ),
             ),
           ),
         ],

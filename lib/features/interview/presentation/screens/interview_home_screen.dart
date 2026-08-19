@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
+import '../../../../core/services/speech/mic_permission.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../data/models/interview_models.dart';
 import '../../providers/interview_history_provider.dart';
+import '../../../../core/utils/responsive.dart';
 
 class InterviewHomeScreen extends ConsumerStatefulWidget {
   const InterviewHomeScreen({super.key});
@@ -23,7 +24,7 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
   static const _counts = [3, 5, 7, 10];
 
   Future<void> _requestMicPermission() async {
-    await Permission.microphone.request();
+    await MicPermissions.request();
     // Invalidate the cached status so the banner re-evaluates
     ref.invalidate(micPermissionProvider);
   }
@@ -46,9 +47,9 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final isWide = constraints.maxWidth >= 700;
+                final isWide = constraints.maxWidth >= Breakpoints.twoColumn;
                 return isWide
-                    ? _wideLayout(context)
+                    ? _wideLayout(context, constraints.maxWidth)
                     : _mobileLayout(context);
               },
             ),
@@ -58,11 +59,18 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
     );
   }
 
-  Widget _wideLayout(BuildContext context) {
+  Widget _wideLayout(BuildContext context, double availableWidth) {
     final history = ref.watch(interviewHistoryProvider);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(48, 32, 48, 48),
+      // Side margins grow on wide windows so the two-column body stops
+      // widening while the backdrop stays full-bleed.
+      padding: centeredPagePadding(
+        availableWidth,
+        minHorizontal: 48,
+        top: 32,
+        bottom: 48,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -197,9 +205,13 @@ class _PermissionBanner extends ConsumerWidget {
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
       data: (status) {
-        if (status.isGranted) return const SizedBox.shrink();
+        if (status == MicPermission.granted) return const SizedBox.shrink();
 
-        final isPermanent = status.isPermanentlyDenied;
+        // Only offer the Settings route where there is a settings app to
+        // open; elsewhere the retry prompt is the only useful action.
+        final isPermanent =
+            status == MicPermission.permanentlyDenied &&
+            MicPermissions.canOpenSettings;
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
@@ -209,8 +221,11 @@ class _PermissionBanner extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.mic_off_rounded,
-                  size: 16, color: AppColors.amber),
+              const Icon(
+                Icons.mic_off_rounded,
+                size: 16,
+                color: AppColors.amber,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -218,12 +233,15 @@ class _PermissionBanner extends ConsumerWidget {
                       ? 'Microphone access was denied. Enable it in Settings to use voice answers.'
                       : 'Microphone access is needed for voice answers.',
                   style: const TextStyle(
-                      fontSize: 13, color: AppColors.amber, height: 1.4),
+                    fontSize: 13,
+                    color: AppColors.amber,
+                    height: 1.4,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: isPermanent ? openAppSettings : onGrant,
+                onTap: isPermanent ? MicPermissions.openSettings : onGrant,
                 child: Text(
                   isPermanent ? 'Settings' : 'Grant',
                   style: const TextStyle(
@@ -281,12 +299,10 @@ class _SessionRow extends StatelessWidget {
     final color = AppColors.scoreColor(session.evaluation.overallScore);
 
     return GestureDetector(
-      onTap: () =>
-          context.push(AppRoutes.interviewResults, extra: session),
+      onTap: () => context.push(AppRoutes.interviewResults, extra: session),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         decoration: AppColors.glassCard(radius: 10),
         child: Row(
           children: [
@@ -325,13 +341,18 @@ class _SessionRow extends StatelessWidget {
                     '${session.turns.length} questions · '
                     '${DateFormat('MMM d').format(session.timestamp)}',
                     style: const TextStyle(
-                        fontSize: 11, color: AppColors.textMedium),
+                      fontSize: 11,
+                      color: AppColors.textMedium,
+                    ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded,
-                size: 18, color: AppColors.outline),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: AppColors.outline,
+            ),
           ],
         ),
       ),
@@ -356,7 +377,8 @@ class _Header extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: AppColors.primary.withValues(alpha: 0.15),
                 border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.3)),
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                ),
               ),
               child: const Icon(
                 Icons.work_outline_rounded,
@@ -506,8 +528,11 @@ class _ModeCard extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle_rounded,
-                  size: 18, color: AppColors.primary),
+              const Icon(
+                Icons.check_circle_rounded,
+                size: 18,
+                color: AppColors.primary,
+              ),
           ],
         ),
       ),
@@ -545,17 +570,18 @@ class _CountSection extends StatelessWidget {
         const SizedBox(height: 12),
         Row(
           children: counts
-              .map((c) => Expanded(
-                    child: Padding(
-                      padding:
-                          EdgeInsets.only(right: c != counts.last ? 10 : 0),
-                      child: _CountPill(
-                        count: c,
-                        isSelected: selected == c,
-                        onTap: () => onSelect(c),
-                      ),
+              .map(
+                (c) => Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: c != counts.last ? 10 : 0),
+                    child: _CountPill(
+                      count: c,
+                      isSelected: selected == c,
+                      onTap: () => onSelect(c),
                     ),
-                  ))
+                  ),
+                ),
+              )
               .toList(),
         ),
       ],
@@ -642,8 +668,11 @@ class _StartButton extends StatelessWidget {
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.play_arrow_rounded,
-                color: AppColors.onPrimary, size: 22),
+            Icon(
+              Icons.play_arrow_rounded,
+              color: AppColors.onPrimary,
+              size: 22,
+            ),
             SizedBox(width: 8),
             Text(
               'Start Interview',
@@ -686,8 +715,9 @@ class _HowItWorksStep extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.primary.withValues(alpha: 0.12),
-              border:
-                  Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.3),
+              ),
             ),
             child: Center(
               child: Text(

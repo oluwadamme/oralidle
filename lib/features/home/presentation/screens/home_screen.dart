@@ -9,6 +9,7 @@ import '../../../history/providers/history_provider.dart';
 import '../../../analysis/data/models/session_record.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/utils/responsive.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -20,15 +21,19 @@ class HomeScreen extends ConsumerWidget {
     final allSessions = ref.watch(historyProvider);
 
     final hour = DateTime.now().hour;
-    final greeting =
-        hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    final greeting = hour < 12
+        ? 'Good morning'
+        : hour < 17
+        ? 'Good afternoon'
+        : 'Good evening';
     final level = _levelTitle(allSessions.length);
 
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
-          if (constraints.maxWidth >= 700) {
+          if (constraints.maxWidth >= Breakpoints.twoColumn) {
             return _WebHome(
+              availableWidth: constraints.maxWidth,
               greeting: greeting,
               level: level,
               streak: streak,
@@ -59,6 +64,8 @@ class HomeScreen extends ConsumerWidget {
 // ── Web two-column layout ─────────────────────────────────────────────────────
 
 class _WebHome extends ConsumerWidget {
+  /// Width of the content area, excluding the shell's sidebar.
+  final double availableWidth;
   final String greeting;
   final String level;
   final int streak;
@@ -66,6 +73,7 @@ class _WebHome extends ConsumerWidget {
   final List<SessionRecord> recent;
 
   const _WebHome({
+    required this.availableWidth,
     required this.greeting,
     required this.level,
     required this.streak,
@@ -77,13 +85,26 @@ class _WebHome extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Stack(
       children: [
-        const Positioned(top: -60, right: -40,
-            child: AmbientOrb(color: AppColors.primary, size: 260)),
-        const Positioned(bottom: 60, left: -60,
-            child: AmbientOrb(color: AppColors.amber, size: 180)),
+        const Positioned(
+          top: -60,
+          right: -40,
+          child: AmbientOrb(color: AppColors.primary, size: 260),
+        ),
+        const Positioned(
+          bottom: 60,
+          left: -60,
+          child: AmbientOrb(color: AppColors.amber, size: 180),
+        ),
         SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
+            // Side margins grow on wide windows so the content stops
+            // widening, while the ambient-orb backdrop stays full-bleed.
+            padding: centeredPagePadding(
+              availableWidth,
+              minHorizontal: 32,
+              top: 32,
+              bottom: 32,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -96,35 +117,36 @@ class _WebHome extends ConsumerWidget {
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primary.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: AppColors.primary.withValues(alpha: 0.3)),
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Text(
                             level,
                             style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.primary),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           '$greeting,',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
+                          style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(color: AppColors.textMedium),
                         ),
                         Text(
                           'Speaker!',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineLarge
-                              ?.copyWith(height: 1.1),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.headlineLarge?.copyWith(height: 1.1),
                         ),
                       ],
                     ),
@@ -132,25 +154,32 @@ class _WebHome extends ConsumerWidget {
                     if (streak > 0)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 7),
+                          horizontal: 12,
+                          vertical: 7,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.amber.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                              color: AppColors.amber.withValues(alpha: 0.3)),
+                            color: AppColors.amber.withValues(alpha: 0.3),
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.local_fire_department_rounded,
-                                color: AppColors.amber, size: 15),
+                            const Icon(
+                              Icons.local_fire_department_rounded,
+                              color: AppColors.amber,
+                              size: 15,
+                            ),
                             const SizedBox(width: 5),
                             Text(
                               '$streak-day streak',
                               style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.amber),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.amber,
+                              ),
                             ),
                           ],
                         ),
@@ -214,12 +243,13 @@ class _WebHome extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Progress',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall
-                                          ?.copyWith(
-                                              color: AppColors.textMedium)),
+                                  Text(
+                                    'Progress',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall
+                                        ?.copyWith(color: AppColors.textMedium),
+                                  ),
                                   const SizedBox(height: 12),
                                   ProgressLineChart(sessions: allSessions),
                                 ],
@@ -228,9 +258,12 @@ class _WebHome extends ConsumerWidget {
                           ] else
                             GlassCard(
                               padding: const EdgeInsets.all(20),
-                              bgColor: AppColors.primary.withValues(alpha: 0.05),
-                              borderColor:
-                                  AppColors.primary.withValues(alpha: 0.2),
+                              bgColor: AppColors.primary.withValues(
+                                alpha: 0.05,
+                              ),
+                              borderColor: AppColors.primary.withValues(
+                                alpha: 0.2,
+                              ),
                               child: Column(
                                 children: [
                                   Container(
@@ -238,26 +271,32 @@ class _WebHome extends ConsumerWidget {
                                     height: 52,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color:
-                                          AppColors.primary.withValues(alpha: 0.12),
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.12,
+                                      ),
                                     ),
-                                    child: const Icon(Icons.mic_none_rounded,
-                                        size: 24, color: AppColors.primary),
+                                    child: const Icon(
+                                      Icons.mic_none_rounded,
+                                      size: 24,
+                                      color: AppColors.primary,
+                                    ),
                                   ),
                                   const SizedBox(height: 12),
                                   const Text(
                                     'No sessions yet',
                                     style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.textDark),
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textDark,
+                                    ),
                                   ),
                                   const SizedBox(height: 6),
                                   const Text(
                                     'Complete your first session to see stats here.',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                        fontSize: 13,
-                                        color: AppColors.textMedium),
+                                      fontSize: 13,
+                                      color: AppColors.textMedium,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -276,42 +315,47 @@ class _WebHome extends ConsumerWidget {
                           GlassCard(
                             padding: const EdgeInsets.all(24),
                             bgColor: AppColors.primary.withValues(alpha: 0.05),
-                            borderColor: AppColors.primary.withValues(alpha: 0.15),
+                            borderColor: AppColors.primary.withValues(
+                              alpha: 0.15,
+                            ),
                             child: Row(
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Ready for your next session?',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleMedium,
                                       ),
                                       const SizedBox(height: 6),
                                       const Text(
                                         'AI analysis will coach your fluency, pace, and filler word frequency in real-time.',
                                         style: TextStyle(
-                                            fontSize: 13,
-                                            color: AppColors.textMedium,
-                                            height: 1.4),
+                                          fontSize: 13,
+                                          color: AppColors.textMedium,
+                                          height: 1.4,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
                                 const SizedBox(width: 24),
                                 GestureDetector(
-                                  onTap: () =>
-                                      context.go(AppRoutes.topics),
+                                  onTap: () => context.go(AppRoutes.topics),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 24, vertical: 14),
+                                      horizontal: 24,
+                                      vertical: 14,
+                                    ),
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
                                         colors: [
                                           AppColors.primaryLight,
-                                          AppColors.primary
+                                          AppColors.primary,
                                         ],
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
@@ -319,8 +363,9 @@ class _WebHome extends ConsumerWidget {
                                       borderRadius: BorderRadius.circular(12),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: AppColors.primary
-                                              .withValues(alpha: 0.3),
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.3,
+                                          ),
                                           blurRadius: 16,
                                           offset: const Offset(0, 4),
                                         ),
@@ -329,8 +374,11 @@ class _WebHome extends ConsumerWidget {
                                     child: const Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.mic_rounded,
-                                            color: Color(0xFF490080), size: 18),
+                                        Icon(
+                                          Icons.mic_rounded,
+                                          color: Color(0xFF490080),
+                                          size: 18,
+                                        ),
                                         SizedBox(width: 8),
                                         Text(
                                           'Start Practice',
@@ -354,10 +402,12 @@ class _WebHome extends ConsumerWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Recent Sessions',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium),
+                                Text(
+                                  'Recent Sessions',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
                                 TextButton(
                                   onPressed: () =>
                                       context.go(AppRoutes.history),
@@ -371,8 +421,7 @@ class _WebHome extends ConsumerWidget {
                             const SizedBox(height: 10),
                             GlassCard(
                               padding: EdgeInsets.zero,
-                              child: _SessionsTable(
-                                  sessions: recent, ref: ref),
+                              child: _SessionsTable(sessions: recent, ref: ref),
                             ),
                           ],
                         ],
@@ -405,43 +454,58 @@ class _SessionsTable extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: const BoxDecoration(
-            border:
-                Border(bottom: BorderSide(color: AppColors.cardBorder)),
+            border: Border(bottom: BorderSide(color: AppColors.cardBorder)),
           ),
           child: const Row(
             children: [
               Expanded(
-                  flex: 4,
-                  child: Text('SESSION',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.outline,
-                          letterSpacing: 0.5))),
+                flex: 4,
+                child: Text(
+                  'SESSION',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.outline,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
               Expanded(
-                  flex: 2,
-                  child: Text('DATE',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.outline,
-                          letterSpacing: 0.5))),
+                flex: 2,
+                child: Text(
+                  'DATE',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.outline,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
               Expanded(
-                  flex: 2,
-                  child: Text('DURATION',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.outline,
-                          letterSpacing: 0.5))),
+                flex: 2,
+                child: Text(
+                  'DURATION',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.outline,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
               Expanded(
-                  flex: 2,
-                  child: Text('SCORE',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.outline,
-                          letterSpacing: 0.5))),
+                flex: 2,
+                child: Text(
+                  'SCORE',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.outline,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -457,13 +521,13 @@ class _SessionsTable extends StatelessWidget {
             onTap: () => context.push(AppRoutes.results, extra: s),
             hoverColor: AppColors.primary.withValues(alpha: 0.04),
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               decoration: BoxDecoration(
                 border: isLast
                     ? null
                     : const Border(
-                        bottom: BorderSide(color: AppColors.cardBorder)),
+                        bottom: BorderSide(color: AppColors.cardBorder),
+                      ),
               ),
               child: Row(
                 children: [
@@ -472,9 +536,10 @@ class _SessionsTable extends StatelessWidget {
                     child: Text(
                       s.topicTitle,
                       style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textDark),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textDark,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -484,7 +549,9 @@ class _SessionsTable extends StatelessWidget {
                     child: Text(
                       DateFormat('MMM d, y').format(s.timestamp),
                       style: const TextStyle(
-                          fontSize: 13, color: AppColors.textMedium),
+                        fontSize: 13,
+                        color: AppColors.textMedium,
+                      ),
                     ),
                   ),
                   Expanded(
@@ -492,7 +559,9 @@ class _SessionsTable extends StatelessWidget {
                     child: Text(
                       s.formattedDuration,
                       style: const TextStyle(
-                          fontSize: 13, color: AppColors.textMedium),
+                        fontSize: 13,
+                        color: AppColors.textMedium,
+                      ),
                     ),
                   ),
                   Expanded(
@@ -501,19 +570,23 @@ class _SessionsTable extends StatelessWidget {
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: color.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: color.withValues(alpha: 0.3)),
+                              color: color.withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Text(
                             '$score',
                             style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: color),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: color,
+                            ),
                           ),
                         ),
                       ],
@@ -559,16 +632,18 @@ class _StatRow extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: Text(label,
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.textMedium)),
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 13, color: AppColors.textMedium),
+          ),
         ),
         Text(
           value,
           style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: color),
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
         ),
       ],
     );
@@ -597,11 +672,13 @@ class _MobileHome extends ConsumerWidget {
     return Stack(
       children: [
         const Positioned(
-          top: -40, right: -40,
+          top: -40,
+          right: -40,
           child: AmbientOrb(color: AppColors.primary, size: 220),
         ),
         const Positioned(
-          top: 120, left: -60,
+          top: 120,
+          left: -60,
           child: AmbientOrb(color: AppColors.amber, size: 140),
         ),
         CustomScrollView(
@@ -622,9 +699,7 @@ class _MobileHome extends ConsumerWidget {
                               children: [
                                 Text(
                                   '$greeting,',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
+                                  style: Theme.of(context).textTheme.bodyLarge
                                       ?.copyWith(color: AppColors.textMedium),
                                 ),
                                 Text(
@@ -639,24 +714,30 @@ class _MobileHome extends ConsumerWidget {
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
                                   AppColors.primary.withValues(alpha: 0.25),
-                                  AppColors.primaryLight.withValues(alpha: 0.15),
+                                  AppColors.primaryLight.withValues(
+                                    alpha: 0.15,
+                                  ),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                  color: AppColors.primary.withValues(alpha: 0.4)),
+                                color: AppColors.primary.withValues(alpha: 0.4),
+                              ),
                             ),
                             child: Text(
                               level,
                               style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primary),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary,
+                              ),
                             ),
                           ),
                         ],
@@ -665,25 +746,32 @@ class _MobileHome extends ConsumerWidget {
                       if (streak > 0)
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.amber.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: AppColors.amber.withValues(alpha: 0.3)),
+                              color: AppColors.amber.withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.local_fire_department_rounded,
-                                  color: AppColors.amber, size: 15),
+                              const Icon(
+                                Icons.local_fire_department_rounded,
+                                color: AppColors.amber,
+                                size: 15,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 '$streak-day streak — keep it up!',
                                 style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.amber),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.amber,
+                                ),
                               ),
                             ],
                           ),
@@ -695,14 +783,19 @@ class _MobileHome extends ConsumerWidget {
                           height: 60,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [AppColors.primaryLight, AppColors.primary],
+                              colors: [
+                                AppColors.primaryLight,
+                                AppColors.primary,
+                              ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.35),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.35,
+                                ),
                                 blurRadius: 20,
                                 offset: const Offset(0, 6),
                               ),
@@ -711,15 +804,19 @@ class _MobileHome extends ConsumerWidget {
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.mic_rounded,
-                                  color: Color(0xFF490080), size: 22),
+                              Icon(
+                                Icons.mic_rounded,
+                                color: Color(0xFF490080),
+                                size: 22,
+                              ),
                               SizedBox(width: 10),
                               Text(
                                 'Start Practice',
                                 style: TextStyle(
-                                    color: Color(0xFF490080),
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w700),
+                                  color: Color(0xFF490080),
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ],
                           ),
@@ -740,7 +837,8 @@ class _MobileHome extends ConsumerWidget {
                             Expanded(
                               child: _MiniStatCard(
                                 icon: Icons.emoji_events_rounded,
-                                value: '${allSessions.map((s) => s.result.overallScore).reduce((a, b) => a > b ? a : b)}',
+                                value:
+                                    '${allSessions.map((s) => s.result.overallScore).reduce((a, b) => a > b ? a : b)}',
                                 label: 'Best',
                                 color: AppColors.good,
                               ),
@@ -749,7 +847,8 @@ class _MobileHome extends ConsumerWidget {
                             Expanded(
                               child: _MiniStatCard(
                                 icon: Icons.trending_up_rounded,
-                                value: '${allSessions.map((s) => s.result.overallScore).reduce((a, b) => a + b) ~/ allSessions.length}',
+                                value:
+                                    '${allSessions.map((s) => s.result.overallScore).reduce((a, b) => a + b) ~/ allSessions.length}',
                                 label: 'Avg',
                                 color: AppColors.fair,
                               ),
@@ -757,8 +856,10 @@ class _MobileHome extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 24),
-                        Text('Progress',
-                            style: Theme.of(context).textTheme.titleMedium),
+                        Text(
+                          'Progress',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
                         const SizedBox(height: 10),
                         GlassCard(
                           padding: const EdgeInsets.all(16),
@@ -768,25 +869,32 @@ class _MobileHome extends ConsumerWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Recent Sessions',
-                                style: Theme.of(context).textTheme.titleMedium),
+                            Text(
+                              'Recent Sessions',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
                             if (allSessions.length > 3)
                               TextButton(
                                 onPressed: () => context.go(AppRoutes.history),
-                                child: const Text('See all',
-                                    style:
-                                        TextStyle(color: AppColors.primary)),
+                                child: const Text(
+                                  'See all',
+                                  style: TextStyle(color: AppColors.primary),
+                                ),
                               ),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        ...recent.map((s) => SessionTile(
-                              record: s,
-                              onTap: () =>
-                                  context.push(AppRoutes.results, extra: s),
-                            )),
+                        ...recent.map(
+                          (s) => SessionTile(
+                            record: s,
+                            onTap: () =>
+                                context.push(AppRoutes.results, extra: s),
+                          ),
+                        ),
                       ] else
-                        _EmptyState(onStart: () => context.go(AppRoutes.topics)),
+                        _EmptyState(
+                          onStart: () => context.go(AppRoutes.topics),
+                        ),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -824,13 +932,19 @@ class _MiniStatCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(value,
-              style: TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.w800, color: color)),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 11, color: AppColors.textMedium)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 11, color: AppColors.textMedium),
+          ),
         ],
       ),
     );
@@ -856,15 +970,21 @@ class _EmptyState extends StatelessWidget {
               shape: BoxShape.circle,
               color: AppColors.primary.withValues(alpha: 0.12),
               border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.3)),
+                color: AppColors.primary.withValues(alpha: 0.3),
+              ),
             ),
-            child: const Icon(Icons.mic_none_rounded,
-                size: 30, color: AppColors.primary),
+            child: const Icon(
+              Icons.mic_none_rounded,
+              size: 30,
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(height: 16),
-          Text('Ready to improve your English?',
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center),
+          Text(
+            'Ready to improve your English?',
+            style: Theme.of(context).textTheme.titleMedium,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 8),
           Text(
             'Pick a topic, speak for 1–2 minutes, and get detailed AI coaching on your fluency, grammar, and more.',
@@ -875,11 +995,11 @@ class _EmptyState extends StatelessWidget {
           GestureDetector(
             onTap: onStart,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                    colors: [AppColors.primaryLight, AppColors.primary]),
+                  colors: [AppColors.primaryLight, AppColors.primary],
+                ),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -892,9 +1012,10 @@ class _EmptyState extends StatelessWidget {
               child: const Text(
                 'Pick Your First Topic',
                 style: TextStyle(
-                    color: Color(0xFF490080),
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15),
+                  color: Color(0xFF490080),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
               ),
             ),
           ),
