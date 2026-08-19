@@ -4,6 +4,9 @@
   "installCommand": "flutter pub get",
   "buildCommand": "flutter build web --release",
   "outputDirectory": "build/web",
+  "git": {
+    "deploymentEnabled": false
+  },
   "headers": [
     {
       "source": "/",
@@ -27,9 +30,7 @@
     },
     {
       "source": "/assets/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" }
-      ]
+      "headers": [{ "key": "X-Content-Type-Options", "value": "nosniff" }]
     }
   ]
 }
