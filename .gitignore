@@ -55,3 +55,4 @@ node_modules/
 
 # Gradle output — the root /build/ rule above does not reach it
 android/build/
+.env*.local
