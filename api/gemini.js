@@ -9,17 +9,12 @@
 // analysis) and InterviewService (mock interviews) — work through one
 // endpoint without the proxy needing to understand either payload.
 
-export const config = {
-  // Audio analysis of a long answer regularly runs past the 10s default.
-  maxDuration: 60,
-};
-
 const UPSTREAM =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
-/// Vercel rejects request bodies above this, and Gemini audio payloads are the
-/// only thing here that gets close. Checked explicitly so an oversized answer
-/// fails with an explanation rather than a bare platform error.
+// Vercel rejects request bodies above ~4.5 MB, and Gemini audio payloads are
+// the only thing here that gets close. Checked explicitly so an oversized
+// answer fails with an explanation rather than a bare platform error.
 const MAX_BODY_BYTES = 4 * 1024 * 1024;
 
 function json(status, body) {
@@ -29,11 +24,8 @@ function json(status, body) {
   });
 }
 
-export default async function handler(request) {
-  if (request.method !== 'POST') {
-    return json(405, { error: { message: 'Method not allowed' } });
-  }
 
+export async function POST(request) {
   // Browsers attach Origin on cross-origin POSTs; our own page does not (it is
   // same-origin) and native clients send none at all. So an absent Origin is
   // normal and a mismatched one is not.
