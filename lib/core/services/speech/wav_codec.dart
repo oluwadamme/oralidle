@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'pcm16_view.dart';
+
 /// Minimal RIFF/WAVE encoder for 16-bit little-endian PCM.
 ///
 /// Pure Dart with no platform dependencies, so the same code produces the
@@ -80,7 +82,9 @@ class WavCodec {
     required int sampleRate,
     int numChannels = 1,
   }) {
-    final samples = Int16List.sublistView(pcm16);
+    // Pcm16View for the same reason the loudness meter uses it: the captured
+    // bytes may start at an odd offset, which the aligned readers reject.
+    final samples = Pcm16View(pcm16);
     final companded = Uint8List(samples.length);
     for (var i = 0; i < samples.length; i++) {
       companded[i] = encodeMuLawSample(samples[i]);

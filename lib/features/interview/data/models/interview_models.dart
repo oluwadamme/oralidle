@@ -214,6 +214,13 @@ class CompletedInterview {
 class InterviewSetup {
   final InterviewMode mode;
   final int questionCount;
+  final String? customCvContent;
+  final String? customCvFileName;
 
-  const InterviewSetup({required this.mode, required this.questionCount});
+  const InterviewSetup({
+    required this.mode,
+    required this.questionCount,
+    this.customCvContent,
+    this.customCvFileName,
+  });
 }

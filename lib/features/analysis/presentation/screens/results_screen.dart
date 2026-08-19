@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -202,6 +203,10 @@ class _WebResults extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            if (r.transcript.isNotEmpty) ...[
+                              _SpeechTranscriptSection(transcript: r.transcript),
+                              const SizedBox(height: 20),
+                            ],
                             GlassCard(
                               padding: const EdgeInsets.all(24),
                               child: Column(
@@ -441,6 +446,10 @@ class _MobileResults extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
+                      if (r.transcript.isNotEmpty) ...[
+                        _SpeechTranscriptSection(transcript: r.transcript),
+                        const SizedBox(height: 24),
+                      ],
                       Text(
                         'Performance Breakdown',
                         style: Theme.of(context).textTheme.titleMedium,
@@ -849,6 +858,99 @@ class _CoachingTipCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SpeechTranscriptSection extends StatelessWidget {
+  final String transcript;
+  const _SpeechTranscriptSection({required this.transcript});
+
+  @override
+  Widget build(BuildContext context) {
+    if (transcript.trim().isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Your Speech Transcript',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: transcript));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Transcript copied to clipboard'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.copy_rounded,
+                      size: 14,
+                      color: AppColors.primary,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      'Copy',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        GlassCard(
+          padding: const EdgeInsets.all(18),
+          bgColor: AppColors.surface.withValues(alpha: 0.6),
+          borderColor: AppColors.primary.withValues(alpha: 0.25),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                ),
+                child: const Icon(
+                  Icons.format_quote_rounded,
+                  size: 18,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: SelectableText(
+                  transcript,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    height: 1.6,
+                    color: AppColors.textDark,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

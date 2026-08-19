@@ -73,6 +73,19 @@ class SessionTile extends StatelessWidget {
                     DateFormat('MMM d, h:mm a').format(record.timestamp),
                     style: const TextStyle(fontSize: 11, color: AppColors.outline),
                   ),
+                  if (record.result.transcript.trim().isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '"${record.result.transcript.trim()}"',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic,
+                        color: AppColors.textMedium,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ],
               ),
             ),

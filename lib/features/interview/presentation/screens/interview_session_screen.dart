@@ -34,6 +34,7 @@ class _InterviewSessionScreenState
           .initialize(
             mode: widget.setup.mode,
             questionCount: widget.setup.questionCount,
+            customCvContent: widget.setup.customCvContent,
           );
     });
   }

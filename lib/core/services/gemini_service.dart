@@ -55,11 +55,15 @@ Analyse this speech and return ONLY a JSON object — no markdown, no explanatio
 }
 ''';
 
-    return AnalysisResult.fromJson(
-      await _generate([
-        {'text': userMessage},
-      ]),
-    );
+    final json = await _generate([
+      {'text': userMessage},
+    ]);
+
+    return AnalysisResult.fromJson({
+      ...json,
+      if ((json['transcript'] as String?)?.trim().isEmpty ?? true)
+        'transcript': transcript,
+    });
   }
 
   /// Analyses a recording by sending Gemini the audio itself.

@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:record/record.dart';
 
+import 'pcm16_view.dart';
 import 'wav_codec.dart';
 
 /// The result of one capture session.
@@ -104,6 +105,10 @@ class AudioCaptureService {
   bool _capturing = false;
   bool _disposed = false;
 
+  /// Holds back half a frame when a chunk arrives with an odd length, so the
+  /// PCM handed downstream is always a whole number of samples.
+  final _aligner = Pcm16FrameAligner();
+
   /// Completes when the platform stream closes, which is the only reliable
   /// signal that every captured chunk has been delivered. `record` forwards
   /// data only while a listener is attached, so cancelling our subscription
@@ -162,16 +167,20 @@ class AudioCaptureService {
 
       final done = Completer<void>();
 
+      _aligner.reset();
       _buffer = buffer;
       _streamDone = done;
       _capturing = true;
 
       _sub = stream.listen(
         (chunk) {
-          buffer.add(chunk);
-          if (!_pcmController.isClosed) _pcmController.add(chunk);
+          final aligned = _aligner.align(chunk);
+          if (aligned.isEmpty) return;
+
+          buffer.add(aligned);
+          if (!_pcmController.isClosed) _pcmController.add(aligned);
           if (!_amplitudeController.isClosed) {
-            _amplitudeController.add(normalisedLoudness(chunk));
+            _amplitudeController.add(normalisedLoudness(aligned));
           }
         },
         onError: (Object e) => log('AudioCaptureService: stream error: $e'),
@@ -240,6 +249,7 @@ class AudioCaptureService {
   /// beats a stuck screen.
   Future<void> _teardown({required bool drain}) async {
     _capturing = false;
+    _aligner.reset();
 
     final done = _streamDone;
     _streamDone = null;
@@ -288,13 +298,14 @@ class AudioCaptureService {
   static double normalisedLoudness(Uint8List pcm16) {
     if (pcm16.length < 2) return 0;
 
-    final samples = pcm16.buffer.asInt16List(
-      pcm16.offsetInBytes,
-      pcm16.lengthInBytes ~/ 2,
-    );
+    // Pcm16View, not a typed-list view: chunks are not guaranteed to start on
+    // an even byte offset and the aligned readers throw when they do not.
+    final samples = Pcm16View(pcm16);
+    if (samples.isEmpty) return 0;
+
     var sumSquares = 0.0;
-    for (final sample in samples) {
-      final normalised = sample / 32768.0;
+    for (var i = 0; i < samples.length; i++) {
+      final normalised = samples.normalised(i);
       sumSquares += normalised * normalised;
     }
 

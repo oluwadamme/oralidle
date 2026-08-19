@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +22,8 @@ class InterviewHomeScreen extends ConsumerStatefulWidget {
 class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
   InterviewMode _selectedMode = InterviewMode.mixed;
   int _questionCount = 5;
+  String? _customCvContent;
+  String? _customCvFileName;
 
   static const _counts = [3, 5, 7, 10];
 
@@ -27,6 +31,138 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
     await MicPermissions.request();
     // Invalidate the cached status so the banner re-evaluates
     ref.invalidate(micPermissionProvider);
+  }
+
+  Future<void> _pickCustomDocument() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['md', 'txt', 'pdf', 'doc', 'docx', 'json'],
+        withData: true,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.single;
+        final bytes = file.bytes;
+        if (bytes != null && bytes.isNotEmpty) {
+          String text;
+          try {
+            text = utf8.decode(bytes);
+          } catch (_) {
+            text = String.fromCharCodes(bytes);
+          }
+
+          // Strip non-printable binary control characters
+          text = text.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]'), '');
+
+          if (text.trim().isEmpty) {
+            if (mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('The selected file appears to be empty.')));
+            }
+            return;
+          }
+
+          setState(() {
+            _customCvContent = text;
+            _customCvFileName = file.name;
+          });
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Loaded "${file.name}" for interview context'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load file: $e')));
+      }
+    }
+  }
+
+  Future<void> _showPasteTextModal() async {
+    final controller = TextEditingController(text: _customCvContent ?? '');
+    final formKey = GlobalKey<FormState>();
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Paste CV or Project README'),
+        content: Form(
+          key: formKey,
+          child: SizedBox(
+            width: 480,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Paste your resume, project README, or candidate bio below:',
+                  style: TextStyle(fontSize: 13, color: AppColors.textMedium),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: controller,
+                  maxLines: 8,
+                  minLines: 4,
+                  style: const TextStyle(fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: '# Project Overview\n\n## Architecture\nFlutter, Node.js, Gemini API...',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: AppColors.cardBorder,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter some context text';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(context, controller.text.trim());
+              }
+            },
+            child: const Text('Save Context'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty) {
+      final words = result.split(RegExp(r'\s+')).length;
+      setState(() {
+        _customCvContent = result;
+        _customCvFileName = 'Pasted Text ($words words)';
+      });
+    }
+  }
+
+  void _resetCustomDocument() {
+    setState(() {
+      _customCvContent = null;
+      _customCvFileName = null;
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Reverted to default sample CV (assets/cv.md)'), duration: Duration(seconds: 2)),
+      );
+    }
   }
 
   @override
@@ -127,6 +263,14 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                _ContextDocumentSection(
+                  fileName: _customCvFileName,
+                  content: _customCvContent,
+                  onUpload: _pickCustomDocument,
+                  onPaste: _showPasteTextModal,
+                  onReset: _resetCustomDocument,
+                ),
+                const SizedBox(height: 24),
                 _ModeSection(
                   selectedMode: _selectedMode,
                   onSelect: (m) => setState(() => _selectedMode = m),
@@ -138,7 +282,12 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
                   onSelect: (c) => setState(() => _questionCount = c),
                 ),
                 const SizedBox(height: 36),
-                _StartButton(mode: _selectedMode, count: _questionCount),
+                _StartButton(
+                  mode: _selectedMode,
+                  count: _questionCount,
+                  customCvContent: _customCvContent,
+                  customCvFileName: _customCvFileName,
+                ),
                 if (history.isNotEmpty) ...[
                   const SizedBox(height: 32),
                   _RecentSessionsSection(sessions: history),
@@ -163,6 +312,14 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
           const SizedBox(height: 16),
           _PermissionBanner(onGrant: _requestMicPermission),
           const SizedBox(height: 16),
+          _ContextDocumentSection(
+            fileName: _customCvFileName,
+            content: _customCvContent,
+            onUpload: _pickCustomDocument,
+            onPaste: _showPasteTextModal,
+            onReset: _resetCustomDocument,
+          ),
+          const SizedBox(height: 20),
           _ModeSection(
             selectedMode: _selectedMode,
             onSelect: (m) => setState(() => _selectedMode = m),
@@ -174,7 +331,12 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
             onSelect: (c) => setState(() => _questionCount = c),
           ),
           const SizedBox(height: 32),
-          _StartButton(mode: _selectedMode, count: _questionCount),
+          _StartButton(
+            mode: _selectedMode,
+            count: _questionCount,
+            customCvContent: _customCvContent,
+            customCvFileName: _customCvFileName,
+          ),
           if (history.isNotEmpty) ...[
             const SizedBox(height: 32),
             _RecentSessionsSection(sessions: history),
@@ -203,7 +365,7 @@ class _PermissionBanner extends ConsumerWidget {
 
     return permAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
       data: (status) {
         if (status == MicPermission.granted) return const SizedBox.shrink();
 
@@ -638,15 +800,22 @@ class _CountPill extends StatelessWidget {
 class _StartButton extends StatelessWidget {
   final InterviewMode mode;
   final int count;
+  final String? customCvContent;
+  final String? customCvFileName;
 
-  const _StartButton({required this.mode, required this.count});
+  const _StartButton({required this.mode, required this.count, this.customCvContent, this.customCvFileName});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => context.push(
         AppRoutes.interviewSession,
-        extra: InterviewSetup(mode: mode, questionCount: count),
+        extra: InterviewSetup(
+          mode: mode,
+          questionCount: count,
+          customCvContent: customCvContent,
+          customCvFileName: customCvFileName,
+        ),
       ),
       child: Container(
         height: 54,
@@ -684,6 +853,152 @@ class _StartButton extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Context Document Selector Card ────────────────────────────────────────────
+
+class _ContextDocumentSection extends StatelessWidget {
+  final String? fileName;
+  final String? content;
+  final VoidCallback onUpload;
+  final VoidCallback onPaste;
+  final VoidCallback onReset;
+
+  const _ContextDocumentSection({
+    required this.fileName,
+    required this.content,
+    required this.onUpload,
+    required this.onPaste,
+    required this.onReset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasCustom = content != null && content!.trim().isNotEmpty;
+    final wordCount = hasCustom ? content!.trim().split(RegExp(r'\s+')).length : 0;
+
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primary.withValues(alpha: 0.12)),
+                child: const Icon(Icons.description_rounded, size: 18, color: AppColors.primary),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Interview Context (CV or Project README)',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textDark),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      hasCustom
+                          ? 'Questions will be generated based on your uploaded document'
+                          : 'Currently using default sample CV (assets/cv.md)',
+                      style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Token recommendation hint banner
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.lightbulb_rounded, size: 16, color: AppColors.primary),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Markdown (.md) or plain text (.txt) files are recommended for reduced token usage and optimal question tailoring.',
+                    style: TextStyle(fontSize: 12, color: AppColors.textDark, height: 1.35),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          if (hasCustom) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.good.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.good.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded, size: 18, color: AppColors.good),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          fileName ?? 'Custom Document',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$wordCount words parsed',
+                          style: const TextStyle(fontSize: 11, color: AppColors.textMedium),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    tooltip: 'Reset to default CV',
+                    onPressed: onReset,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
+
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onUpload,
+                  icon: const Icon(Icons.upload_file_rounded, size: 16),
+                  label: Text(hasCustom ? 'Change File' : 'Upload File', style: const TextStyle(fontSize: 12)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onPaste,
+                  icon: const Icon(Icons.edit_note_rounded, size: 16),
+                  label: const Text('Paste Text', style: TextStyle(fontSize: 12)),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

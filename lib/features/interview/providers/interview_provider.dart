@@ -144,15 +144,8 @@ class InterviewState {
 
 class InterviewNotifier extends StateNotifier<InterviewState> {
   InterviewNotifier({
-    required SpeechRecognitionService recognition,
-    required AudioCaptureService capture,
-    required InterviewRepository repository,
-    required Ref ref,
-  }) : _recognition = recognition,
-       _capture = capture,
-       _repository = repository,
-       _ref = ref,
-       super(const InterviewState());
+    required this._recognition, required this._capture, required this._repository, required this._ref})
+    : super(const InterviewState());
 
   final SpeechRecognitionService _recognition;
   final AudioCaptureService _capture;
@@ -164,6 +157,7 @@ class InterviewNotifier extends StateNotifier<InterviewState> {
   Future<void> initialize({
     required InterviewMode mode,
     required int questionCount,
+    String? customCvContent,
   }) async {
     // Close and release any service from a prior session or failed attempt
     _timer?.cancel();
@@ -198,9 +192,14 @@ class InterviewNotifier extends StateNotifier<InterviewState> {
       // Guard against the screen being popped while assets were loading
       if (!mounted) return;
 
+      final customCv = customCvContent?.trim();
+      final effectiveCv = (customCv != null && customCv.isNotEmpty)
+          ? customCv
+          : results[0];
+
       _service = InterviewService(
         apiKey: apiKey,
-        cvContent: results[0],
+        cvContent: effectiveCv,
         skillsContent: results[1],
         mode: mode,
         questionCount: questionCount,
