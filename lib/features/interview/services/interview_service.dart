@@ -32,14 +32,13 @@ class InterviewService {
   final List<Map<String, dynamic>> _history = [];
 
   InterviewService({
-    required String apiKey,
+    required this._apiKey,
     required String cvContent,
     required String skillsContent,
     required InterviewMode mode,
     required int questionCount,
     http.Client? client,
-  }) : _apiKey = apiKey,
-       _client = client ?? http.Client() {
+  }) : _client = client ?? http.Client() {
     _systemPrompt = _buildPrompt(
       cvContent: cvContent,
       skillsContent: skillsContent,
@@ -91,14 +90,18 @@ class InterviewService {
     if (audioBytes != null && audioBytes.isNotEmpty) {
       try {
         final encoded = await compute(base64Encode, audioBytes);
+        final String textInstruction = sttFallback.trim().isNotEmpty
+            ? 'Candidate spoken answer (verbatim transcript): "$sttFallback"\n\n${isLastQuestion ? 'That was my final answer. Please evaluate it and provide the comprehensive final evaluation.' : 'That is my answer. Please evaluate it and provide feedback and the next question.'}'
+            : (isLastQuestion
+                  ? 'That was my final answer. Please evaluate it and provide the comprehensive final evaluation.'
+                  : 'That is my answer.');
+
         audioParts = [
           {
             'inline_data': {'mime_type': audioMimeType, 'data': encoded},
           },
           {
-            'text': isLastQuestion
-                ? 'That was my final answer. Please evaluate it and provide the comprehensive final evaluation.'
-                : 'That is my answer.',
+            'text': textInstruction,
           },
         ];
       } catch (e) {
@@ -188,7 +191,8 @@ class InterviewService {
 
     // Replace the placeholder with the real transcript so future turns have
     // meaningful context without re-sending the audio bytes.
-    final transcript = (json['transcript'] as String?)?.trim() ?? sttFallback;
+    final geminiTranscript = (json['transcript'] as String?)?.trim();
+    final transcript = (sttFallback.trim().isNotEmpty) ? sttFallback.trim() : (geminiTranscript ?? '');
     _history.last = {
       'role': 'user',
       'parts': [
@@ -448,10 +452,10 @@ First message (starting the interview):
 {"first_question": {"question": "<question text>", "question_type": "cvBased|technical|behavioral|leetcode"}}
 
 Each answer followed by a next question:
-{"transcript": "<verbatim transcription of exactly what the candidate said>", "evaluation": {"content_score": <0-100>, "feedback": "<2-3 sentences>", "model_answer": "<include ONLY when content_score < 80: a strong 3-5 sentence ideal answer showing what an excellent response looks like — omit this field entirely when content_score >= 80>"}, "next_question": {"question": "<question text>", "question_type": "cvBased|technical|behavioral|leetcode"}}
+{"transcript": "<verbatim transcription of exactly what the candidate said>", "evaluation": {"content_score": <0-100>, "feedback": "<2-3 sentences>", "model_answer": "<a strong 3-5 sentence ideal sample answer showing what an excellent response looks like for this question>"}, "next_question": {"question": "<question text>", "question_type": "cvBased|technical|behavioral|leetcode"}}
 
 Final answer (no next question — give comprehensive evaluation):
-{"transcript": "<verbatim transcription of exactly what the candidate said>", "evaluation": {"content_score": <0-100>, "feedback": "<2-3 sentences>", "model_answer": "<include ONLY when content_score < 80: a strong 3-5 sentence ideal answer showing what an excellent response looks like — omit this field entirely when content_score >= 80>"}, "final_evaluation": {"overall_score": <0-100>, "summary": "<3-4 sentence holistic assessment>", "strengths": ["<strength>", "<strength>", "<strength>"], "improvements": ["<specific improvement area>", "<specific improvement area>", "<specific improvement area>"]}}
+{"transcript": "<verbatim transcription of exactly what the candidate said>", "evaluation": {"content_score": <0-100>, "feedback": "<2-3 sentences>", "model_answer": "<a strong 3-5 sentence ideal sample answer showing what an excellent response looks like for this question>"}, "final_evaluation": {"overall_score": <0-100>, "summary": "<3-4 sentence holistic assessment>", "strengths": ["<strength>", "<strength>", "<strength>"], "improvements": ["<specific improvement area>", "<specific improvement area>", "<specific improvement area>"]}}
 ''';
 
   static String _modeDescription(InterviewMode mode) {

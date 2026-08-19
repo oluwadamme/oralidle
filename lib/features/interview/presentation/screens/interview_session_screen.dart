@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -860,6 +861,7 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
   void initState() {
     super.initState();
     _player = AudioPlayer();
+    unawaited(_player.setVolume(1.0));
     _subscriptions.addAll([
       _player.onPositionChanged.listen(_onPosition),
       _player.onDurationChanged.listen(_onDuration),
@@ -882,10 +884,6 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
   }
 
   void _onComplete(void _) {
-    // Seek the underlying player back to zero so that the next play() call
-    // starts from the beginning. Without this the platform player's cursor
-    // sits at the end-of-stream position; on some platforms resume() would
-    // then produce silence rather than replaying from the start.
     unawaited(_player.seek(Duration.zero));
     if (mounted) {
       setState(() {
@@ -897,8 +895,7 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
 
   Future<void> _loadSource() async {
     try {
-      // Bytes rather than a file: the clip never touches disk, so the same
-      // path works on web, where there is no filesystem to point at.
+      await _player.setVolume(1.0);
       await _player.setSource(
         BytesSource(
           widget.audio.playbackBytes,
@@ -912,14 +909,17 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
   }
 
   Future<void> _togglePlay() async {
-    if (_playerState == PlayerState.playing) {
-      await _player.pause();
-    } else {
-      // Covers both the initial stopped state (after setSource) and the
-      // post-completion stopped state (after _onComplete seeks to 0).
-      // resume() starts from the current platform cursor position without
-      // re-loading the source, which avoids redundant I/O on replay.
-      await _player.resume();
+    try {
+      await _player.setVolume(1.0);
+      if (_playerState == PlayerState.playing) {
+        await _player.pause();
+      } else if (_playerState == PlayerState.paused) {
+        await _player.resume();
+      } else {
+        await _player.play(BytesSource(widget.audio.playbackBytes, mimeType: widget.audio.mimeType));
+      }
+    } catch (e) {
+      log('AudioPlayerWidget: play error: $e');
     }
   }
 
@@ -1074,7 +1074,7 @@ class _ModelAnswerCard extends StatefulWidget {
 }
 
 class _ModelAnswerCardState extends State<_ModelAnswerCard> {
-  bool _expanded = false;
+  bool _expanded = true;
 
   @override
   Widget build(BuildContext context) {

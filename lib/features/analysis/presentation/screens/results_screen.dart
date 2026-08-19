@@ -8,6 +8,9 @@ import '../../data/models/analysis_result.dart';
 import '../../../history/providers/history_provider.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/gradient_button.dart';
+import '../../../../core/widgets/meta_chip.dart';
+import '../../../../core/widgets/score_bar.dart';
 import '../../../../core/utils/responsive.dart';
 
 class ResultsScreen extends ConsumerWidget {
@@ -172,15 +175,15 @@ class _WebResults extends StatelessWidget {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceAround,
                                 children: [
-                                  _MetaChip(
+                                  MetaChip(
                                     icon: Icons.timer_outlined,
                                     label: record.formattedDuration,
                                   ),
-                                  _MetaChip(
+                                  MetaChip(
                                     icon: Icons.speed_rounded,
                                     label: '${r.wpm} wpm',
                                   ),
-                                  _MetaChip(
+                                  MetaChip(
                                     icon: Icons.calendar_today_outlined,
                                     label: DateFormat(
                                       'MMM d',
@@ -219,27 +222,27 @@ class _WebResults extends StatelessWidget {
                                     ).textTheme.titleMedium,
                                   ),
                                   const SizedBox(height: 20),
-                                  _ScoreBar(
+                                  ScoreBar(
                                     label: 'Fluency',
                                     score: r.scores.fluency,
                                   ),
-                                  _ScoreBar(
+                                  ScoreBar(
                                     label: 'Vocabulary',
                                     score: r.scores.vocabulary,
                                   ),
-                                  _ScoreBar(
+                                  ScoreBar(
                                     label: 'Grammar',
                                     score: r.scores.grammar,
                                   ),
-                                  _ScoreBar(
+                                  ScoreBar(
                                     label: 'Coherence',
                                     score: r.scores.coherence,
                                   ),
-                                  _ScoreBar(
+                                  ScoreBar(
                                     label: 'Confidence',
                                     score: r.scores.confidence,
                                   ),
-                                  _ScoreBar(
+                                  ScoreBar(
                                     label: 'Topic',
                                     score: r.scores.topicRelevance,
                                     isLast: true,
@@ -262,50 +265,14 @@ class _WebResults extends StatelessWidget {
                             Row(
                               children: [
                                 Expanded(
-                                  child: GestureDetector(
-                                    onTap: () => context.go(AppRoutes.topics),
-                                    child: Container(
-                                      height: 48,
-                                      decoration: BoxDecoration(
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            AppColors.primaryLight,
-                                            AppColors.primary,
-                                          ],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: AppColors.primary.withValues(
-                                              alpha: 0.3,
-                                            ),
-                                            blurRadius: 14,
-                                            offset: const Offset(0, 4),
-                                          ),
-                                        ],
-                                      ),
-                                      child: const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.mic_rounded,
-                                            color: Color(0xFF490080),
-                                            size: 18,
-                                          ),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            'Try a New Topic',
-                                            style: TextStyle(
-                                              color: Color(0xFF490080),
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                  child: PrimaryGradientButton(
+                                    label: 'Try a New Topic',
+                                    icon: Icons.mic_rounded,
+                                    height: 48,
+                                    onTap: () {
+                                      ref.read(historyProvider.notifier).refresh();
+                                      context.go(AppRoutes.topics);
+                                    },
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -459,27 +426,27 @@ class _MobileResults extends StatelessWidget {
                         padding: const EdgeInsets.all(18),
                         child: Column(
                           children: [
-                            _ScoreBar(
+                            ScoreBar(
                               label: 'Fluency',
                               score: r.scores.fluency,
                             ),
-                            _ScoreBar(
+                            ScoreBar(
                               label: 'Vocabulary',
                               score: r.scores.vocabulary,
                             ),
-                            _ScoreBar(
+                            ScoreBar(
                               label: 'Grammar',
                               score: r.scores.grammar,
                             ),
-                            _ScoreBar(
+                            ScoreBar(
                               label: 'Coherence',
                               score: r.scores.coherence,
                             ),
-                            _ScoreBar(
+                            ScoreBar(
                               label: 'Confidence',
                               score: r.scores.confidence,
                             ),
-                            _ScoreBar(
+                            ScoreBar(
                               label: 'Topic',
                               score: r.scores.topicRelevance,
                               isLast: true,
@@ -532,101 +499,6 @@ class _MobileResults extends StatelessWidget {
     if (s >= 60) return 'Good Progress';
     if (s >= 45) return 'Keep Practising';
     return 'Just Getting Started';
-  }
-}
-
-// ── Shared widgets ────────────────────────────────────────────────────────────
-
-class _MetaChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const _MetaChip({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 13, color: AppColors.outline),
-        const SizedBox(width: 5),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
-        ),
-      ],
-    );
-  }
-}
-
-class _ScoreBar extends StatelessWidget {
-  final String label;
-  final int score;
-  final bool isLast;
-
-  const _ScoreBar({
-    required this.label,
-    required this.score,
-    this.isLast = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = AppColors.scoreColor(score);
-    return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textDark,
-                  ),
-                ),
-              ),
-              Text(
-                '$score%',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: Stack(
-              children: [
-                Container(height: 6, color: AppColors.outlineVariant),
-                FractionallySizedBox(
-                  widthFactor: score / 100,
-                  child: Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: color,
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withValues(alpha: 0.5),
-                          blurRadius: 6,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

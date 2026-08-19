@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/services/speech/mic_permission.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/gradient_button.dart';
 import '../../data/models/interview_models.dart';
 import '../../providers/interview_history_provider.dart';
 import '../../../../core/utils/responsive.dart';
@@ -803,11 +804,18 @@ class _StartButton extends StatelessWidget {
   final String? customCvContent;
   final String? customCvFileName;
 
-  const _StartButton({required this.mode, required this.count, this.customCvContent, this.customCvFileName});
+  const _StartButton({
+    required this.mode,
+    required this.count,
+    this.customCvContent,
+    this.customCvFileName,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return PrimaryGradientButton(
+      label: 'Start Interview',
+      icon: Icons.play_arrow_rounded,
       onTap: () => context.push(
         AppRoutes.interviewSession,
         extra: InterviewSetup(
@@ -815,43 +823,6 @@ class _StartButton extends StatelessWidget {
           questionCount: count,
           customCvContent: customCvContent,
           customCvFileName: customCvFileName,
-        ),
-      ),
-      child: Container(
-        height: 54,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.primaryLight, AppColors.primary],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.35),
-              blurRadius: 18,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.play_arrow_rounded,
-              color: AppColors.onPrimary,
-              size: 22,
-            ),
-            SizedBox(width: 8),
-            Text(
-              'Start Interview',
-              style: TextStyle(
-                color: AppColors.onPrimary,
-                fontWeight: FontWeight.w800,
-                fontSize: 16,
-              ),
-            ),
-          ],
         ),
       ),
     );

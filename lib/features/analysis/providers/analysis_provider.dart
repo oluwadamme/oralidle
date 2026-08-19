@@ -25,26 +25,28 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
       AnalysisResult? result;
 
       // On Web, use Ollama directly to prevent exposing Gemini API key in browser network traffic.
-      if (kIsWeb) {
-        log('Web platform detected: using local Ollama service to protect API keys');
-        if (session.hasTranscript) {
-          result = await _ollama.analyseTranscript(
-            topic: session.topicTitle,
-            transcript: session.transcript,
-            durationSeconds: session.durationSeconds,
-            metrics: SpeechAnalyser.analyse(
-              session.transcript,
-              session.durationSeconds,
-            ),
-          );
-        } else {
-          throw Exception(
-            'Speech analysis on web requires a transcript. Make sure audio input was captured.',
-          );
-        }
-      } else {
-        // On native platforms (iOS, Android, macOS), attempt Gemini first, then fallback to Ollama
-        try {
+      // if (kIsWeb) {
+      //   log('Web platform detected: using local Ollama service to protect API keys');
+      //   if (session.hasTranscript) {
+      //     result = await _ollama.analyseTranscript(
+      //       topic: session.topicTitle,
+      //       transcript: session.transcript,
+      //       durationSeconds: session.durationSeconds,
+      //       metrics: SpeechAnalyser.analyse(
+      //         session.transcript,
+      //         session.durationSeconds,
+      //       ),
+      //     );
+      //   } else {
+      //     throw Exception(
+      //       'Speech analysis on web requires a transcript. Make sure audio input was captured.',
+      //     );
+      //   }
+      // } else {
+      //   // On native platforms (iOS, Android, macOS), attempt Gemini first, then fallback to Ollama
+
+      // }
+      try {
           if (session.hasAudio) {
             result = await _gemini.analyseAudioFile(
               topic: session.topicTitle,
@@ -80,7 +82,6 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
               session.durationSeconds,
             ),
           );
-        }
       }
 
       if (result == null) {

@@ -9,6 +9,7 @@ import '../../../history/providers/history_provider.dart';
 import '../../../analysis/data/models/session_record.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/gradient_button.dart';
 import '../../../../core/utils/responsive.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -344,53 +345,11 @@ class _WebHome extends ConsumerWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 24),
-                                GestureDetector(
+                                PrimaryGradientButton(
+                                  label: 'Start Practice',
+                                  icon: Icons.mic_rounded,
+                                  height: 48,
                                   onTap: () => context.go(AppRoutes.topics),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 14,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          AppColors.primaryLight,
-                                          AppColors.primary,
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppColors.primary.withValues(
-                                            alpha: 0.3,
-                                          ),
-                                          blurRadius: 16,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.mic_rounded,
-                                          color: Color(0xFF490080),
-                                          size: 18,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'Start Practice',
-                                          style: TextStyle(
-                                            color: Color(0xFF490080),
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
                                 ),
                               ],
                             ),
@@ -777,50 +736,12 @@ class _MobileHome extends ConsumerWidget {
                           ),
                         ),
                       const SizedBox(height: 28),
-                      GestureDetector(
+                      PrimaryGradientButton(
+                        label: 'Start Practice',
+                        icon: Icons.mic_rounded,
+                        height: 60,
+                        fontSize: 17,
                         onTap: () => context.go(AppRoutes.topics),
-                        child: Container(
-                          height: 60,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                AppColors.primaryLight,
-                                AppColors.primary,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primary.withValues(
-                                  alpha: 0.35,
-                                ),
-                                blurRadius: 20,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.mic_rounded,
-                                color: Color(0xFF490080),
-                                size: 22,
-                              ),
-                              SizedBox(width: 10),
-                              Text(
-                                'Start Practice',
-                                style: TextStyle(
-                                  color: Color(0xFF490080),
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ),
                       const SizedBox(height: 24),
                       if (allSessions.isNotEmpty) ...[
