@@ -8,6 +8,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 concurrency:
   # A newer push supersedes an in-flight run for the same ref. Production is
   # exempt so a queued release is never cancelled halfway.
@@ -24,7 +28,7 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: subosito/flutter-action@v2
         with:

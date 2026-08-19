@@ -113,6 +113,14 @@ Flutter runs on the GitHub runner, not on Vercel: the workflow does
 `vercel build` there and ships the finished output with
 `vercel deploy --prebuilt`, so Vercel never needs a Flutter toolchain.
 
+`vercel.json` sets `git.deploymentEnabled: false` for exactly that reason. With
+Vercel's Git integration active, a push makes Vercel clone the repo and run
+`installCommand` itself — on a build image with no Flutter, which fails with
+`flutter: command not found`. It would also skip the test gate. The
+`installCommand` and `buildCommand` entries still matter: `vercel build` reads
+them, but it runs on the GitHub runner where Flutter exists. Deployments come
+only from CI; disabling Git deployments does not affect `vercel deploy`.
+
 ### Where the API key lives
 
 A web build is static files in a browser, so anything it carries is public.

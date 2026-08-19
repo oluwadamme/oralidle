@@ -4,6 +4,6 @@
   "type": "module",
   "description": "Serverless functions for Lumina Speech. The Flutter app itself is built by `flutter build web` — see vercel.json.",
   "engines": {
-    "node": ">=20"
+    "node": "22.x"
   }
 }
