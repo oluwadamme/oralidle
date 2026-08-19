@@ -7,7 +7,7 @@ import '../config/ai_endpoint.dart';
 import '../utils/speech_analyser.dart';
 
 class GeminiService {
-  /// Empty on the proxy path, where the key lives on the server instead.
+  static const _timeout = Duration(seconds: 75);
   final String _apiKey;
   GeminiService(this._apiKey);
 
@@ -124,15 +124,7 @@ Return ONLY a JSON object — no markdown, no explanation. Use this exact schema
       _withMeasuredMetrics(json, durationSeconds: durationSeconds),
     );
   }
-
-  /// Replaces the model's estimated pace and filler counts with values
-  /// computed from the transcript it returned.
-  ///
-  /// An LLM eyeballing "words per minute" from audio is guesswork; dividing a
-  /// word count by a duration measured from the PCM is not. Falls back to the
-  /// model's own numbers when there is nothing better — no transcript came
-  /// back, or the duration is unknown, as with uploaded files.
-  static Map<String, dynamic> _withMeasuredMetrics(
+ static Map<String, dynamic> _withMeasuredMetrics(
     Map<String, dynamic> json, {
     required int? durationSeconds,
   }) {
@@ -171,6 +163,11 @@ Return ONLY a JSON object — no markdown, no explanation. Use this exact schema
           ],
           'generationConfig': {'maxOutputTokens': 8192, 'temperature': 0.4},
         }),
+      ).timeout(
+        _timeout,
+        onTimeout: () => throw Exception(
+          'Analysis timed out. Please check your connection and try again.',
+        ),
       );
 
       if (response.statusCode != 200) {

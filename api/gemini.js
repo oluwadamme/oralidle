@@ -17,26 +17,92 @@ const UPSTREAM =
 // answer fails with an explanation rather than a bare platform error.
 const MAX_BODY_BYTES = 4 * 1024 * 1024;
 
+// Below `maxDuration` in vercel.json (60s) so a stalled upstream returns a
+// real 504 from us rather than the platform killing the function mid-flight
+// and handing the client an opaque error.
+const UPSTREAM_TIMEOUT_MS = 55_000;
+
+// Per-instance flood control. See rateLimited() for what this does and does
+// not protect against.
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_TRACKED = 5_000;
+
+/** @type {Map<string, {count: number, resetAt: number}>} */
+const rateLimitHits = new Map();
+
 function json(status, body) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      // Responses are request-specific and must never be served to anyone
+      // else from a cache.
+      'Cache-Control': 'no-store',
+    },
   });
 }
 
+/** Host of `url`, or null if it cannot be parsed. */
+function safeHost(url) {
+  try {
+    return new URL(url).host;
+  } catch {
+    return null;
+  }
+}
+
+/** True when `origin` is this deployment itself, or the configured extra. */
+function isAllowedOrigin(origin, request) {
+  const originHost = safeHost(origin);
+  if (!originHost) return false;
+
+  const host =
+    request.headers.get('x-forwarded-host') ??
+    request.headers.get('host') ??
+    safeHost(request.url);
+  if (host && originHost === host) return true;
+
+  const allowed = process.env.ALLOWED_ORIGIN;
+  return Boolean(allowed) && origin === allowed;
+}
+
+
+function rateLimited(request) {
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const now = Date.now();
+
+  // Bound the map: without this a spray of unique IPs would grow it until the
+  // instance runs out of memory.
+  if (rateLimitHits.size > RATE_LIMIT_MAX_TRACKED) {
+    for (const [key, entry] of rateLimitHits) {
+      if (now > entry.resetAt) rateLimitHits.delete(key);
+    }
+    if (rateLimitHits.size > RATE_LIMIT_MAX_TRACKED) rateLimitHits.clear();
+  }
+
+  const entry = rateLimitHits.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitHits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+
+  entry.count += 1;
+  return entry.count > RATE_LIMIT_MAX;
+}
 
 export async function POST(request) {
-  // Browsers attach Origin on cross-origin POSTs; our own page does not (it is
-  // same-origin) and native clients send none at all. So an absent Origin is
-  // normal and a mismatched one is not.
-  //
-  // This only filters casual abuse from other websites — Origin is trivially
-  // forged outside a browser. Rate limiting is what actually contains misuse
-  // of this endpoint; see the WAF rule noted in README.md.
+
   const origin = request.headers.get('origin');
-  const allowed = process.env.ALLOWED_ORIGIN;
-  if (origin && allowed && origin !== allowed) {
+  if (origin && !isAllowedOrigin(origin, request)) {
     return json(403, { error: { message: 'Origin not allowed' } });
+  }
+
+  if (rateLimited(request)) {
+    return json(429, {
+      error: { message: 'Too many requests. Please wait a moment.' },
+    });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -48,8 +114,9 @@ export async function POST(request) {
     });
   }
 
-  const body = await request.text();
-  if (body.length > MAX_BODY_BYTES) {
+
+  const declaredLength = Number(request.headers.get('content-length'));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_BODY_BYTES) {
     return json(413, {
       error: {
         message:
@@ -57,6 +124,8 @@ export async function POST(request) {
       },
     });
   }
+
+  const body = await request.text();
 
   let upstream;
   try {
@@ -67,17 +136,33 @@ export async function POST(request) {
         'x-goog-api-key': apiKey,
       },
       body,
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
   } catch (error) {
-    return json(502, {
-      error: { message: `Could not reach the analysis service: ${error}` },
+    // Logged in full for us; the client gets a message that says what to do
+    // and nothing about our internals.
+    console.error('Gemini upstream request failed:', error);
+    const timedOut = error?.name === 'TimeoutError' || error?.name === 'AbortError';
+    return json(timedOut ? 504 : 502, {
+      error: {
+        message: timedOut
+          ? 'The analysis service took too long to respond. Please try again.'
+          : 'Could not reach the analysis service. Please try again.',
+      },
     });
   }
 
-  // Status and body pass straight back so the client's existing error
-  // handling — which already reads Gemini's `error.message` — keeps working.
+  // Status and body pass straight back so the client's existing error handling
+  // — which already reads Gemini's `error.message` — keeps working. The
+  // upstream content type is preserved rather than asserted: when Google's
+  // edge returns an HTML error page, mislabelling it as JSON turns a readable
+  // failure into a parse error.
   return new Response(upstream.body, {
     status: upstream.status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type':
+        upstream.headers.get('content-type') ?? 'application/json',
+      'Cache-Control': 'no-store',
+    },
   });
 }

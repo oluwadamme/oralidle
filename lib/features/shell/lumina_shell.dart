@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/responsive.dart';
 
@@ -51,10 +52,10 @@ class _SideNav extends StatelessWidget {
   const _SideNav({required this.currentIndex, required this.onTap});
 
   static const _mainItems = [
-    (Icons.home_outlined, Icons.home_rounded, 'Home'),
-    (Icons.mic_none_rounded, Icons.mic_rounded, 'Practice'),
-    (Icons.insights_outlined, Icons.insights_rounded, 'Insights'),
-    (Icons.work_outline_rounded, Icons.work_rounded, 'Interview'),
+    (LucideIcons.home, LucideIcons.home, 'Home'),
+    (LucideIcons.mic, LucideIcons.mic, 'Practice'),
+    (LucideIcons.barChart2, LucideIcons.barChart2, 'Insights'),
+    (LucideIcons.userCheck, LucideIcons.userCheck, 'Interview'),
   ];
 
   @override
@@ -77,7 +78,7 @@ class _SideNav extends StatelessWidget {
                     text: const TextSpan(
                       children: [
                         TextSpan(
-                          text: 'Lumina',
+                          text: 'Oralidle',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
@@ -85,7 +86,7 @@ class _SideNav extends StatelessWidget {
                           ),
                         ),
                         TextSpan(
-                          text: ' Speech',
+                          text: ' AI',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
@@ -97,7 +98,7 @@ class _SideNav extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   const Text(
-                    'Elite Speech Mastery',
+                    'AI Speech & Interview Coach',
                     style: TextStyle(fontSize: 11, color: AppColors.textMedium),
                   ),
                 ],
@@ -120,20 +121,20 @@ class _SideNav extends StatelessWidget {
           const Spacer(),
 
           // ── Footer items ───────────────────────────────────────────────
-          _SideNavItem(
-            icon: Icons.settings_outlined,
-            activeIcon: Icons.settings_rounded,
-            label: 'Settings',
-            active: false,
-            onTap: () {},
-          ),
-          _SideNavItem(
-            icon: Icons.help_outline_rounded,
-            activeIcon: Icons.help_rounded,
-            label: 'Support',
-            active: false,
-            onTap: () {},
-          ),
+          // _SideNavItem(
+          //   icon: LucideIcons.settings,
+          //   activeIcon: LucideIcons.settings,
+          //   label: 'Settings',
+          //   active: false,
+          //   onTap: () {},
+          // ),
+          // _SideNavItem(
+          //   icon: LucideIcons.helpCircle,
+          //   activeIcon: LucideIcons.helpCircle,
+          //   label: 'Support',
+          //   active: false,
+          //   onTap: () {},
+          // ),
           const SizedBox(height: 12),
 
           // ── Upgrade CTA ────────────────────────────────────────────────
@@ -267,29 +268,29 @@ class _GlassNavBar extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _NavItem(
-                    icon: Icons.home_outlined,
-                    activeIcon: Icons.home_rounded,
+                    icon: LucideIcons.home,
+                    activeIcon: LucideIcons.home,
                     label: 'Home',
                     active: currentIndex == 0,
                     onTap: () => onTap(0),
                   ),
                   _NavItem(
-                    icon: Icons.mic_none_rounded,
-                    activeIcon: Icons.mic_rounded,
+                    icon: LucideIcons.mic,
+                    activeIcon: LucideIcons.mic,
                     label: 'Practice',
                     active: currentIndex == 1,
                     onTap: () => onTap(1),
                   ),
                   _NavItem(
-                    icon: Icons.insights_outlined,
-                    activeIcon: Icons.insights_rounded,
+                    icon: LucideIcons.barChart2,
+                    activeIcon: LucideIcons.barChart2,
                     label: 'Insights',
                     active: currentIndex == 2,
                     onTap: () => onTap(2),
                   ),
                   _NavItem(
-                    icon: Icons.work_outline_rounded,
-                    activeIcon: Icons.work_rounded,
+                    icon: LucideIcons.userCheck,
+                    activeIcon: LucideIcons.userCheck,
                     label: 'Interview',
                     active: currentIndex == 3,
                     onTap: () => onTap(3),

@@ -28,7 +28,7 @@ class AppRoutes {
   static const interviewResults = '/interview/results';
 }
 
-/// Lumina Speech dark design system colours.
+/// Oralidle dark design system colours.
 class AppColors {
   // ── Semantic score colours ─────────────────────────────────────────────────
   static const good = Color(0xFF4EDEA3);   // emerald – success / growth

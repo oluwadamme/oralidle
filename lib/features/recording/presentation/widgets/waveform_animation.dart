@@ -36,7 +36,7 @@ class _WaveformAnimationState extends State<WaveformAnimation>
 
   static const _barCount = 28;
 
-  // Gradient: primary purple → amber (Lumina design spec)
+  // Gradient: primary purple → amber (Oralidle design spec)
   static const _colorStart = AppColors.primary; // #DDB7FF
   static const _colorEnd = AppColors.amber; // #FFB95F
 
