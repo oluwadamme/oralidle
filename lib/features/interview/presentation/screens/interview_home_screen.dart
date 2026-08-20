@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/services/speech/mic_permission.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
@@ -385,7 +386,7 @@ class _PermissionBanner extends ConsumerWidget {
           child: Row(
             children: [
               const Icon(
-                Icons.mic_off_rounded,
+                LucideIcons.micOff,
                 size: 16,
                 color: AppColors.amber,
               ),
@@ -512,7 +513,7 @@ class _SessionRow extends StatelessWidget {
               ),
             ),
             const Icon(
-              Icons.chevron_right_rounded,
+              LucideIcons.chevronRight,
               size: 18,
               color: AppColors.outline,
             ),
@@ -544,7 +545,7 @@ class _Header extends StatelessWidget {
                 ),
               ),
               child: const Icon(
-                Icons.work_outline_rounded,
+                LucideIcons.userCheck,
                 size: 18,
                 color: AppColors.primary,
               ),
@@ -621,9 +622,9 @@ class _ModeCard extends StatelessWidget {
   });
 
   static const _icons = {
-    InterviewMode.technical: Icons.code_rounded,
-    InterviewMode.behavioral: Icons.psychology_outlined,
-    InterviewMode.mixed: Icons.shuffle_rounded,
+    InterviewMode.technical: LucideIcons.code,
+    InterviewMode.behavioral: LucideIcons.brain,
+    InterviewMode.mixed: LucideIcons.shuffle,
   };
 
   @override
@@ -650,17 +651,17 @@ class _ModeCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 38,
-              height: 38,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.15)
+                    ? AppColors.primary.withValues(alpha: 0.2)
                     : AppColors.surfaceHigh,
               ),
               child: Icon(
-                _icons[mode]!,
-                size: 18,
+                _icons[mode],
+                size: 20,
                 color: isSelected ? AppColors.primary : AppColors.outline,
               ),
             ),
@@ -672,14 +673,14 @@ class _ModeCard extends StatelessWidget {
                   Text(
                     mode.label,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: isSelected
                           ? AppColors.primary
                           : AppColors.textDark,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
                     mode.description,
                     style: const TextStyle(
@@ -692,7 +693,7 @@ class _ModeCard extends StatelessWidget {
             ),
             if (isSelected)
               const Icon(
-                Icons.check_circle_rounded,
+                LucideIcons.checkCircle2,
                 size: 18,
                 color: AppColors.primary,
               ),
@@ -815,7 +816,7 @@ class _StartButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return PrimaryGradientButton(
       label: 'Start Interview',
-      icon: Icons.play_arrow_rounded,
+      icon: LucideIcons.play,
       onTap: () => context.push(
         AppRoutes.interviewSession,
         extra: InterviewSetup(
@@ -861,7 +862,7 @@ class _ContextDocumentSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primary.withValues(alpha: 0.12)),
-                child: const Icon(Icons.description_rounded, size: 18, color: AppColors.primary),
+                child: const Icon(LucideIcons.fileText, size: 18, color: AppColors.primary),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -896,7 +897,7 @@ class _ContextDocumentSection extends StatelessWidget {
             ),
             child: const Row(
               children: [
-                Icon(Icons.lightbulb_rounded, size: 16, color: AppColors.primary),
+                Icon(LucideIcons.lightbulb, size: 16, color: AppColors.primary),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -919,7 +920,7 @@ class _ContextDocumentSection extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle_rounded, size: 18, color: AppColors.good),
+                  const Icon(LucideIcons.checkCircle2, size: 18, color: AppColors.good),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -940,7 +941,7 @@ class _ContextDocumentSection extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 18),
+                    icon: const Icon(LucideIcons.x, size: 18),
                     tooltip: 'Reset to default CV',
                     onPressed: onReset,
                   ),
@@ -955,7 +956,7 @@ class _ContextDocumentSection extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: onUpload,
-                  icon: const Icon(Icons.upload_file_rounded, size: 16),
+                  icon: const Icon(LucideIcons.upload, size: 16),
                   label: Text(hasCustom ? 'Change File' : 'Upload File', style: const TextStyle(fontSize: 12)),
                 ),
               ),
@@ -963,7 +964,7 @@ class _ContextDocumentSection extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: onPaste,
-                  icon: const Icon(Icons.edit_note_rounded, size: 16),
+                  icon: const Icon(LucideIcons.fileEdit, size: 16),
                   label: const Text('Paste Text', style: TextStyle(fontSize: 12)),
                 ),
               ),

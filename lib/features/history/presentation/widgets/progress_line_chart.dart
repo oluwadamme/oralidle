@@ -75,7 +75,7 @@ class ProgressLineChart extends StatelessWidget {
               color: AppColors.primary,
               barWidth: 2.5,
               dotData: FlDotData(
-                getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(
+                getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
                   radius: 4,
                   color: AppColors.primary,
                   strokeWidth: 2,

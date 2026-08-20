@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../data/models/session_record.dart';
 import '../../data/models/analysis_result.dart';
 import '../../../history/providers/history_provider.dart';
@@ -90,7 +91,7 @@ class _WebResults extends StatelessWidget {
                     const Spacer(),
                     IconButton(
                       icon: const Icon(
-                        Icons.home_rounded,
+                        LucideIcons.home,
                         color: AppColors.textMedium,
                       ),
                       onPressed: () {
@@ -176,15 +177,15 @@ class _WebResults extends StatelessWidget {
                                     MainAxisAlignment.spaceAround,
                                 children: [
                                   MetaChip(
-                                    icon: Icons.timer_outlined,
+                                    icon: LucideIcons.clock,
                                     label: record.formattedDuration,
                                   ),
                                   MetaChip(
-                                    icon: Icons.speed_rounded,
+                                    icon: LucideIcons.gauge,
                                     label: '${r.wpm} wpm',
                                   ),
                                   MetaChip(
-                                    icon: Icons.calendar_today_outlined,
+                                    icon: LucideIcons.calendar,
                                     label: DateFormat(
                                       'MMM d',
                                     ).format(record.timestamp),
@@ -267,7 +268,7 @@ class _WebResults extends StatelessWidget {
                                 Expanded(
                                   child: PrimaryGradientButton(
                                     label: 'Try a New Topic',
-                                    icon: Icons.mic_rounded,
+                                    icon: LucideIcons.mic,
                                     height: 48,
                                     onTap: () {
                                       ref.read(historyProvider.notifier).refresh();
@@ -284,7 +285,7 @@ class _WebResults extends StatelessWidget {
                                           .refresh();
                                       context.go(AppRoutes.home);
                                     },
-                                    icon: const Icon(Icons.home_outlined),
+                                    icon: const Icon(LucideIcons.home),
                                     label: const Text('Back to Home'),
                                   ),
                                 ),
@@ -356,7 +357,7 @@ class _MobileResults extends StatelessWidget {
                     ),
                     IconButton(
                       icon: const Icon(
-                        Icons.home_rounded,
+                        LucideIcons.home,
                         color: AppColors.textMedium,
                       ),
                       onPressed: () {
@@ -470,7 +471,7 @@ class _MobileResults extends StatelessWidget {
                       ],
                       ElevatedButton.icon(
                         onPressed: () => context.go(AppRoutes.topics),
-                        icon: const Icon(Icons.mic_rounded),
+                        icon: const Icon(LucideIcons.mic),
                         label: const Text('Try a New Topic'),
                       ),
                       const SizedBox(height: 10),
@@ -479,7 +480,7 @@ class _MobileResults extends StatelessWidget {
                           ref.read(historyProvider.notifier).refresh();
                           context.go(AppRoutes.home);
                         },
-                        icon: const Icon(Icons.home_outlined),
+                        icon: const Icon(LucideIcons.home),
                         label: const Text('Back to Home'),
                       ),
                     ],
@@ -541,7 +542,7 @@ class _KeyInsightsSection extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.speed_rounded, size: 12, color: wpmColor),
+                        Icon(LucideIcons.gauge, size: 12, color: wpmColor),
                         const SizedBox(width: 5),
                         Text(
                           '${result.wpm} WPM',
@@ -575,7 +576,7 @@ class _KeyInsightsSection extends StatelessWidget {
                 Row(
                   children: [
                     const Icon(
-                      Icons.warning_amber_rounded,
+                      LucideIcons.alertTriangle,
                       size: 14,
                       color: AppColors.amber,
                     ),
@@ -605,7 +606,7 @@ class _KeyInsightsSection extends StatelessWidget {
                 const Row(
                   children: [
                     Icon(
-                      Icons.check_circle_rounded,
+                      LucideIcons.checkCircle2,
                       size: 14,
                       color: AppColors.good,
                     ),
@@ -697,7 +698,7 @@ class _CoachingTipCard extends StatelessWidget {
               ),
             ),
             child: const Icon(
-              Icons.arrow_upward_rounded,
+              LucideIcons.arrowUp,
               size: 16,
               color: AppColors.primary,
             ),
@@ -769,7 +770,7 @@ class _SpeechTranscriptSection extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.copy_rounded,
+                      LucideIcons.copy,
                       size: 14,
                       color: AppColors.primary,
                     ),
@@ -803,7 +804,7 @@ class _SpeechTranscriptSection extends StatelessWidget {
                   color: AppColors.primary.withValues(alpha: 0.12),
                 ),
                 child: const Icon(
-                  Icons.format_quote_rounded,
+                  LucideIcons.quote,
                   size: 18,
                   color: AppColors.primary,
                 ),

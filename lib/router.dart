@@ -24,16 +24,16 @@ final appRouter = GoRouter(
       builder: (context, state, shell) => LuminaShell(shell: shell),
       branches: [
         StatefulShellBranch(routes: [
-          GoRoute(path: AppRoutes.home, builder: (_, __) => const HomeScreen()),
+          GoRoute(path: AppRoutes.home, builder: (context, state) => const HomeScreen()),
         ]),
         StatefulShellBranch(routes: [
-          GoRoute(path: AppRoutes.topics, builder: (_, __) => const TopicSelectionScreen()),
+          GoRoute(path: AppRoutes.topics, builder: (context, state) => const TopicSelectionScreen()),
         ]),
         StatefulShellBranch(routes: [
-          GoRoute(path: AppRoutes.history, builder: (_, __) => const HistoryScreen()),
+          GoRoute(path: AppRoutes.history, builder: (context, state) => const HistoryScreen()),
         ]),
         StatefulShellBranch(routes: [
-          GoRoute(path: AppRoutes.interview, builder: (_, __) => const InterviewHomeScreen()),
+          GoRoute(path: AppRoutes.interview, builder: (context, state) => const InterviewHomeScreen()),
         ]),
       ],
     ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../data/models/interview_models.dart';
@@ -19,7 +20,7 @@ class InterviewResultsScreen extends StatelessWidget {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) context.go(AppRoutes.interview);
+        if (!didPop) context.go(AppRoutes.home);
       },
       child: Scaffold(
         body: LayoutBuilder(
@@ -103,7 +104,7 @@ class _WideResults extends StatelessWidget {
                 const Spacer(),
                 IconButton(
                   icon: const Icon(
-                    Icons.home_rounded,
+                    LucideIcons.home,
                     color: AppColors.textMedium,
                   ),
                   onPressed: () => context.go(AppRoutes.home),
@@ -186,7 +187,7 @@ class _MobileResults extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(
-                    Icons.home_rounded,
+                    LucideIcons.home,
                     color: AppColors.textMedium,
                   ),
                   onPressed: () => context.go(AppRoutes.home),
@@ -273,15 +274,15 @@ class _OverallCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _MetaChip(
-                icon: Icons.quiz_outlined,
+                icon: LucideIcons.helpCircle,
                 label: '${interview.turns.length} questions',
               ),
               _MetaChip(
-                icon: Icons.trending_up_rounded,
+                icon: LucideIcons.trendingUp,
                 label: 'Avg ${interview.averageContentScore}%',
               ),
               _MetaChip(
-                icon: Icons.calendar_today_outlined,
+                icon: LucideIcons.calendar,
                 label: DateFormat('MMM d').format(interview.timestamp),
               ),
             ],
@@ -318,7 +319,7 @@ class _InsightsCard extends StatelessWidget {
               Row(
                 children: [
                   const Icon(
-                    Icons.star_rounded,
+                    LucideIcons.sparkles,
                     size: 16,
                     color: AppColors.good,
                   ),
@@ -345,7 +346,7 @@ class _InsightsCard extends StatelessWidget {
               Row(
                 children: [
                   const Icon(
-                    Icons.arrow_upward_rounded,
+                    LucideIcons.arrowUp,
                     size: 16,
                     color: AppColors.primary,
                   ),
@@ -477,8 +478,8 @@ class _TurnTileState extends State<_TurnTile> {
                   const SizedBox(width: 6),
                   Icon(
                     _expanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
+                        ? LucideIcons.chevronUp
+                        : LucideIcons.chevronDown,
                     size: 20,
                     color: AppColors.outline,
                   ),
@@ -497,7 +498,7 @@ class _TurnTileState extends State<_TurnTile> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(
-                        Icons.chat_bubble_outline_rounded,
+                        LucideIcons.messageSquare,
                         size: 13,
                         color: AppColors.scoreColor(eval.contentScore),
                       ),
@@ -566,7 +567,7 @@ class _TurnTileState extends State<_TurnTile> {
                           const Row(
                             children: [
                               Icon(
-                                Icons.auto_awesome_rounded,
+                                LucideIcons.sparkles,
                                 size: 12,
                                 color: AppColors.primary,
                               ),
@@ -636,7 +637,7 @@ class _ActionButtons extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.replay_rounded,
+                  LucideIcons.rotateCcw,
                   color: AppColors.onPrimary,
                   size: 18,
                 ),
@@ -655,7 +656,7 @@ class _ActionButtons extends StatelessWidget {
         const SizedBox(height: 10),
         OutlinedButton.icon(
           onPressed: () => context.go(AppRoutes.home),
-          icon: const Icon(Icons.home_outlined),
+          icon: const Icon(LucideIcons.home),
           label: const Text('Back to Home'),
         ),
       ],

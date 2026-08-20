@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../providers/history_provider.dart';
 import '../widgets/session_tile.dart';
 import '../widgets/progress_line_chart.dart';
@@ -129,7 +130,7 @@ class _EmptyState extends StatelessWidget {
                 ),
               ),
               child: const Icon(
-                Icons.history_rounded,
+                LucideIcons.history,
                 size: 32,
                 color: AppColors.primary,
               ),

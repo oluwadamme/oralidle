@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../topic_selection/data/models/topic.dart';
 import '../../data/models/recording_session.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -176,7 +177,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                     children: [
                       IconButton(
                         icon: const Icon(
-                          Icons.close_rounded,
+                          LucideIcons.x,
                           color: AppColors.textMedium,
                         ),
                         onPressed: () => context.go(AppRoutes.topics),
@@ -244,7 +245,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Icon(
-                          Icons.lightbulb_rounded,
+                          LucideIcons.lightbulb,
                           color: AppColors.amber,
                           size: 18,
                         ),
@@ -352,7 +353,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.mic_rounded,
+                            LucideIcons.mic,
                             color: Color(0xFF490080),
                             size: 20,
                           ),
@@ -398,7 +399,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                                   ),
                                 )
                               : const Icon(
-                                  Icons.upload_file_rounded,
+                                  LucideIcons.upload,
                                   color: AppColors.primary,
                                   size: 20,
                                 ),
@@ -453,7 +454,7 @@ class _TipsList extends StatelessWidget {
               child: Row(
                 children: [
                   const Icon(
-                    Icons.check_circle_rounded,
+                    LucideIcons.checkCircle2,
                     size: 16,
                     color: AppColors.good,
                   ),
