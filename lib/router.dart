@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'core/constants/app_constants.dart';
 import 'features/shell/lumina_shell.dart';
@@ -16,56 +17,139 @@ import 'features/interview/presentation/screens/interview_session_screen.dart';
 import 'features/interview/presentation/screens/interview_results_screen.dart';
 import 'features/interview/data/models/interview_models.dart';
 
-final appRouter = GoRouter(
+GoRouterRedirect _requireExtra<T>(String fallback) {
+  return (context, state) => state.extra is T ? null : fallback;
+}
+
+GoRouter createAppRouter() => GoRouter(
   initialLocation: AppRoutes.home,
+  errorBuilder: (context, state) => _RouteNotFound(uri: state.uri),
   routes: [
     // ── Tabbed shell (Home / Practice / Insights) ────────────────────────────
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) => LuminaShell(shell: shell),
       branches: [
-        StatefulShellBranch(routes: [
-          GoRoute(path: AppRoutes.home, builder: (_, __) => const HomeScreen()),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(path: AppRoutes.topics, builder: (_, __) => const TopicSelectionScreen()),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(path: AppRoutes.history, builder: (_, __) => const HistoryScreen()),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(path: AppRoutes.interview, builder: (_, __) => const InterviewHomeScreen()),
-        ]),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.home,
+              builder: (context, state) => const HomeScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.topics,
+              builder: (context, state) => const TopicSelectionScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.history,
+              builder: (context, state) => const HistoryScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.interview,
+              builder: (context, state) => const InterviewHomeScreen(),
+            ),
+          ],
+        ),
       ],
     ),
 
     // ── Full-screen recording flow (no bottom nav) ────────────────────────────
     GoRoute(
       path: AppRoutes.prepare,
+      redirect: _requireExtra<Topic>(AppRoutes.topics),
       builder: (context, state) => PreparationScreen(topic: state.extra as Topic),
     ),
     GoRoute(
       path: AppRoutes.record,
+      redirect: _requireExtra<Topic>(AppRoutes.topics),
       builder: (context, state) => RecordingScreen(topic: state.extra as Topic),
     ),
     GoRoute(
       path: AppRoutes.processing,
+      redirect: _requireExtra<RecordingSession>(AppRoutes.topics),
       builder: (context, state) =>
           ProcessingScreen(session: state.extra as RecordingSession),
     ),
     GoRoute(
       path: AppRoutes.results,
+      redirect: _requireExtra<SessionRecord>(AppRoutes.history),
       builder: (context, state) =>
           ResultsScreen(record: state.extra as SessionRecord),
     ),
     GoRoute(
       path: AppRoutes.interviewSession,
+      redirect: _requireExtra<InterviewSetup>(AppRoutes.interview),
       builder: (context, state) =>
           InterviewSessionScreen(setup: state.extra as InterviewSetup),
     ),
     GoRoute(
       path: AppRoutes.interviewResults,
+      redirect: _requireExtra<CompletedInterview>(AppRoutes.interview),
       builder: (context, state) =>
           InterviewResultsScreen(interview: state.extra as CompletedInterview),
     ),
   ],
 );
+
+final appRouter = createAppRouter();
+
+class _RouteNotFound extends StatelessWidget {
+  final Uri uri;
+
+  const _RouteNotFound({required this.uri});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.explore_off_rounded,
+                size: 40,
+                color: AppColors.textMedium,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Page not found',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                uri.path,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textMedium,
+                ),
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: () => context.go(AppRoutes.home),
+                child: const Text('Go home'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

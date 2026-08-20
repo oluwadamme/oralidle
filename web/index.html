@@ -35,6 +35,12 @@
 
   <title>Oralidle — AI Speech & Interview Coach</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Queue stub must exist before any va() call; vercel-analytics.js loads
+       the script itself at the end of <body>. -->
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
 </head>
 <body>
   <!-- Painted behind the canvas so the first frame is not a white flash

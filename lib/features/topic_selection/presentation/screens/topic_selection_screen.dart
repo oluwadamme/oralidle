@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../data/models/topic.dart';
 import '../../providers/topic_provider.dart';
 import '../widgets/topic_card.dart';
@@ -71,7 +72,7 @@ class TopicSelectionScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.shuffle_rounded,
+                        LucideIcons.shuffle,
                         color: Color(0xFF490080),
                         size: 20,
                       ),
@@ -100,7 +101,7 @@ class TopicSelectionScreen extends ConsumerWidget {
                   horizontal: context.responsive(compact: 20, medium: 28),
                 ),
                 itemCount: categories.length + 1,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   if (index == 0) {
                     return _CategoryChip(

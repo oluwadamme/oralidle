@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../topic_selection/data/models/topic.dart';
 import '../../providers/recording_provider.dart';
 import '../widgets/waveform_animation.dart';
@@ -89,7 +90,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                       children: [
                         IconButton(
                           icon: const Icon(
-                            Icons.close_rounded,
+                            LucideIcons.x,
                             color: AppColors.textMedium,
                           ),
                           onPressed: () => _confirmStop(context),
@@ -175,8 +176,8 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                             children: [
                               Icon(
                                 state.isFinalising
-                                    ? Icons.hourglass_top_rounded
-                                    : Icons.graphic_eq_rounded,
+                                    ? LucideIcons.hourglass
+                                    : LucideIcons.activity,
                                 size: 14,
                                 color: state.isRecording || state.isFinalising
                                     ? AppColors.primary
@@ -292,8 +293,8 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                               ),
                               child: Icon(
                                 state.canStop
-                                    ? Icons.stop_rounded
-                                    : Icons.mic_rounded,
+                                    ? LucideIcons.square
+                                    : LucideIcons.mic,
                                 color: state.canStop
                                     ? Colors.white
                                     : const Color(0xFF490080),

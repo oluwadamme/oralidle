@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../providers/home_provider.dart';
 import '../../../history/presentation/widgets/session_tile.dart';
 import '../../../history/presentation/widgets/progress_line_chart.dart';
@@ -169,7 +170,7 @@ class _WebHome extends ConsumerWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(
-                              Icons.local_fire_department_rounded,
+                              LucideIcons.flame,
                               color: AppColors.amber,
                               size: 15,
                             ),
@@ -214,14 +215,14 @@ class _WebHome extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 16),
                                   _StatRow(
-                                    icon: Icons.bar_chart_rounded,
+                                    icon: LucideIcons.barChart2,
                                     label: 'Sessions',
                                     value: '${allSessions.length}',
                                     color: AppColors.primary,
                                   ),
                                   const SizedBox(height: 12),
                                   _StatRow(
-                                    icon: Icons.emoji_events_rounded,
+                                    icon: LucideIcons.trophy,
                                     label: 'Best Score',
                                     value:
                                         '${allSessions.map((s) => s.result.overallScore).reduce((a, b) => a > b ? a : b)}',
@@ -229,7 +230,7 @@ class _WebHome extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 12),
                                   _StatRow(
-                                    icon: Icons.trending_up_rounded,
+                                    icon: LucideIcons.trendingUp,
                                     label: 'Avg Score',
                                     value:
                                         '${allSessions.map((s) => s.result.overallScore).reduce((a, b) => a + b) ~/ allSessions.length}',
@@ -277,7 +278,7 @@ class _WebHome extends ConsumerWidget {
                                       ),
                                     ),
                                     child: const Icon(
-                                      Icons.mic_none_rounded,
+                                      LucideIcons.mic,
                                       size: 24,
                                       color: AppColors.primary,
                                     ),
@@ -346,8 +347,8 @@ class _WebHome extends ConsumerWidget {
                                 ),
                                 const SizedBox(width: 24),
                                 PrimaryGradientButton(
-                                  label: 'Start Practice',
-                                  icon: Icons.mic_rounded,
+                                  label: 'Practice',
+                                  icon: LucideIcons.mic,
                                   height: 48,
                                   onTap: () => context.go(AppRoutes.topics),
                                 ),
@@ -719,7 +720,7 @@ class _MobileHome extends ConsumerWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Icon(
-                                Icons.local_fire_department_rounded,
+                                LucideIcons.flame,
                                 color: AppColors.amber,
                                 size: 15,
                               ),
@@ -737,8 +738,8 @@ class _MobileHome extends ConsumerWidget {
                         ),
                       const SizedBox(height: 28),
                       PrimaryGradientButton(
-                        label: 'Start Practice',
-                        icon: Icons.mic_rounded,
+                        label: 'Practice',
+                        icon: LucideIcons.mic,
                         height: 60,
                         fontSize: 17,
                         onTap: () => context.go(AppRoutes.topics),
@@ -749,7 +750,7 @@ class _MobileHome extends ConsumerWidget {
                           children: [
                             Expanded(
                               child: _MiniStatCard(
-                                icon: Icons.bar_chart_rounded,
+                                icon: LucideIcons.barChart2,
                                 value: '${allSessions.length}',
                                 label: 'Sessions',
                               ),
@@ -757,7 +758,7 @@ class _MobileHome extends ConsumerWidget {
                             const SizedBox(width: 10),
                             Expanded(
                               child: _MiniStatCard(
-                                icon: Icons.emoji_events_rounded,
+                                icon: LucideIcons.trophy,
                                 value:
                                     '${allSessions.map((s) => s.result.overallScore).reduce((a, b) => a > b ? a : b)}',
                                 label: 'Best',
@@ -767,7 +768,7 @@ class _MobileHome extends ConsumerWidget {
                             const SizedBox(width: 10),
                             Expanded(
                               child: _MiniStatCard(
-                                icon: Icons.trending_up_rounded,
+                                icon: LucideIcons.trendingUp,
                                 value:
                                     '${allSessions.map((s) => s.result.overallScore).reduce((a, b) => a + b) ~/ allSessions.length}',
                                 label: 'Avg',
@@ -895,7 +896,7 @@ class _EmptyState extends StatelessWidget {
               ),
             ),
             child: const Icon(
-              Icons.mic_none_rounded,
+              LucideIcons.mic,
               size: 30,
               color: AppColors.primary,
             ),

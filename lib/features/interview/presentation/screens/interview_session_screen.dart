@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../recording/presentation/widgets/waveform_animation.dart';
@@ -92,7 +93,7 @@ class _InterviewSessionScreenState
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.close_rounded, color: AppColors.textMedium),
+            icon: const Icon(LucideIcons.x, color: AppColors.textMedium),
             onPressed: () => _confirmExit(context),
           ),
           Expanded(
@@ -274,7 +275,7 @@ class _ErrorView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.error_outline_rounded,
+              LucideIcons.alertCircle,
               size: 48,
               color: AppColors.poor,
             ),
@@ -291,7 +292,7 @@ class _ErrorView extends StatelessWidget {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: onRetry,
-              icon: const Icon(Icons.refresh_rounded),
+              icon: const Icon(LucideIcons.rotateCcw),
               label: const Text('Try Again'),
             ),
           ],
@@ -389,10 +390,10 @@ class _QuestionView extends ConsumerWidget {
             children: [
               Icon(
                 isRecording
-                    ? Icons.graphic_eq_rounded
+                    ? LucideIcons.activity
                     : isBusy
-                    ? Icons.hourglass_top_rounded
-                    : Icons.mic_none_rounded,
+                    ? LucideIcons.hourglass
+                    : LucideIcons.mic,
                 size: 14,
                 color: isRecording || isFinalising
                     ? AppColors.primary
@@ -452,7 +453,7 @@ class _QuestionView extends ConsumerWidget {
                   ],
                 ),
                 child: Icon(
-                  isRecording ? Icons.stop_rounded : Icons.mic_rounded,
+                  isRecording ? LucideIcons.square : LucideIcons.mic,
                   color: isRecording ? Colors.white : AppColors.onPrimary,
                   size: 34,
                 ),
@@ -591,7 +592,7 @@ class _FeedbackView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
-                      Icons.chat_bubble_outline_rounded,
+                      LucideIcons.messageSquare,
                       size: 14,
                       color: scoreColor,
                     ),
@@ -650,7 +651,7 @@ class _FeedbackView extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              Icons.headphones_rounded,
+                              LucideIcons.headphones,
                               size: 10,
                               color: AppColors.primary,
                             ),
@@ -721,8 +722,8 @@ class _FeedbackView extends StatelessWidget {
                 children: [
                   Icon(
                     isFinal
-                        ? Icons.bar_chart_rounded
-                        : Icons.arrow_forward_rounded,
+                        ? LucideIcons.barChart2
+                        : LucideIcons.arrowRight,
                     color: AppColors.onPrimary,
                     size: 20,
                   ),
@@ -946,7 +947,7 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
       return const Row(
         children: [
           Icon(
-            Icons.error_outline_rounded,
+            LucideIcons.alertCircle,
             size: 15,
             color: AppColors.textMedium,
           ),
@@ -996,7 +997,7 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
               ),
             ),
             child: Icon(
-              isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              isPlaying ? LucideIcons.pause : LucideIcons.play,
               color: AppColors.primary,
               size: 22,
             ),
@@ -1100,7 +1101,7 @@ class _ModelAnswerCardState extends State<_ModelAnswerCard> {
                     color: AppColors.primary.withValues(alpha: 0.15),
                   ),
                   child: const Icon(
-                    Icons.auto_awesome_rounded,
+                    LucideIcons.sparkles,
                     size: 13,
                     color: AppColors.primary,
                   ),
@@ -1121,7 +1122,7 @@ class _ModelAnswerCardState extends State<_ModelAnswerCard> {
                   turns: _expanded ? 0.5 : 0.0,
                   duration: const Duration(milliseconds: 200),
                   child: const Icon(
-                    Icons.keyboard_arrow_down_rounded,
+                    LucideIcons.chevronDown,
                     size: 18,
                     color: AppColors.primary,
                   ),

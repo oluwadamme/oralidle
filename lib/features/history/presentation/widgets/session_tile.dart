@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../analysis/data/models/session_record.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../topic_selection/data/models/topic.dart';
@@ -89,7 +90,7 @@ class SessionTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.outline),
+            const Icon(LucideIcons.chevronRight, color: AppColors.outline),
           ],
         ),
       ),
