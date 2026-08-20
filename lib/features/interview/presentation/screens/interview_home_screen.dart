@@ -551,12 +551,14 @@ class _Header extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            const Text(
-              'Interview Prep',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textDark,
+            const Expanded(
+              child: Text(
+                'Interview Prep',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDark,
+                ),
               ),
             ),
           ],

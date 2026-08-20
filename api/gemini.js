@@ -127,6 +127,15 @@ export async function POST(request) {
 
   const body = await request.text();
 
+  if (body.length > MAX_BODY_BYTES) {
+    return json(413, {
+      error: {
+        message:
+          'Recording is too large to analyse. Please keep answers under three minutes.',
+      },
+    });
+  }
+
   let upstream;
   try {
     upstream = await fetch(UPSTREAM, {
