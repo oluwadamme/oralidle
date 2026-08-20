@@ -30,39 +30,51 @@ class AppRoutes {
 
 /// Oralidle dark design system colours.
 class AppColors {
-  // ── Semantic score colours ─────────────────────────────────────────────────
-  static const good = Color(0xFF4EDEA3);   // emerald – success / growth
-  static const fair = Color(0xFFFFB95F);   // amber   – caution / warmth
-  static const poor = Color(0xFFFFB4AB);   // soft-red – error
+  // ── Level ramp — cool at conversational volume, warm at peak. DESIGN.md §2.
+  static const levelLow = Color(0xFF4FB8A8);
+  static const levelHigh = Color(0xFFE8A33D);
+  static const levelRest = Color(0xFF2C4642); // unlit meter bar
+
+  // ── Semantic. Real system states only — never a score verdict. ───────────
+  static const good = Color(0xFF5BC38C);
+  static const fair = Color(0xFFE8A33D);
+  static const poor = Color(0xFFE08A7E);
 
   // ── Brand ──────────────────────────────────────────────────────────────────
-  static const primary = Color(0xFFDDB7FF);       // light purple (AI/CTA)
-  static const primaryLight = Color(0xFFB76DFF);  // mid-purple (gradient end)
-  static const onPrimary = Color(0xFF490080);     // dark purple — text/icons on primary surface
-  static const amber = Color(0xFFFFB95F);         // alias for secondary
+  static const primary = levelLow;
+  static const primaryLight = Color(0xFF6FD3C2);
+  static const onPrimary = Color(0xFF06110F);
+  static const amber = levelHigh;
 
   // ── Surfaces (dark layering: lowest → highest) ────────────────────────────
-  static const background = Color(0xFF131313);
-  static const surfaceLow = Color(0xFF1C1B1B);   // sidebar / drawer bg
-  static const surface = Color(0xFF201F1F);
-  static const surfaceHigh = Color(0xFF2A2A2A);
-  static const surfaceHighest = Color(0xFF353534);
+  static const background = Color(0xFF0E1513);
+  static const surfaceLow = Color(0xFF121917);
+  static const surface = Color(0xFF141C1A);
+  static const surfaceHigh = Color(0xFF1B2422);
+  static const surfaceHighest = Color(0xFF243230);
 
   // ── Text ───────────────────────────────────────────────────────────────────
-  static const textDark = Color(0xFFE5E2E1);
-  static const textMedium = Color(0xFFCFC2D6);
+  static const textDark = Color(0xFFE6E9E5);
+  static const textMedium = Color(0xFF8FA09B);
 
   // ── Borders ────────────────────────────────────────────────────────────────
-  static const outline = Color(0xFF988D9F);
-  static const outlineVariant = Color(0xFF4D4354);
-  static const cardBorder = Color(0x1AFFFFFF); // 10 % white – glass card edge
+  static const outline = Color(0xFF6B7A76);
+  static const outlineVariant = Color(0xFF243230);
+  static const cardBorder = Color(0x14FFFFFF); // 8 % white hairline
 
   // ── Helpers ────────────────────────────────────────────────────────────────
-  static Color scoreColor(int score) {
-    if (score >= 75) return good;
-    if (score >= 50) return fair;
-    return poor;
-  }
+  /// Position on the level ramp, `t` in 0..1.
+  static Color levelColor(double t) =>
+      Color.lerp(levelLow, levelHigh, t.clamp(0.0, 1.0))!;
+
+  /// A score read as a position on the ramp rather than a pass/fail hue.
+  ///
+  /// Someone practising their own voice should read a number as diagnostic,
+  /// not as a verdict, so the scale is continuous and carries no red.
+  static Color scoreColor(int score) => levelColor(score / 100);
+
+  /// Track behind any score meter.
+  static const scoreTrack = Color(0xFF243230);
 
   /// Glass-morphism card decoration used throughout the app.
   static BoxDecoration glassCard({

@@ -9,35 +9,35 @@ class AppTheme {
     final textTheme = GoogleFonts.manropeTextTheme(base.textTheme)
         .copyWith(
           // Headings — Plus Jakarta Sans
-          displayLarge: GoogleFonts.plusJakartaSans(
+          displayLarge: GoogleFonts.bricolageGrotesque(
               fontSize: 40, fontWeight: FontWeight.w700,
               letterSpacing: -0.8, color: AppColors.textDark),
-          displayMedium: GoogleFonts.plusJakartaSans(
+          displayMedium: GoogleFonts.bricolageGrotesque(
               fontSize: 34, fontWeight: FontWeight.w700, color: AppColors.textDark),
-          headlineLarge: GoogleFonts.plusJakartaSans(
+          headlineLarge: GoogleFonts.bricolageGrotesque(
               fontSize: 32, fontWeight: FontWeight.w600,
               letterSpacing: -0.32, color: AppColors.textDark),
-          headlineMedium: GoogleFonts.plusJakartaSans(
+          headlineMedium: GoogleFonts.bricolageGrotesque(
               fontSize: 24, fontWeight: FontWeight.w600, color: AppColors.textDark),
-          headlineSmall: GoogleFonts.plusJakartaSans(
+          headlineSmall: GoogleFonts.bricolageGrotesque(
               fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textDark),
-          titleLarge: GoogleFonts.plusJakartaSans(
+          titleLarge: GoogleFonts.bricolageGrotesque(
               fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textDark),
-          titleMedium: GoogleFonts.plusJakartaSans(
+          titleMedium: GoogleFonts.bricolageGrotesque(
               fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textDark),
-          titleSmall: GoogleFonts.plusJakartaSans(
+          titleSmall: GoogleFonts.bricolageGrotesque(
               fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark),
           // Body — Manrope
           bodyLarge: GoogleFonts.manrope(fontSize: 16, color: AppColors.textDark),
           bodyMedium: GoogleFonts.manrope(fontSize: 14, color: AppColors.textMedium),
           bodySmall: GoogleFonts.manrope(fontSize: 12, color: AppColors.textMedium),
-          // Labels — Space Grotesk (technical / data feel, closest to Geist)
-          labelLarge: GoogleFonts.spaceGrotesk(
+          // Labels and readouts — IBM Plex Mono, tabular figures
+          labelLarge: GoogleFonts.ibmPlexMono(
               fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark),
-          labelMedium: GoogleFonts.spaceGrotesk(
+          labelMedium: GoogleFonts.ibmPlexMono(
               fontSize: 12, fontWeight: FontWeight.w500,
               letterSpacing: 0.7, color: AppColors.textMedium),
-          labelSmall: GoogleFonts.spaceGrotesk(
+          labelSmall: GoogleFonts.ibmPlexMono(
               fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textMedium),
         )
         .apply(
@@ -48,13 +48,13 @@ class AppTheme {
     return base.copyWith(
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primary,
-        onPrimary: Color(0xFF490080),
+        onPrimary: AppColors.onPrimary,
         primaryContainer: AppColors.primaryLight,
-        onPrimaryContainer: Color(0xFF400071),
+        onPrimaryContainer: AppColors.onPrimary,
         secondary: AppColors.amber,
-        onSecondary: Color(0xFF472A00),
+        onSecondary: AppColors.onPrimary,
         tertiary: AppColors.good,
-        onTertiary: Color(0xFF003824),
+        onTertiary: AppColors.onPrimary,
         error: AppColors.poor,
         onError: Color(0xFF690005),
         errorContainer: Color(0xFF93000A),
@@ -63,8 +63,8 @@ class AppTheme {
         onSurfaceVariant: AppColors.textMedium,
         outline: AppColors.outline,
         outlineVariant: AppColors.outlineVariant,
-        surfaceContainerLowest: Color(0xFF0E0E0E),
-        surfaceContainerLow: Color(0xFF1C1B1B),
+        surfaceContainerLowest: AppColors.background,
+        surfaceContainerLow: AppColors.surfaceLow,
         surfaceContainer: AppColors.surface,
         surfaceContainerHigh: AppColors.surfaceHigh,
         surfaceContainerHighest: AppColors.surfaceHighest,
@@ -76,7 +76,7 @@ class AppTheme {
         foregroundColor: AppColors.textDark,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        titleTextStyle: GoogleFonts.plusJakartaSans(
+        titleTextStyle: GoogleFonts.bricolageGrotesque(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: AppColors.textDark,
@@ -97,7 +97,7 @@ class AppTheme {
           foregroundColor: const Color(0xFF490080),
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          textStyle: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w600),
+          textStyle: GoogleFonts.bricolageGrotesque(fontSize: 16, fontWeight: FontWeight.w600),
           elevation: 0,
         ),
       ),
@@ -107,7 +107,7 @@ class AppTheme {
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           side: const BorderSide(color: AppColors.primary),
-          textStyle: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w600),
+          textStyle: GoogleFonts.bricolageGrotesque(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
       chipTheme: ChipThemeData(

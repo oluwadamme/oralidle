@@ -1,14 +1,14 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../constants/app_constants.dart';
 
-/// Glassmorphism card with backdrop blur + 10% white border.
 class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final double radius;
   final Color? borderColor;
   final Color? bgColor;
+
+  @Deprecated('Backdrop blur was retired; this value is ignored.')
   final double blur;
 
   const GlassCard({
@@ -18,30 +18,29 @@ class GlassCard extends StatelessWidget {
     this.radius = 16,
     this.borderColor,
     this.bgColor,
-    this.blur = 8,
+    // ignore: deprecated_member_use_from_same_package
+    this.blur = 0,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: bgColor ?? AppColors.surface,
-            borderRadius: BorderRadius.circular(radius),
-            border: Border.all(color: borderColor ?? AppColors.cardBorder),
-          ),
-          child: child,
-        ),
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: bgColor ?? AppColors.surface,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: borderColor ?? AppColors.cardBorder),
       ),
+      child: child,
     );
   }
 }
 
-/// Blurred ambient glow orb for background depth.
+/// Soft background wash.
+///
+/// Kept as a radial gradient rather than a blurred circle: a 55-sigma
+/// `ImageFilter.blur` is expensive to composite, and there are two dozen of
+/// these across the app. The gradient renders the same shape for free.
 class AmbientOrb extends StatelessWidget {
   final Color color;
   final double size;
@@ -50,14 +49,16 @@ class AmbientOrb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ImageFiltered(
-      imageFilter: ImageFilter.blur(sigmaX: 55, sigmaY: 55),
+    return IgnorePointer(
       child: Container(
         width: size,
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: color.withValues(alpha: 0.35),
+          gradient: RadialGradient(
+            colors: [color.withValues(alpha: 0.16), color.withValues(alpha: 0.06), color.withValues(alpha: 0.0)],
+            stops: const [0.0, 0.55, 1.0],
+          ),
         ),
       ),
     );

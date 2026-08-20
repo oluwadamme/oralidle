@@ -76,6 +76,7 @@ Analyse this speech as a professional English coach. Return ONLY a JSON object â
       body: jsonEncode({
         'model': model,
         'stream': false,
+        'format': 'json',
         'messages': [
           {
             'role': 'system',
@@ -101,10 +102,16 @@ Analyse this speech as a professional English coach. Return ONLY a JSON object â
       throw Exception('Ollama returned empty response');
     }
 
-    final cleaned = content
+    String cleaned = content
         .trim()
         .replaceAll(RegExp(r'```json|```', multiLine: true), '')
         .trim();
+
+    final firstBrace = cleaned.indexOf('{');
+    final lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace != -1 && lastBrace > firstBrace) {
+      cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+    }
 
     final parsedJson = jsonDecode(cleaned) as Map<String, dynamic>;
     return AnalysisResult.fromJson({
