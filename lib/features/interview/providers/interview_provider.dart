@@ -183,28 +183,25 @@ class InterviewNotifier extends StateNotifier<InterviewState> {
       phase: InterviewPhase.loading,
     );
 
-    // Warm the on-device recogniser while the first question is generating,
-    // so the model download (once, ~49 MB) overlaps with work the user is
-    // already waiting on. Never awaited — the interview does not depend on it.
     unawaited(_recognition.prepare());
 
     try {
-      // Only the direct-to-Google path needs a key on the client. On web the
-      // request goes through our own proxy, which holds it server-side —
-      // demanding one here would fail every browser session.
-      final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+      final apiKey = dotenv.env['GEMINI_API_KEY'] ?? AiEndpoint.localApiKey;
       if (AiEndpoint.requiresApiKey && apiKey.isEmpty) {
+        if (AiEndpoint.isLocalWeb) {
+          throw Exception(
+            'GEMINI_API_KEY is missing from .env for local web testing.\n'
+            'Add GEMINI_API_KEY to your .env file, or run `vercel dev` and launch with `--dart-define=API_PROXY_BASE=http://localhost:3000`.',
+          );
+        }
         throw Exception('GEMINI_API_KEY is not configured in .env');
       }
 
-      // Assets come from FutureProviders cached at app-level — one disk read
-      // per app session, not per interview session.
       final results = await Future.wait([
         _ref.read(cvContentProvider.future),
         _ref.read(skillsContentProvider.future),
       ]);
 
-      // Guard against the screen being popped while assets were loading
       if (!mounted) return;
 
       final customCv = customCvContent?.trim();
@@ -236,12 +233,6 @@ class InterviewNotifier extends StateNotifier<InterviewState> {
     }
   }
 
-  /// Opens the microphone and begins the answer.
-  ///
-  /// Capture is started first and is the only microphone client; the
-  /// recogniser is then attached to the PCM the capture already produces.
-  /// Nothing here opens a second audio input — doing so is what previously
-  /// left recordings silent.
   Future<void> startAnswering() async {
     final started = await _capture.start();
     if (!mounted) return;
@@ -262,9 +253,6 @@ class InterviewNotifier extends StateNotifier<InterviewState> {
       error: null,
     );
 
-    // Live transcript is a progressive enhancement: if the on-device engine
-    // is not ready (still downloading, or unsupported on web) the answer
-    // still records and Gemini still transcribes it.
     if (_recognition.state.isReady) {
       await _recognition.listen(_capture.pcmStream, (transcript) {
         if (!mounted || state.phase != InterviewPhase.recording) return;

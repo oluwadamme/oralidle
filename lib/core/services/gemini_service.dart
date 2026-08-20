@@ -124,7 +124,8 @@ Return ONLY a JSON object — no markdown, no explanation. Use this exact schema
       _withMeasuredMetrics(json, durationSeconds: durationSeconds),
     );
   }
- static Map<String, dynamic> _withMeasuredMetrics(
+
+  static Map<String, dynamic> _withMeasuredMetrics(
     Map<String, dynamic> json, {
     required int? durationSeconds,
   }) {
@@ -145,30 +146,42 @@ Return ONLY a JSON object — no markdown, no explanation. Use this exact schema
     List<Map<String, dynamic>> parts,
   ) async {
     try {
-      final response = await http.post(
-        // Google directly on native, our own proxy on web — see AiEndpoint.
-        AiEndpoint.generateContent,
-        headers: AiEndpoint.headers(_apiKey),
-        body: jsonEncode({
-          'system_instruction': {
-            'parts': [
-              {
-                'text':
-                    'You are a professional English speech coach. Analyse spoken transcripts and audio recordings, providing structured, constructive feedback. Be encouraging but honest. Focus on fluency, vocabulary, grammar, coherence, topic relevance, and confidence.',
+      final response = await http
+          .post(
+            // Google directly on native, our own proxy on web — see AiEndpoint.
+            AiEndpoint.generateContent,
+            headers: AiEndpoint.headers(_apiKey),
+            body: jsonEncode({
+              'system_instruction': {
+                'parts': [
+                  {
+                    'text':
+                        'You are a professional English speech coach. Analyse spoken transcripts and audio recordings, providing structured, constructive feedback. Be encouraging but honest. Focus on fluency, vocabulary, grammar, coherence, topic relevance, and confidence.',
+                  },
+                ],
               },
-            ],
-          },
-          'contents': [
-            {'parts': parts},
-          ],
-          'generationConfig': {'maxOutputTokens': 8192, 'temperature': 0.4},
-        }),
-      ).timeout(
-        _timeout,
-        onTimeout: () => throw Exception(
-          'Analysis timed out. Please check your connection and try again.',
-        ),
-      );
+              'contents': [
+                {'parts': parts},
+              ],
+              'generationConfig': {
+                'maxOutputTokens': 8192,
+                'temperature': 0.4,
+                // Gemini 2.5 reasons before answering, and those tokens come out
+                // of maxOutputTokens. Left on, thinking has consumed ~7.8k of the
+                // 8k budget and truncated the JSON mid-string.
+                'thinkingConfig': {'thinkingBudget': 0},
+                // Guarantees a bare JSON object: without it the model wraps the
+                // response in ```json fences or opens with prose.
+                'responseMimeType': 'application/json',
+              },
+            }),
+          )
+          .timeout(
+            _timeout,
+            onTimeout: () => throw Exception(
+              'Analysis timed out. Please check your connection and try again.',
+            ),
+          );
 
       if (response.statusCode != 200) {
         log(response.body);
@@ -183,19 +196,39 @@ Return ONLY a JSON object — no markdown, no explanation. Use this exact schema
 
       final finishReason = candidate['finishReason'] as String? ?? 'STOP';
       if (finishReason == 'MAX_TOKENS') {
-        throw Exception('The AI response was cut off. Please try again.');
+        throw Exception(
+          'The AI response was cut off before it finished. Please try again '
+          'with a shorter recording.',
+        );
       }
 
       final text =
           (candidate['content']['parts'] as List).first['text'] as String;
-      final cleaned = text
-          .trim()
-          .replaceAll(RegExp(r'```json|```', multiLine: true), '')
-          .trim();
-      return jsonDecode(cleaned) as Map<String, dynamic>;
+      return _decodeJsonObject(text);
     } catch (e, st) {
       log('GeminiService error: $e\n$st');
       rethrow;
+    }
+  }
+
+  /// Decodes a JSON object from model output.
+  ///
+  /// `responseMimeType: application/json` should make this a plain decode, but
+  /// a model that ignores it wraps the object in ``` fences or opens with a
+  /// sentence of prose. Falling back to the outermost braces recovers both.
+  static Map<String, dynamic> _decodeJsonObject(String text) {
+    final trimmed = text
+        .trim()
+        .replaceAll(RegExp(r'```json|```', multiLine: true), '')
+        .trim();
+    try {
+      return jsonDecode(trimmed) as Map<String, dynamic>;
+    } on FormatException {
+      final start = trimmed.indexOf('{');
+      final end = trimmed.lastIndexOf('}');
+      if (start == -1 || end <= start) rethrow;
+      return jsonDecode(trimmed.substring(start, end + 1))
+          as Map<String, dynamic>;
     }
   }
 
