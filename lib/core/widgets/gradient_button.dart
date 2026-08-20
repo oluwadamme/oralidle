@@ -50,6 +50,7 @@ class PrimaryGradientButton extends StatelessWidget {
             ),
           ],
         ),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
