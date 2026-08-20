@@ -41,6 +41,12 @@
   <script>
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
   </script>
+
+  <!-- Speed Insights queue stub must exist before any si() call; 
+       vercel-speed-insights.js loads the script itself at the end of <body>. -->
+  <script>
+    window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+  </script>
 </head>
 <body>
   <!-- Painted behind the canvas so the first frame is not a white flash
@@ -60,5 +66,8 @@
   
   <!-- Vercel Web Analytics -->
   <script src="vercel-analytics.js" defer></script>
+
+  <!-- Vercel Speed Insights -->
+  <script src="vercel-speed-insights.js" defer></script>
 </body>
 </html>
