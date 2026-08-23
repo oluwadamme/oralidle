@@ -30,10 +30,6 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
           ? SpeechAnalyser.analyse(session.transcript, session.durationSeconds)
           : null;
 
-      // Debug-only: a release build always goes to Gemini, which hears pace
-      // and delivery that a transcript throws away. Platform is not part of
-      // the gate — what matters is whether a transcript exists, which is
-      // native (Moonshine) or web (Whisper WASM).
       final useOllama =
           kDebugMode && dotenv.env['USE_OLLAMA'] == 'true';
 
