@@ -11,6 +11,7 @@ import '../../../analysis/data/models/session_record.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_button.dart';
+import '../../../../core/widgets/ad_banner_widget.dart';
 import '../../../../core/utils/responsive.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -383,6 +384,8 @@ class _WebHome extends ConsumerWidget {
                               padding: EdgeInsets.zero,
                               child: _SessionsTable(sessions: recent, ref: ref),
                             ),
+                            const SizedBox(height: 20),
+                            const AppAdBannerWidget(),
                           ],
                         ],
                       ),
@@ -817,6 +820,8 @@ class _MobileHome extends ConsumerWidget {
                         _EmptyState(
                           onStart: () => context.go(AppRoutes.topics),
                         ),
+                      const SizedBox(height: 24),
+                      const AppAdBannerWidget(),
                       const SizedBox(height: 24),
                     ],
                   ),

@@ -58,6 +58,10 @@ dependencies:
   intl: ^0.20.2
   uuid: ^4.5.1
   lucide_icons_flutter: ^3.1.15
+
+  # Google Mobile Ads & Web AdSense
+  google_mobile_ads: ^5.2.0
+  web: ^1.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -70,3 +74,5 @@ flutter:
     - .env
     - assets/cv.md
     - assets/interview-prep-skills.md
+    - assets/logo_variant_1.png
+    - assets/logo_variant_3.png

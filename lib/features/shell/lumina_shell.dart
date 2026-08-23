@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/responsive.dart';
 
@@ -71,35 +72,18 @@ class _SideNav extends StatelessWidget {
             bottom: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  RichText(
-                    text: const TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'Oralidle',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' AI',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.textDark,
-                          ),
-                        ),
-                      ],
+                  Image.asset('assets/logo_variant_1.png', height: 32, fit: BoxFit.contain),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Oralidle',
+                    style: GoogleFonts.bricolageGrotesque(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.5,
+                      color: AppColors.ink,
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  const Text(
-                    'AI Speech & Interview Coach',
-                    style: TextStyle(fontSize: 11, color: AppColors.textMedium),
                   ),
                 ],
               ),
