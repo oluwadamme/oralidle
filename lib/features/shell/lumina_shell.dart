@@ -74,15 +74,24 @@ class _SideNav extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
               child: Row(
                 children: [
-                  Image.asset('assets/logo_variant_1.png', height: 32, fit: BoxFit.contain),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Oralidle',
-                    style: GoogleFonts.bricolageGrotesque(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.5,
-                      color: AppColors.ink,
+                  Image.asset(
+                    'assets/logo_variant_1.png',
+                    width: 24,
+                    height: 24,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Oralidle',
+                      style: GoogleFonts.bricolageGrotesque(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.5,
+                        color: AppColors.ink,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
