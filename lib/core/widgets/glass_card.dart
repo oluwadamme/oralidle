@@ -36,11 +36,6 @@ class GlassCard extends StatelessWidget {
   }
 }
 
-/// Soft background wash.
-///
-/// Kept as a radial gradient rather than a blurred circle: a 55-sigma
-/// `ImageFilter.blur` is expensive to composite, and there are two dozen of
-/// these across the app. The gradient renders the same shape for free.
 class AmbientOrb extends StatelessWidget {
   final Color color;
   final double size;
@@ -55,10 +50,7 @@ class AmbientOrb extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [color.withValues(alpha: 0.16), color.withValues(alpha: 0.06), color.withValues(alpha: 0.0)],
-            stops: const [0.0, 0.55, 1.0],
-          ),
+          color: color.withValues(alpha: 0.08),
         ),
       ),
     );
@@ -96,13 +88,7 @@ class ScoreRing extends StatelessWidget {
               height: size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.3),
-                    blurRadius: 24,
-                    spreadRadius: 4,
-                  ),
-                ],
+                border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
               ),
             ),
           SizedBox(
@@ -123,7 +109,7 @@ class ScoreRing extends StatelessWidget {
                 '$score',
                 style: TextStyle(
                   fontSize: size * 0.3,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: AppFontWeight.w800,
                   color: color,
                   height: 1,
                 ),

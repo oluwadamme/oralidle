@@ -20,7 +20,7 @@ class ProgressLineChart extends StatelessWidget {
         ),
         child: Text(
           'Complete 2+ sessions to see your progress trend',
-          style: const TextStyle(color: AppColors.outline, fontSize: 13),
+          style: const TextStyle(color: AppColors.outline, fontSize: AppFontSize.f13),
           textAlign: TextAlign.center,
         ),
       );
@@ -51,7 +51,7 @@ class ProgressLineChart extends StatelessWidget {
                 reservedSize: 30,
                 interval: 25,
                 getTitlesWidget: (v, _) =>
-                    Text('${v.toInt()}', style: const TextStyle(fontSize: 10, color: AppColors.textMedium)),
+                    Text('${v.toInt()}', style: const TextStyle(fontSize: AppFontSize.f10, color: AppColors.textMedium)),
               ),
             ),
             bottomTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -63,7 +63,7 @@ class ProgressLineChart extends StatelessWidget {
               getTooltipItems: (spots) => spots
                   .map((s) => LineTooltipItem(
                         '${s.y.toInt()}',
-                        const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                        const TextStyle(color: AppColors.ink, fontWeight: AppFontWeight.w700),
                       ))
                   .toList(),
             ),

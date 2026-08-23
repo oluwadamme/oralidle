@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../analysis/data/models/session_record.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/widgets/pressable.dart';
 import '../../../topic_selection/data/models/topic.dart';
 
 class SessionTile extends StatelessWidget {
@@ -17,7 +18,7 @@ class SessionTile extends StatelessWidget {
     final color = AppColors.scoreColor(score);
     final categoryColor = record.topicCategory.categoryColor;
 
-    return GestureDetector(
+    return Pressable(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
@@ -33,7 +34,7 @@ class SessionTile extends StatelessWidget {
               child: Text(
                 '$score',
                 style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15),
+                    color: AppColors.ink, fontWeight: AppFontWeight.w800, fontSize: AppFontSize.f15),
               ),
             ),
             const SizedBox(width: 12),
@@ -43,7 +44,7 @@ class SessionTile extends StatelessWidget {
                 children: [
                   Text(
                     record.topicTitle,
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    style: const TextStyle(fontWeight: AppFontWeight.w600, fontSize: AppFontSize.f14),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -59,27 +60,27 @@ class SessionTile extends StatelessWidget {
                         child: Text(
                           record.topicCategory,
                           style: TextStyle(
-                              fontSize: 10, color: categoryColor, fontWeight: FontWeight.w600),
+                              fontSize: AppFontSize.f10, color: categoryColor, fontWeight: AppFontWeight.w600),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         '${record.formattedDuration} • ${record.result.wpm} wpm',
-                        style: const TextStyle(fontSize: 11, color: AppColors.textMedium),
+                        style: const TextStyle(fontSize: AppFontSize.f11, color: AppColors.textMedium),
                       ),
                     ],
                   ),
                   const SizedBox(height: 2),
                   Text(
                     DateFormat('MMM d, h:mm a').format(record.timestamp),
-                    style: const TextStyle(fontSize: 11, color: AppColors.outline),
+                    style: const TextStyle(fontSize: AppFontSize.f11, color: AppColors.outline),
                   ),
                   if (record.result.transcript.trim().isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
                       '"${record.result.transcript.trim()}"',
                       style: const TextStyle(
-                        fontSize: 11,
+                        fontSize: AppFontSize.f11,
                         fontStyle: FontStyle.italic,
                         color: AppColors.textMedium,
                       ),

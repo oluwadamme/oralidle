@@ -21,64 +21,76 @@ class AppTheme {
   static ThemeData get dark {
     final base = ThemeData.dark(useMaterial3: true);
 
-    final textTheme = GoogleFonts.manropeTextTheme(base.textTheme)
+    final textTheme = GoogleFonts.bricolageGrotesqueTextTheme(base.textTheme)
         .copyWith(
           // Display — Bricolage Grotesque
           displayLarge: GoogleFonts.bricolageGrotesque(
-              fontSize: 40,
-              fontWeight: FontWeight.w700,
+            fontSize: AppFontSize.f40,
+            fontWeight: AppFontWeight.w700,
               letterSpacing: -0.8,
               color: AppColors.ink),
           displayMedium: GoogleFonts.bricolageGrotesque(
-              fontSize: 34, fontWeight: FontWeight.w700, color: AppColors.ink),
+            fontSize: AppFontSize.f34,
+            fontWeight: AppFontWeight.w700,
+            color: AppColors.ink,
+          ),
           headlineLarge: GoogleFonts.bricolageGrotesque(
-              fontSize: 32,
-              fontWeight: FontWeight.w700,
+            fontSize: AppFontSize.f32,
+            fontWeight: AppFontWeight.w700,
               letterSpacing: -0.5,
               color: AppColors.ink),
           headlineMedium: GoogleFonts.bricolageGrotesque(
-              fontSize: 24, fontWeight: FontWeight.w600, color: AppColors.ink),
+            fontSize: AppFontSize.f24,
+            fontWeight: AppFontWeight.w600,
+            color: AppColors.ink,
+          ),
           headlineSmall: GoogleFonts.bricolageGrotesque(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
+            fontSize: AppFontSize.f22,
+            fontWeight: AppFontWeight.w600,
               letterSpacing: -0.25,
               color: AppColors.ink),
           titleLarge: GoogleFonts.bricolageGrotesque(
-              fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.ink),
+            fontSize: AppFontSize.f18,
+            fontWeight: AppFontWeight.w600,
+            color: AppColors.ink,
+          ),
           titleMedium: GoogleFonts.bricolageGrotesque(
-              fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.ink),
+            fontSize: AppFontSize.f16,
+            fontWeight: AppFontWeight.w600,
+            color: AppColors.ink,
+          ),
           titleSmall: GoogleFonts.bricolageGrotesque(
-              fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink),
-          // Body — Manrope
-          bodyLarge: GoogleFonts.manrope(
-              fontSize: 16, height: 1.55, color: AppColors.ink),
-          bodyMedium: GoogleFonts.manrope(
-              fontSize: 14, height: 1.5, color: AppColors.inkMuted),
-          bodySmall: GoogleFonts.manrope(
-              fontSize: 12, height: 1.5, color: AppColors.inkMuted),
+            fontSize: AppFontSize.f14,
+            fontWeight: AppFontWeight.w600,
+            color: AppColors.ink,
+          ),
+          // Body — bricolageGrotesque
+          bodyLarge: GoogleFonts.bricolageGrotesque(fontSize: AppFontSize.f16, height: 1.55, color: AppColors.ink),
+          bodyMedium: GoogleFonts.bricolageGrotesque(fontSize: AppFontSize.f14, height: 1.5, color: AppColors.inkMuted),
+          bodySmall: GoogleFonts.bricolageGrotesque(fontSize: AppFontSize.f12, height: 1.5, color: AppColors.inkMuted),
           // Readouts — IBM Plex Mono, tabular
-          labelLarge: GoogleFonts.ibmPlexMono(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+          labelLarge: GoogleFonts.bricolageGrotesque(
+            fontSize: AppFontSize.f14,
+            fontWeight: AppFontWeight.w500,
               fontFeatures: _tabular,
               color: AppColors.ink),
-          labelMedium: GoogleFonts.ibmPlexMono(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+          labelMedium: GoogleFonts.bricolageGrotesque(
+            fontSize: AppFontSize.f12,
+            fontWeight: AppFontWeight.w500,
               letterSpacing: 0.7,
               fontFeatures: _tabular,
               color: AppColors.inkMuted),
-          labelSmall: GoogleFonts.ibmPlexMono(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
+          labelSmall: GoogleFonts.bricolageGrotesque(
+            fontSize: AppFontSize.f11,
+            fontWeight: AppFontWeight.w500,
               fontFeatures: _tabular,
               color: AppColors.inkMuted),
         )
         .apply(bodyColor: AppColors.ink, displayColor: AppColors.ink);
 
-    // Manrope, not Bricolage: a display face does not belong on a control.
+    // bricolageGrotesque, not Bricolage: a display face does not belong on a control.
     final controlLabel =
-        GoogleFonts.manrope(fontSize: 15, fontWeight: FontWeight.w600);
+        GoogleFonts.bricolageGrotesque(fontSize: AppFontSize.f15, fontWeight: AppFontWeight.w600);
 
     return base.copyWith(
       colorScheme: const ColorScheme.dark(
@@ -114,8 +126,8 @@ class AppTheme {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         titleTextStyle: GoogleFonts.bricolageGrotesque(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
+          fontSize: AppFontSize.f20,
+          fontWeight: AppFontWeight.w700,
           color: AppColors.ink,
         ),
       ),
@@ -194,14 +206,11 @@ class AppTheme {
         indicatorShape:
             const RoundedRectangleBorder(borderRadius: Radii.pillAll),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        // An unselected tab is neither disabled nor a placeholder, so it gets
-        // inkMuted (8.49:1) rather than inkFaint.
         labelTextStyle: WidgetStateProperty.resolveWith(
-          (states) => GoogleFonts.manrope(
-            fontSize: 11,
+          (states) => GoogleFonts.bricolageGrotesque(
+            fontSize: AppFontSize.f11,
             fontWeight: states.contains(WidgetState.selected)
-                ? FontWeight.w600
-                : FontWeight.w500,
+                ? AppFontWeight.w600 : AppFontWeight.w500,
             color: states.contains(WidgetState.selected)
                 ? AppColors.ink
                 : AppColors.inkMuted,

@@ -41,7 +41,7 @@ extension AppText on BuildContext {
   /// so it still fits a phone in landscape. (§7, §11)
   TextStyle get timer => _t.labelLarge!.copyWith(
         fontSize: isShort ? 44 : 56,
-        fontWeight: FontWeight.w500,
+        fontWeight: AppFontWeight.w500,
         letterSpacing: -2,
         height: 1,
         color: AppColors.ink,

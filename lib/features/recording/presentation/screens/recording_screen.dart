@@ -7,6 +7,7 @@ import '../../providers/recording_provider.dart';
 import '../widgets/waveform_animation.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/pressable.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/services/speech/speech_providers.dart';
 import '../../../../core/services/speech/speech_recognition_service.dart';
@@ -78,7 +79,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
             const Positioned(
               bottom: 80,
               left: -60,
-              child: AmbientOrb(color: AppColors.amber, size: 200),
+              child: AmbientOrb(color: AppColors.caution, size: 200),
             ),
             SafeArea(
               child: Column(
@@ -100,8 +101,8 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                             'Oralidle',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                              fontSize: AppFontSize.f16,
+                              fontWeight: AppFontWeight.w700,
                               color: AppColors.textDark,
                             ),
                           ),
@@ -124,10 +125,10 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.amber.withValues(alpha: 0.12),
+                              color: AppColors.caution.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: AppColors.amber.withValues(alpha: 0.35),
+                                color: AppColors.caution.withValues(alpha: 0.35),
                               ),
                             ),
                             child: Row(
@@ -138,16 +139,16 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                                   height: 6,
                                   decoration: const BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: AppColors.amber,
+                                    color: AppColors.caution,
                                   ),
                                 ),
                                 const SizedBox(width: 7),
                                 Text(
                                   widget.topic.category.toUpperCase(),
                                   style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.amber,
+                                    fontSize: AppFontSize.f11,
+                                    fontWeight: AppFontWeight.w700,
+                                    color: AppColors.caution,
                                     letterSpacing: 0.8,
                                   ),
                                 ),
@@ -161,8 +162,8 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                             widget.topic.title,
                             textAlign: TextAlign.center,
                             style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
+                              fontSize: AppFontSize.f20,
+                              fontWeight: AppFontWeight.w700,
                               color: AppColors.textDark,
                               height: 1.35,
                             ),
@@ -189,7 +190,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                                   _statusLabel(state, engineState),
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: AppFontSize.f12,
                                     color:
                                         state.isRecording || state.isFinalising
                                         ? AppColors.primary
@@ -206,7 +207,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                             '$minutes:${seconds.toString().padLeft(2, '0')}',
                             style: TextStyle(
                               fontSize: context.isShort ? 52 : 72,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: AppFontWeight.w800,
                               color: AppColors.textDark,
                               letterSpacing: -3,
                               height: 1,
@@ -218,7 +219,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                                 ? 'Min 1:00 to stop'
                                 : 'Tap the mic to stop',
                             style: const TextStyle(
-                              fontSize: 13,
+                              fontSize: AppFontSize.f13,
                               color: AppColors.textMedium,
                             ),
                           ),
@@ -252,7 +253,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                                 child: Text(
                                   state.transcript,
                                   style: const TextStyle(
-                                    fontSize: 13,
+                                    fontSize: AppFontSize.f13,
                                     color: AppColors.textMedium,
                                     height: 1.45,
                                   ),
@@ -264,7 +265,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                           const Spacer(),
 
                           // ── Mic / stop button ───────────────────────────
-                          GestureDetector(
+                          Pressable(
                             onTap: state.canStop && !state.isFinalising
                                 ? () => ref
                                       .read(recordingProvider.notifier)
@@ -296,8 +297,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                                     ? LucideIcons.square
                                     : LucideIcons.mic,
                                 color: state.canStop
-                                    ? Colors.white
-                                    : const Color(0xFF490080),
+                                    ? AppColors.ink : AppColors.onAction,
                                 size: 38,
                               ),
                             ),
@@ -310,7 +310,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                                 ? 'Tap to stop recording'
                                 : 'Keep speaking…',
                             style: const TextStyle(
-                              fontSize: 13,
+                              fontSize: AppFontSize.f13,
                               color: AppColors.textMedium,
                             ),
                           ),

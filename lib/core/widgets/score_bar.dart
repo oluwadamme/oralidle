@@ -27,8 +27,8 @@ class ScoreBar extends StatelessWidget {
                 child: Text(
                   label,
                   style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                    fontSize: AppFontSize.f13,
+                    fontWeight: AppFontWeight.w600,
                     color: AppColors.textDark,
                   ),
                 ),
@@ -36,8 +36,8 @@ class ScoreBar extends StatelessWidget {
               Text(
                 '$score%',
                 style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                  fontSize: AppFontSize.f13,
+                  fontWeight: AppFontWeight.w700,
                   color: color,
                 ),
               ),
@@ -55,13 +55,6 @@ class ScoreBar extends StatelessWidget {
                     height: 6,
                     decoration: BoxDecoration(
                       color: color,
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withValues(alpha: 0.5),
-                          blurRadius: 6,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
                     ),
                   ),
                 ),

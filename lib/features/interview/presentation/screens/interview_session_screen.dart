@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/pressable.dart';
 import '../../../recording/presentation/widgets/waveform_animation.dart';
 import '../../../recording/providers/recording_provider.dart';
 import '../../data/models/interview_models.dart';
@@ -61,7 +62,7 @@ class _InterviewSessionScreenState
             const Positioned(
               bottom: 80,
               left: -60,
-              child: AmbientOrb(color: AppColors.amber, size: 200),
+              child: AmbientOrb(color: AppColors.caution, size: 200),
             ),
             SafeArea(
               child: Column(
@@ -102,8 +103,8 @@ class _InterviewSessionScreenState
                 const Text(
                   'Mock Interview',
                   style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+                    fontSize: AppFontSize.f15,
+                    fontWeight: AppFontWeight.w700,
                     color: AppColors.textDark,
                   ),
                 ),
@@ -111,7 +112,7 @@ class _InterviewSessionScreenState
                   Text(
                     'Q$current of $total  ·  ${widget.setup.mode.label}',
                     style: const TextStyle(
-                      fontSize: 11,
+                      fontSize: AppFontSize.f11,
                       color: AppColors.textMedium,
                     ),
                   ),
@@ -242,15 +243,15 @@ class _LoadingView extends StatelessWidget {
           Text(
             'Preparing your interview…',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontSize: AppFontSize.f16,
+              fontWeight: AppFontWeight.w600,
               color: AppColors.textDark,
             ),
           ),
           SizedBox(height: 8),
           Text(
             'Reading your CV and crafting questions',
-            style: TextStyle(fontSize: 13, color: AppColors.textMedium),
+            style: TextStyle(fontSize: AppFontSize.f13, color: AppColors.textMedium),
           ),
         ],
       ),
@@ -284,7 +285,7 @@ class _ErrorView extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: AppFontSize.f14,
                 color: AppColors.textDark,
                 height: 1.5,
               ),
@@ -349,8 +350,8 @@ class _QuestionView extends ConsumerWidget {
             child: Text(
               question?.text ?? '',
               style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
+                fontSize: AppFontSize.f17,
+                fontWeight: AppFontWeight.w600,
                 color: AppColors.textDark,
                 height: 1.5,
               ),
@@ -374,7 +375,7 @@ class _QuestionView extends ConsumerWidget {
                 child: Text(
                   transcript,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: AppFontSize.f13,
                     color: AppColors.textMedium,
                     height: 1.45,
                   ),
@@ -413,7 +414,7 @@ class _QuestionView extends ConsumerWidget {
                       : 'Tap the mic to answer',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppFontSize.f12,
                     color: isRecording || isFinalising
                         ? AppColors.primary
                         : AppColors.outline,
@@ -432,7 +433,7 @@ class _QuestionView extends ConsumerWidget {
           const SizedBox(height: 20),
 
           if (!isBusy)
-            GestureDetector(
+            Pressable(
               onTap: isRecording
                   ? () => ref.read(interviewProvider.notifier).stopAnswering()
                   : () => ref.read(interviewProvider.notifier).startAnswering(),
@@ -443,18 +444,10 @@ class _QuestionView extends ConsumerWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isRecording ? AppColors.poor : AppColors.primary,
-                  boxShadow: [
-                    BoxShadow(
-                      color: (isRecording ? AppColors.poor : AppColors.primary)
-                          .withValues(alpha: 0.45),
-                      blurRadius: 28,
-                      spreadRadius: 5,
-                    ),
-                  ],
                 ),
                 child: Icon(
                   isRecording ? LucideIcons.square : LucideIcons.mic,
-                  color: isRecording ? Colors.white : AppColors.onPrimary,
+                  color: isRecording ? AppColors.ink : AppColors.onPrimary,
                   size: 34,
                 ),
               ),
@@ -481,7 +474,7 @@ class _QuestionView extends ConsumerWidget {
                 : isRecording
                 ? 'Tap to stop when done'
                 : 'Tap to start answering',
-            style: const TextStyle(fontSize: 13, color: AppColors.textMedium),
+            style: const TextStyle(fontSize: AppFontSize.f13, color: AppColors.textMedium),
           ),
 
           const SizedBox(height: 32),
@@ -532,8 +525,8 @@ class _FeedbackView extends StatelessWidget {
             child: Text(
               turn.question.text,
               style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
+                fontSize: AppFontSize.f15,
+                fontWeight: AppFontWeight.w600,
                 color: AppColors.textDark,
                 height: 1.45,
               ),
@@ -565,8 +558,8 @@ class _FeedbackView extends StatelessWidget {
                           const Text(
                             'ANSWER QUALITY',
                             style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
+                              fontSize: AppFontSize.f10,
+                              fontWeight: AppFontWeight.w700,
                               color: AppColors.textMedium,
                               letterSpacing: 0.8,
                             ),
@@ -575,8 +568,8 @@ class _FeedbackView extends StatelessWidget {
                           Text(
                             _scoreLabel(evaluation.contentScore),
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                              fontSize: AppFontSize.f16,
+                              fontWeight: AppFontWeight.w700,
                               color: scoreColor,
                             ),
                           ),
@@ -601,7 +594,7 @@ class _FeedbackView extends StatelessWidget {
                       child: Text(
                         evaluation.feedback,
                         style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: AppFontSize.f14,
                           color: AppColors.textDark,
                           height: 1.55,
                         ),
@@ -627,8 +620,8 @@ class _FeedbackView extends StatelessWidget {
                       child: Text(
                         'YOUR ANSWER',
                         style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
+                          fontSize: AppFontSize.f10,
+                          fontWeight: AppFontWeight.w700,
                           color: AppColors.textMedium,
                           letterSpacing: 0.8,
                         ),
@@ -659,9 +652,9 @@ class _FeedbackView extends StatelessWidget {
                             Text(
                               'Recording',
                               style: TextStyle(
-                                fontSize: 9,
+                                fontSize: AppFontSize.f9,
                                 color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: AppFontWeight.w600,
                               ),
                             ),
                           ],
@@ -679,7 +672,7 @@ class _FeedbackView extends StatelessWidget {
                 Text(
                   turn.transcript,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: AppFontSize.f13,
                     color: AppColors.textMedium,
                     height: 1.5,
                     fontStyle: FontStyle.italic,
@@ -698,24 +691,13 @@ class _FeedbackView extends StatelessWidget {
           const SizedBox(height: 28),
 
           // ── Next / results button ─────────────────────────────────────────
-          GestureDetector(
+          Pressable(
             onTap: onNext,
             child: Container(
               height: 52,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primaryLight, AppColors.primary],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: AppColors.action,
                 borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.35),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -732,8 +714,8 @@ class _FeedbackView extends StatelessWidget {
                     isFinal ? 'See Final Results' : 'Next Question',
                     style: const TextStyle(
                       color: AppColors.onPrimary,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15,
+                      fontWeight: AppFontWeight.w800,
+                      fontSize: AppFontSize.f15,
                     ),
                   ),
                 ],
@@ -784,8 +766,8 @@ class _TypeBadge extends StatelessWidget {
             Text(
               type.label.toUpperCase(),
               style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
+                fontSize: AppFontSize.f11,
+                fontWeight: AppFontWeight.w700,
                 color: color,
                 letterSpacing: 0.8,
               ),
@@ -954,7 +936,7 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
           SizedBox(width: 6),
           Text(
             'Playback unavailable',
-            style: TextStyle(fontSize: 12, color: AppColors.textMedium),
+            style: TextStyle(fontSize: AppFontSize.f12, color: AppColors.textMedium),
           ),
         ],
       );
@@ -984,7 +966,7 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
 
     return Row(
       children: [
-        GestureDetector(
+        Pressable(
           onTap: _togglePlay,
           child: Container(
             width: 44,
@@ -1043,14 +1025,14 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
                     Text(
                       _fmt(_position),
                       style: const TextStyle(
-                        fontSize: 10,
+                        fontSize: AppFontSize.f10,
                         color: AppColors.textMedium,
                       ),
                     ),
                     Text(
                       _fmt(_duration),
                       style: const TextStyle(
-                        fontSize: 10,
+                        fontSize: AppFontSize.f10,
                         color: AppColors.textMedium,
                       ),
                     ),
@@ -1088,9 +1070,8 @@ class _ModelAnswerCardState extends State<_ModelAnswerCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          GestureDetector(
+          Pressable(
             onTap: () => setState(() => _expanded = !_expanded),
-            behavior: HitTestBehavior.opaque,
             child: Row(
               children: [
                 Container(
@@ -1111,8 +1092,8 @@ class _ModelAnswerCardState extends State<_ModelAnswerCard> {
                   child: Text(
                     "ALEX'S IDEAL ANSWER",
                     style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
+                      fontSize: AppFontSize.f10,
+                      fontWeight: AppFontWeight.w700,
                       color: AppColors.primary,
                       letterSpacing: 0.8,
                     ),
@@ -1144,7 +1125,7 @@ class _ModelAnswerCardState extends State<_ModelAnswerCard> {
                         Text(
                           widget.answer,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: AppFontSize.f14,
                             color: AppColors.textDark,
                             height: 1.65,
                           ),

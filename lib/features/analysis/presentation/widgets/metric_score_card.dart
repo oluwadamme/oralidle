@@ -29,14 +29,14 @@ class MetricScoreCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             '$score',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color),
+            style: TextStyle(fontSize: AppFontSize.f22, fontWeight: AppFontWeight.w800, color: color),
           ),
           const SizedBox(height: 2),
           Text(
             label,
             textAlign: TextAlign.center,
             style: const TextStyle(
-                fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textMedium),
+                fontSize: AppFontSize.f11, fontWeight: AppFontWeight.w500, color: AppColors.textMedium),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),

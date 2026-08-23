@@ -23,7 +23,7 @@ class FillerWordsBarChart extends StatelessWidget {
             Icon(Icons.check_circle_rounded, color: AppColors.good, size: 18),
             SizedBox(width: 8),
             Text('No filler words detected! Great job.',
-                style: TextStyle(color: AppColors.good, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: AppColors.good, fontWeight: AppFontWeight.w600)),
           ],
         ),
       );
@@ -50,7 +50,7 @@ class FillerWordsBarChart extends StatelessWidget {
                       padding: const EdgeInsets.only(right: 8),
                       child: Text(
                         '"${sorted[idx].key}"',
-                        style: const TextStyle(fontSize: 12),
+                        style: const TextStyle(fontSize: AppFontSize.f12),
                         textAlign: TextAlign.right,
                       ),
                     );
@@ -65,7 +65,7 @@ class FillerWordsBarChart extends StatelessWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 getTitlesWidget: (value, meta) =>
-                    Text('${value.toInt()}×', style: const TextStyle(fontSize: 10)),
+                    Text('${value.toInt()}×', style: const TextStyle(fontSize: AppFontSize.f10)),
               ),
             ),
           ),

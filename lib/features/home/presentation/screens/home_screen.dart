@@ -11,6 +11,7 @@ import '../../../analysis/data/models/session_record.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_button.dart';
+import '../../../../core/widgets/pressable.dart';
 import '../../../../core/widgets/ad_banner_widget.dart';
 import '../../../../core/utils/responsive.dart';
 
@@ -96,7 +97,7 @@ class _WebHome extends ConsumerWidget {
         const Positioned(
           bottom: 60,
           left: -60,
-          child: AmbientOrb(color: AppColors.amber, size: 180),
+          child: AmbientOrb(color: AppColors.caution, size: 180),
         ),
         SafeArea(
           child: SingleChildScrollView(
@@ -133,8 +134,8 @@ class _WebHome extends ConsumerWidget {
                           child: Text(
                             level,
                             style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                              fontSize: AppFontSize.f12,
+                              fontWeight: AppFontWeight.w600,
                               color: AppColors.primary,
                             ),
                           ),
@@ -161,10 +162,10 @@ class _WebHome extends ConsumerWidget {
                           vertical: 7,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.amber.withValues(alpha: 0.1),
+                          color: AppColors.caution.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: AppColors.amber.withValues(alpha: 0.3),
+                            color: AppColors.caution.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
@@ -172,16 +173,16 @@ class _WebHome extends ConsumerWidget {
                           children: [
                             const Icon(
                               LucideIcons.flame,
-                              color: AppColors.amber,
+                              color: AppColors.caution,
                               size: 15,
                             ),
                             const SizedBox(width: 5),
                             Text(
                               '$streak-day streak',
                               style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.amber,
+                                fontSize: AppFontSize.f13,
+                                fontWeight: AppFontWeight.w600,
+                                color: AppColors.caution,
                               ),
                             ),
                           ],
@@ -288,7 +289,7 @@ class _WebHome extends ConsumerWidget {
                                   const Text(
                                     'No sessions yet',
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: AppFontWeight.w600,
                                       color: AppColors.textDark,
                                     ),
                                   ),
@@ -297,7 +298,7 @@ class _WebHome extends ConsumerWidget {
                                     'Complete your first session to see stats here.',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      fontSize: 13,
+                                      fontSize: AppFontSize.f13,
                                       color: AppColors.textMedium,
                                     ),
                                   ),
@@ -338,7 +339,7 @@ class _WebHome extends ConsumerWidget {
                                       const Text(
                                         'AI analysis will coach your fluency, pace, and filler word frequency in real-time.',
                                         style: TextStyle(
-                                          fontSize: 13,
+                                          fontSize: AppFontSize.f13,
                                           color: AppColors.textMedium,
                                           height: 1.4,
                                         ),
@@ -426,8 +427,8 @@ class _SessionsTable extends StatelessWidget {
                 child: Text(
                   'SESSION',
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    fontSize: AppFontSize.f11,
+                    fontWeight: AppFontWeight.w700,
                     color: AppColors.outline,
                     letterSpacing: 0.5,
                   ),
@@ -438,8 +439,8 @@ class _SessionsTable extends StatelessWidget {
                 child: Text(
                   'DATE',
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    fontSize: AppFontSize.f11,
+                    fontWeight: AppFontWeight.w700,
                     color: AppColors.outline,
                     letterSpacing: 0.5,
                   ),
@@ -450,8 +451,8 @@ class _SessionsTable extends StatelessWidget {
                 child: Text(
                   'DURATION',
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    fontSize: AppFontSize.f11,
+                    fontWeight: AppFontWeight.w700,
                     color: AppColors.outline,
                     letterSpacing: 0.5,
                   ),
@@ -462,8 +463,8 @@ class _SessionsTable extends StatelessWidget {
                 child: Text(
                   'SCORE',
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    fontSize: AppFontSize.f11,
+                    fontWeight: AppFontWeight.w700,
                     color: AppColors.outline,
                     letterSpacing: 0.5,
                   ),
@@ -499,8 +500,8 @@ class _SessionsTable extends StatelessWidget {
                     child: Text(
                       s.topicTitle,
                       style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontSize: AppFontSize.f14,
+                        fontWeight: AppFontWeight.w500,
                         color: AppColors.textDark,
                       ),
                       maxLines: 1,
@@ -512,7 +513,7 @@ class _SessionsTable extends StatelessWidget {
                     child: Text(
                       DateFormat('MMM d, y').format(s.timestamp),
                       style: const TextStyle(
-                        fontSize: 13,
+                        fontSize: AppFontSize.f13,
                         color: AppColors.textMedium,
                       ),
                     ),
@@ -522,7 +523,7 @@ class _SessionsTable extends StatelessWidget {
                     child: Text(
                       s.formattedDuration,
                       style: const TextStyle(
-                        fontSize: 13,
+                        fontSize: AppFontSize.f13,
                         color: AppColors.textMedium,
                       ),
                     ),
@@ -546,8 +547,8 @@ class _SessionsTable extends StatelessWidget {
                           child: Text(
                             '$score',
                             style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                              fontSize: AppFontSize.f13,
+                              fontWeight: AppFontWeight.w700,
                               color: color,
                             ),
                           ),
@@ -597,14 +598,14 @@ class _StatRow extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(fontSize: 13, color: AppColors.textMedium),
+            style: const TextStyle(fontSize: AppFontSize.f13, color: AppColors.textMedium),
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
+            fontSize: AppFontSize.f16,
+            fontWeight: AppFontWeight.w700,
             color: color,
           ),
         ),
@@ -642,7 +643,7 @@ class _MobileHome extends ConsumerWidget {
         const Positioned(
           top: 120,
           left: -60,
-          child: AmbientOrb(color: AppColors.amber, size: 140),
+          child: AmbientOrb(color: AppColors.caution, size: 140),
         ),
         CustomScrollView(
           slivers: [
@@ -681,14 +682,7 @@ class _MobileHome extends ConsumerWidget {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppColors.primary.withValues(alpha: 0.25),
-                                  AppColors.primaryLight.withValues(
-                                    alpha: 0.15,
-                                  ),
-                                ],
-                              ),
+                              color: AppColors.primary.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: AppColors.primary.withValues(alpha: 0.4),
@@ -697,8 +691,8 @@ class _MobileHome extends ConsumerWidget {
                             child: Text(
                               level,
                               style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
+                                fontSize: AppFontSize.f12,
+                                fontWeight: AppFontWeight.w600,
                                 color: AppColors.primary,
                               ),
                             ),
@@ -713,10 +707,10 @@ class _MobileHome extends ConsumerWidget {
                             vertical: 5,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.amber.withValues(alpha: 0.12),
+                            color: AppColors.caution.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: AppColors.amber.withValues(alpha: 0.3),
+                              color: AppColors.caution.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
@@ -724,16 +718,16 @@ class _MobileHome extends ConsumerWidget {
                             children: [
                               const Icon(
                                 LucideIcons.flame,
-                                color: AppColors.amber,
+                                color: AppColors.caution,
                                 size: 15,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 '$streak-day streak — keep it up!',
                                 style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.amber,
+                                  fontSize: AppFontSize.f12,
+                                  fontWeight: AppFontWeight.w600,
+                                  color: AppColors.caution,
                                 ),
                               ),
                             ],
@@ -744,7 +738,7 @@ class _MobileHome extends ConsumerWidget {
                         label: 'Practice',
                         icon: LucideIcons.mic,
                         height: 60,
-                        fontSize: 17,
+                        fontSize: AppFontSize.f17,
                         onTap: () => context.go(AppRoutes.topics),
                       ),
                       const SizedBox(height: 24),
@@ -862,15 +856,15 @@ class _MiniStatCard extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
+              fontSize: AppFontSize.f20,
+              fontWeight: AppFontWeight.w800,
               color: color,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(fontSize: 11, color: AppColors.textMedium),
+            style: const TextStyle(fontSize: AppFontSize.f11, color: AppColors.textMedium),
           ),
         ],
       ),
@@ -919,29 +913,20 @@ class _EmptyState extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 20),
-          GestureDetector(
+          Pressable(
             onTap: onStart,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primaryLight, AppColors.primary],
-                ),
+                color: AppColors.action,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 14,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
               child: const Text(
                 'Pick Your First Topic',
                 style: TextStyle(
-                  color: Color(0xFF490080),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
+                  color: AppColors.onAction,
+                  fontWeight: AppFontWeight.w700,
+                  fontSize: AppFontSize.f15,
                 ),
               ),
             ),

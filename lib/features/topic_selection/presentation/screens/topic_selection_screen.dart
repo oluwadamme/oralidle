@@ -6,6 +6,7 @@ import '../../data/models/topic.dart';
 import '../../providers/topic_provider.dart';
 import '../widgets/topic_card.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/widgets/pressable.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/constants/topics.dart';
 
@@ -46,7 +47,7 @@ class TopicSelectionScreen extends ConsumerWidget {
             // ── Surprise Me ────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: GestureDetector(
+              child: Pressable(
                 onTap: () {
                   final topic = randomTopic();
                   _navigate(context, ref, topic);
@@ -54,35 +55,24 @@ class TopicSelectionScreen extends ConsumerWidget {
                 child: Container(
                   height: 52,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primaryLight, AppColors.primary],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: AppColors.action,
                     borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
                   ),
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         LucideIcons.shuffle,
-                        color: Color(0xFF490080),
+                        color: AppColors.onAction,
                         size: 20,
                       ),
                       SizedBox(width: 8),
                       Text(
                         'Surprise Me!',
                         style: TextStyle(
-                          color: Color(0xFF490080),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
+                          color: AppColors.onAction,
+                          fontSize: AppFontSize.f15,
+                          fontWeight: AppFontWeight.w700,
                         ),
                       ),
                     ],
@@ -187,7 +177,7 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Pressable(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -198,22 +188,13 @@ class _CategoryChip extends StatelessWidget {
           border: Border.all(
             color: selected ? color : color.withValues(alpha: 0.25),
           ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.25),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
-              : null,
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: selected ? const Color(0xFF490080) : color,
+            fontSize: AppFontSize.f13,
+            fontWeight: AppFontWeight.w600,
+            color: selected ? AppColors.onAction : color,
           ),
         ),
       ),

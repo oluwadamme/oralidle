@@ -57,11 +57,15 @@ void main() {
 
   group('typography', () {
     test('no inline font sizing', () {
-      _expectNoMatch(sources, RegExp(r'fontSize:\s*\d'));
+      _expectOnlyIn(sources, RegExp(r'fontSize:\s*\d'), _typographyAllowlist);
     });
 
     test('no inline font weight', () {
-      _expectNoMatch(sources, RegExp(r'fontWeight:\s*FontWeight\.'));
+      _expectOnlyIn(
+        sources,
+        RegExp(r'fontWeight:\s*FontWeight\.'),
+        _typographyAllowlist,
+      );
     });
   });
 
@@ -88,6 +92,12 @@ const _gradientAllowlist = <String>{
 /// `Pressable` is the one place allowed to reach for a raw gesture primitive.
 const _gestureAllowlist = <String>{
   'lib/core/widgets/pressable.dart',
+};
+
+/// §7: ThemeData type scale definitions.
+const _typographyAllowlist = <String>{
+  'lib/core/theme/app_theme.dart',
+  'lib/core/theme/text_styles.dart',
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

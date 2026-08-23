@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/widgets/pressable.dart';
 import '../../core/utils/responsive.dart';
 
 const _kSidebarWidth = 220.0;
@@ -85,8 +86,8 @@ class _SideNav extends StatelessWidget {
                     child: Text(
                       'Oralidle',
                       style: GoogleFonts.bricolageGrotesque(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
+                        fontSize: AppFontSize.f20,
+                        fontWeight: AppFontWeight.w700,
                         letterSpacing: -0.5,
                         color: AppColors.ink,
                       ),
@@ -138,27 +139,16 @@ class _SideNav extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primaryLight, AppColors.primary],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: AppColors.action,
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
-                      blurRadius: 12,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
                 ),
                 alignment: Alignment.center,
                 child: const Text(
                   'Upgrade to Pro',
                   style: TextStyle(
-                    color: Color(0xFF490080),
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
+                    color: AppColors.onAction,
+                    fontWeight: AppFontWeight.w700,
+                    fontSize: AppFontSize.f13,
                   ),
                 ),
               ),
@@ -188,9 +178,8 @@ class _SideNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Pressable(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
@@ -213,8 +202,8 @@ class _SideNavItem extends StatelessWidget {
               child: Text(
                 label,
                 style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                  fontSize: AppFontSize.f14,
+                  fontWeight: active ? AppFontWeight.w600 : AppFontWeight.w400,
                   color: active ? AppColors.primary : AppColors.textMedium,
                 ),
               ),
@@ -245,52 +234,47 @@ class _GlassNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            border: Border(top: BorderSide(color: AppColors.cardBorder)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _NavItem(
-                    icon: LucideIcons.home,
-                    activeIcon: LucideIcons.home,
-                    label: 'Home',
-                    active: currentIndex == 0,
-                    onTap: () => onTap(0),
-                  ),
-                  _NavItem(
-                    icon: LucideIcons.mic,
-                    activeIcon: LucideIcons.mic,
-                    label: 'Practice',
-                    active: currentIndex == 1,
-                    onTap: () => onTap(1),
-                  ),
-                  _NavItem(
-                    icon: LucideIcons.barChart2,
-                    activeIcon: LucideIcons.barChart2,
-                    label: 'Insights',
-                    active: currentIndex == 2,
-                    onTap: () => onTap(2),
-                  ),
-                  _NavItem(
-                    icon: LucideIcons.userCheck,
-                    activeIcon: LucideIcons.userCheck,
-                    label: 'Interview',
-                    active: currentIndex == 3,
-                    onTap: () => onTap(3),
-                  ),
-                ],
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.cardBorder)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _NavItem(
+                icon: LucideIcons.home,
+                activeIcon: LucideIcons.home,
+                label: 'Home',
+                active: currentIndex == 0,
+                onTap: () => onTap(0),
               ),
-            ),
+              _NavItem(
+                icon: LucideIcons.mic,
+                activeIcon: LucideIcons.mic,
+                label: 'Practice',
+                active: currentIndex == 1,
+                onTap: () => onTap(1),
+              ),
+              _NavItem(
+                icon: LucideIcons.barChart2,
+                activeIcon: LucideIcons.barChart2,
+                label: 'Insights',
+                active: currentIndex == 2,
+                onTap: () => onTap(2),
+              ),
+              _NavItem(
+                icon: LucideIcons.userCheck,
+                activeIcon: LucideIcons.userCheck,
+                label: 'Interview',
+                active: currentIndex == 3,
+                onTap: () => onTap(3),
+              ),
+            ],
           ),
         ),
       ),
@@ -315,9 +299,8 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Pressable(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
@@ -339,8 +322,8 @@ class _NavItem extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 11,
-                fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                fontSize: AppFontSize.f11,
+                fontWeight: active ? AppFontWeight.w600 : AppFontWeight.w400,
                 color: active ? AppColors.primary : AppColors.outline,
               ),
             ),
