@@ -60,6 +60,7 @@ class Pressable extends StatelessWidget {
     Widget result = Material(
       type: MaterialType.transparency,
       child: InkWell(
+        excludeFromSemantics: true,
         onTap: onTap == null ? null : _handleTap,
         onLongPress: onLongPress,
         borderRadius: borderRadius,
@@ -78,21 +79,22 @@ class Pressable extends StatelessWidget {
       );
     }
 
+    if (padding != null) {
+      result = Padding(padding: padding!, child: result);
+    }
+
     if (tooltip != null) {
       result = Tooltip(message: tooltip!, child: result);
     }
 
-    return Padding(
-      padding: padding ?? EdgeInsets.zero,
-      child: Semantics(
-        container: true,
-        button: true,
-        enabled: _enabled,
-        selected: selected,
-        label: semanticLabel ?? tooltip,
-        hint: semanticHint,
-        child: result,
-      ),
+    return Semantics(
+      container: true,
+      button: true,
+      enabled: _enabled,
+      selected: selected,
+      label: semanticLabel ?? tooltip,
+      hint: semanticHint,
+      child: result,
     );
   }
 }
