@@ -9,6 +9,7 @@ import '../../../../core/services/speech/mic_permission.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
 import '../../../../core/widgets/gradient_button.dart';
+import '../../../../core/widgets/pressable.dart';
 import '../../data/models/interview_models.dart';
 import '../../providers/interview_history_provider.dart';
 import '../../../../core/utils/responsive.dart';
@@ -107,14 +108,14 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
               children: [
                 const Text(
                   'Paste your resume, project README, or candidate bio below:',
-                  style: TextStyle(fontSize: 13, color: AppColors.textMedium),
+                  style: TextStyle(fontSize: AppFontSize.f13, color: AppColors.textMedium),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: controller,
                   maxLines: 8,
                   minLines: 4,
-                  style: const TextStyle(fontSize: 13),
+                  style: const TextStyle(fontSize: AppFontSize.f13),
                   decoration: InputDecoration(
                     hintText: '# Project Overview\n\n## Architecture\nFlutter, Node.js, Gemini API...',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -180,7 +181,7 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
           const Positioned(
             bottom: 60,
             right: -80,
-            child: AmbientOrb(color: AppColors.amber, size: 220),
+            child: AmbientOrb(color: AppColors.caution, size: 220),
           ),
           SafeArea(
             child: LayoutBuilder(
@@ -229,8 +230,8 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
                       const Text(
                         'How it works',
                         style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                          fontSize: AppFontSize.f14,
+                          fontWeight: AppFontWeight.w700,
                           color: AppColors.textDark,
                         ),
                       ),
@@ -349,12 +350,6 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
   }
 }
 
-// ── Permission banner ─────────────────────────────────────────────────────────
-//
-// Watches micPermissionProvider (autoDispose FutureProvider) and shows a
-// non-blocking warning when microphone access is not yet granted.
-// Shown as a no-op empty box when permission is granted or still loading,
-// so it has zero visual footprint in the happy path.
 
 class _PermissionBanner extends ConsumerWidget {
   final VoidCallback onGrant;
@@ -379,16 +374,16 @@ class _PermissionBanner extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.amber.withValues(alpha: 0.1),
+            color: AppColors.caution.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.amber.withValues(alpha: 0.35)),
+            border: Border.all(color: AppColors.caution.withValues(alpha: 0.35)),
           ),
           child: Row(
             children: [
               const Icon(
                 LucideIcons.micOff,
                 size: 16,
-                color: AppColors.amber,
+                color: AppColors.caution,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -397,21 +392,21 @@ class _PermissionBanner extends ConsumerWidget {
                       ? 'Microphone access was denied. Enable it in Settings to use voice answers.'
                       : 'Microphone access is needed for voice answers.',
                   style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.amber,
+                    fontSize: AppFontSize.f13,
+                    color: AppColors.caution,
                     height: 1.4,
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              GestureDetector(
+              Pressable(
                 onTap: isPermanent ? MicPermissions.openSettings : onGrant,
                 child: Text(
                   isPermanent ? 'Settings' : 'Grant',
                   style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.amber,
+                    fontSize: AppFontSize.f13,
+                    fontWeight: AppFontWeight.w700,
+                    color: AppColors.caution,
                   ),
                 ),
               ),
@@ -440,8 +435,8 @@ class _RecentSessionsSection extends StatelessWidget {
         const Text(
           'RECENT SESSIONS',
           style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
+            fontSize: AppFontSize.f11,
+            fontWeight: AppFontWeight.w700,
             color: AppColors.textMedium,
             letterSpacing: 1.0,
           ),
@@ -462,7 +457,7 @@ class _SessionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = AppColors.scoreColor(session.evaluation.overallScore);
 
-    return GestureDetector(
+    return Pressable(
       onTap: () => context.push(AppRoutes.interviewResults, extra: session),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
@@ -481,8 +476,8 @@ class _SessionRow extends StatelessWidget {
                 child: Text(
                   '${session.evaluation.overallScore}',
                   style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontSize: AppFontSize.f13,
+                    fontWeight: AppFontWeight.w800,
                     color: color,
                   ),
                 ),
@@ -496,8 +491,8 @@ class _SessionRow extends StatelessWidget {
                   Text(
                     session.mode.label,
                     style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontSize: AppFontSize.f13,
+                      fontWeight: AppFontWeight.w600,
                       color: AppColors.textDark,
                     ),
                   ),
@@ -505,7 +500,7 @@ class _SessionRow extends StatelessWidget {
                     '${session.turns.length} questions · '
                     '${DateFormat('MMM d').format(session.timestamp)}',
                     style: const TextStyle(
-                      fontSize: 11,
+                      fontSize: AppFontSize.f11,
                       color: AppColors.textMedium,
                     ),
                   ),
@@ -555,8 +550,8 @@ class _Header extends StatelessWidget {
               child: Text(
                 'Interview Prep',
                 style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
+                  fontSize: AppFontSize.f22,
+                  fontWeight: AppFontWeight.w800,
                   color: AppColors.textDark,
                 ),
               ),
@@ -567,7 +562,7 @@ class _Header extends StatelessWidget {
         const Text(
           'AI mock interviews personalised to your CV. Sharpen your answers, improve your delivery.',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: AppFontSize.f14,
             color: AppColors.textMedium,
             height: 1.5,
           ),
@@ -593,8 +588,8 @@ class _ModeSection extends StatelessWidget {
         const Text(
           'INTERVIEW TYPE',
           style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
+            fontSize: AppFontSize.f11,
+            fontWeight: AppFontWeight.w700,
             color: AppColors.textMedium,
             letterSpacing: 1.0,
           ),
@@ -631,9 +626,8 @@ class _ModeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Pressable(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(bottom: 10),
@@ -675,8 +669,8 @@ class _ModeCard extends StatelessWidget {
                   Text(
                     mode.label,
                     style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
+                      fontSize: AppFontSize.f15,
+                      fontWeight: AppFontWeight.w700,
                       color: isSelected
                           ? AppColors.primary
                           : AppColors.textDark,
@@ -686,7 +680,7 @@ class _ModeCard extends StatelessWidget {
                   Text(
                     mode.description,
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: AppFontSize.f12,
                       color: AppColors.textMedium,
                     ),
                   ),
@@ -727,8 +721,8 @@ class _CountSection extends StatelessWidget {
         const Text(
           'NUMBER OF QUESTIONS',
           style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
+            fontSize: AppFontSize.f11,
+            fontWeight: AppFontWeight.w700,
             color: AppColors.textMedium,
             letterSpacing: 1.0,
           ),
@@ -768,7 +762,7 @@ class _CountPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Pressable(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
@@ -789,8 +783,8 @@ class _CountPill extends StatelessWidget {
           '$count',
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontSize: AppFontSize.f16,
+            fontWeight: AppFontWeight.w800,
             color: isSelected ? AppColors.primary : AppColors.textMedium,
           ),
         ),
@@ -873,14 +867,14 @@ class _ContextDocumentSection extends StatelessWidget {
                   children: [
                     const Text(
                       'Interview Context (CV or Project README)',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textDark),
+                      style: TextStyle(fontSize: AppFontSize.f14, fontWeight: AppFontWeight.w700, color: AppColors.textDark),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       hasCustom
                           ? 'Questions will be generated based on your uploaded document'
                           : 'Currently using default sample CV (assets/cv.md)',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
+                      style: const TextStyle(fontSize: AppFontSize.f12, color: AppColors.textMedium),
                     ),
                   ],
                 ),
@@ -904,7 +898,7 @@ class _ContextDocumentSection extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Markdown (.md) or plain text (.txt) files are recommended for reduced token usage and optimal question tailoring.',
-                    style: TextStyle(fontSize: 12, color: AppColors.textDark, height: 1.35),
+                    style: TextStyle(fontSize: AppFontSize.f12, color: AppColors.textDark, height: 1.35),
                   ),
                 ),
               ],
@@ -930,14 +924,14 @@ class _ContextDocumentSection extends StatelessWidget {
                       children: [
                         Text(
                           fileName ?? 'Custom Document',
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark),
+                          style: const TextStyle(fontSize: AppFontSize.f13, fontWeight: AppFontWeight.w700, color: AppColors.textDark),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
                         Text(
                           '$wordCount words parsed',
-                          style: const TextStyle(fontSize: 11, color: AppColors.textMedium),
+                          style: const TextStyle(fontSize: AppFontSize.f11, color: AppColors.textMedium),
                         ),
                       ],
                     ),
@@ -959,7 +953,7 @@ class _ContextDocumentSection extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onUpload,
                   icon: const Icon(LucideIcons.upload, size: 16),
-                  label: Text(hasCustom ? 'Change File' : 'Upload File', style: const TextStyle(fontSize: 12)),
+                  label: Text(hasCustom ? 'Change File' : 'Upload File', style: const TextStyle(fontSize: AppFontSize.f12)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -967,7 +961,7 @@ class _ContextDocumentSection extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onPaste,
                   icon: const Icon(LucideIcons.fileEdit, size: 16),
-                  label: const Text('Paste Text', style: TextStyle(fontSize: 12)),
+                  label: const Text('Paste Text', style: TextStyle(fontSize: AppFontSize.f12)),
                 ),
               ),
             ],
@@ -1012,8 +1006,8 @@ class _HowItWorksStep extends StatelessWidget {
               child: Text(
                 number,
                 style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
+                  fontSize: AppFontSize.f11,
+                  fontWeight: AppFontWeight.w800,
                   color: AppColors.primary,
                 ),
               ),
@@ -1024,7 +1018,7 @@ class _HowItWorksStep extends StatelessWidget {
             child: Text(
               text,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: AppFontSize.f13,
                 color: AppColors.textMedium,
                 height: 1.4,
               ),

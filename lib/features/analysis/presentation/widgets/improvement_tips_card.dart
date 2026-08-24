@@ -69,9 +69,9 @@ class _TipRow extends StatelessWidget {
                 if (area.isNotEmpty)
                   Text(area,
                       style: TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.w700, color: color)),
+                          fontSize: AppFontSize.f12, fontWeight: AppFontWeight.w700, color: color)),
                 if (area.isNotEmpty) const SizedBox(height: 3),
-                Text(tip, style: const TextStyle(fontSize: 13, height: 1.4)),
+                Text(tip, style: const TextStyle(fontSize: AppFontSize.f13, height: 1.4)),
               ],
             ),
           ),

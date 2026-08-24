@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/pressable.dart';
 import '../../data/models/interview_models.dart';
 import '../utils/interview_ui_utils.dart';
 import '../../../../core/utils/responsive.dart';
@@ -237,8 +238,8 @@ class _OverallCard extends StatelessWidget {
           const Text(
             'OVERALL SCORE',
             style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
+              fontSize: AppFontSize.f11,
+              fontWeight: AppFontWeight.w700,
               color: AppColors.textMedium,
               letterSpacing: 1.0,
             ),
@@ -254,8 +255,8 @@ class _OverallCard extends StatelessWidget {
           Text(
             _overallLabel(eval.overallScore),
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+              fontSize: AppFontSize.f16,
+              fontWeight: AppFontWeight.w700,
               color: color,
             ),
           ),
@@ -420,9 +421,8 @@ class _TurnTileState extends State<_TurnTile> {
       ),
       child: Column(
         children: [
-          GestureDetector(
+          Pressable(
             onTap: () => setState(() => _expanded = !_expanded),
-            behavior: HitTestBehavior.opaque,
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Row(
@@ -438,8 +438,8 @@ class _TurnTileState extends State<_TurnTile> {
                       child: Text(
                         '${widget.index + 1}',
                         style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
+                          fontSize: AppFontSize.f13,
+                          fontWeight: AppFontWeight.w800,
                           color: color,
                         ),
                       ),
@@ -455,8 +455,8 @@ class _TurnTileState extends State<_TurnTile> {
                           maxLines: _expanded ? null : 2,
                           overflow: _expanded ? null : TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                            fontSize: AppFontSize.f13,
+                            fontWeight: AppFontWeight.w600,
                             color: AppColors.textDark,
                             height: 1.4,
                           ),
@@ -470,8 +470,8 @@ class _TurnTileState extends State<_TurnTile> {
                   Text(
                     '${eval.contentScore}%',
                     style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
+                      fontSize: AppFontSize.f14,
+                      fontWeight: AppFontWeight.w800,
                       color: color,
                     ),
                   ),
@@ -507,7 +507,7 @@ class _TurnTileState extends State<_TurnTile> {
                         child: Text(
                           eval.feedback,
                           style: const TextStyle(
-                            fontSize: 13,
+                            fontSize: AppFontSize.f13,
                             color: AppColors.textDark,
                             height: 1.5,
                           ),
@@ -529,8 +529,8 @@ class _TurnTileState extends State<_TurnTile> {
                         const Text(
                           'YOUR ANSWER',
                           style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
+                            fontSize: AppFontSize.f10,
+                            fontWeight: AppFontWeight.w700,
                             color: AppColors.textMedium,
                             letterSpacing: 0.6,
                           ),
@@ -539,7 +539,7 @@ class _TurnTileState extends State<_TurnTile> {
                         Text(
                           widget.turn.transcript,
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: AppFontSize.f12,
                             color: AppColors.textMedium,
                             height: 1.5,
                             fontStyle: FontStyle.italic,
@@ -575,8 +575,8 @@ class _TurnTileState extends State<_TurnTile> {
                               Text(
                                 'GEMINI SAMPLE / IDEAL ANSWER',
                                 style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
+                                  fontSize: AppFontSize.f10,
+                                  fontWeight: AppFontWeight.w700,
                                   color: AppColors.primary,
                                   letterSpacing: 0.6,
                                 ),
@@ -587,7 +587,7 @@ class _TurnTileState extends State<_TurnTile> {
                           Text(
                             eval.modelAnswer!,
                             style: const TextStyle(
-                              fontSize: 12,
+                              fontSize: AppFontSize.f12,
                               color: AppColors.textDark,
                               height: 1.5,
                             ),
@@ -614,24 +614,13 @@ class _ActionButtons extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        GestureDetector(
+        Pressable(
           onTap: () => context.go(AppRoutes.interview),
           child: Container(
             height: 50,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.primaryLight, AppColors.primary],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: AppColors.action,
               borderRadius: BorderRadius.circular(13),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
-                ),
-              ],
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -646,7 +635,7 @@ class _ActionButtons extends StatelessWidget {
                   'Practice Again',
                   style: TextStyle(
                     color: AppColors.onPrimary,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: AppFontWeight.w700,
                   ),
                 ),
               ],
@@ -681,7 +670,7 @@ class _MetaChip extends StatelessWidget {
         const SizedBox(width: 5),
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
+          style: const TextStyle(fontSize: AppFontSize.f12, color: AppColors.textMedium),
         ),
       ],
     );
@@ -712,7 +701,7 @@ class _BulletItem extends StatelessWidget {
             child: Text(
               text,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: AppFontSize.f13,
                 color: AppColors.textDark,
                 height: 1.45,
               ),
@@ -741,8 +730,8 @@ class _TypePill extends StatelessWidget {
       child: Text(
         type.label,
         style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
+          fontSize: AppFontSize.f10,
+          fontWeight: AppFontWeight.w700,
           color: color,
         ),
       ),

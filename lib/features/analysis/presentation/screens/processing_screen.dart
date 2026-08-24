@@ -65,7 +65,7 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen>
           const Positioned(
             bottom: 80,
             right: -50,
-            child: AmbientOrb(color: AppColors.amber, size: 180),
+            child: AmbientOrb(color: AppColors.caution, size: 180),
           ),
           SafeArea(
             child: state.hasError
@@ -99,14 +99,6 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen>
                                           alpha: 0.3 + _pulse.value * 0.2),
                                       width: 1.5,
                                     ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppColors.primary.withValues(
-                                            alpha: 0.2 + _pulse.value * 0.2),
-                                        blurRadius: 30 + _pulse.value * 20,
-                                        spreadRadius: 4,
-                                      ),
-                                    ],
                                   ),
                                   child: const Icon(
                                     Icons.psychology_rounded,
@@ -184,7 +176,7 @@ class _CheckChip extends StatelessWidget {
       borderColor: AppColors.primary.withValues(alpha: 0.25),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500),
+        style: const TextStyle(fontSize: AppFontSize.f12, color: AppColors.primary, fontWeight: AppFontWeight.w500),
       ),
     );
   }
@@ -212,13 +204,6 @@ class _ErrorView extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: AppColors.poor.withValues(alpha: 0.1),
                 border: Border.all(color: AppColors.poor.withValues(alpha: 0.3)),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.poor.withValues(alpha: 0.2),
-                    blurRadius: 20,
-                    spreadRadius: 3,
-                  ),
-                ],
               ),
               child: const Icon(Icons.error_outline_rounded, size: 36, color: AppColors.poor),
             ),

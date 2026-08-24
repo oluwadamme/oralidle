@@ -1,14 +1,14 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../constants/app_constants.dart';
 
-/// Glassmorphism card with backdrop blur + 10% white border.
 class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final double radius;
   final Color? borderColor;
   final Color? bgColor;
+
+  @Deprecated('Backdrop blur was retired; this value is ignored.')
   final double blur;
 
   const GlassCard({
@@ -18,30 +18,24 @@ class GlassCard extends StatelessWidget {
     this.radius = 16,
     this.borderColor,
     this.bgColor,
-    this.blur = 8,
+    // ignore: deprecated_member_use_from_same_package
+    this.blur = 0,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: bgColor ?? AppColors.surface,
-            borderRadius: BorderRadius.circular(radius),
-            border: Border.all(color: borderColor ?? AppColors.cardBorder),
-          ),
-          child: child,
-        ),
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: bgColor ?? AppColors.surface,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: borderColor ?? AppColors.cardBorder),
       ),
+      child: child,
     );
   }
 }
 
-/// Blurred ambient glow orb for background depth.
 class AmbientOrb extends StatelessWidget {
   final Color color;
   final double size;
@@ -50,14 +44,13 @@ class AmbientOrb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ImageFiltered(
-      imageFilter: ImageFilter.blur(sigmaX: 55, sigmaY: 55),
+    return IgnorePointer(
       child: Container(
         width: size,
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: color.withValues(alpha: 0.35),
+          color: color.withValues(alpha: 0.08),
         ),
       ),
     );
@@ -95,13 +88,7 @@ class ScoreRing extends StatelessWidget {
               height: size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.3),
-                    blurRadius: 24,
-                    spreadRadius: 4,
-                  ),
-                ],
+                border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
               ),
             ),
           SizedBox(
@@ -122,7 +109,7 @@ class ScoreRing extends StatelessWidget {
                 '$score',
                 style: TextStyle(
                   fontSize: size * 0.3,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: AppFontWeight.w800,
                   color: color,
                   height: 1,
                 ),

@@ -7,6 +7,7 @@ import '../../../topic_selection/data/models/topic.dart';
 import '../../data/models/recording_session.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/pressable.dart';
 import '../../../../core/utils/responsive.dart';
 
 class PreparationScreen extends StatefulWidget {
@@ -192,7 +193,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                           'Skip →',
                           style: TextStyle(
                             color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: AppFontWeight.w600,
                           ),
                         ),
                       ),
@@ -216,8 +217,8 @@ class _PreparationScreenState extends State<PreparationScreen> {
                       child: Text(
                         widget.topic.category,
                         style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontSize: AppFontSize.f12,
+                          fontWeight: AppFontWeight.w600,
                           color: color,
                         ),
                       ),
@@ -229,7 +230,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                   Text(
                     widget.topic.title,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
+                      fontWeight: AppFontWeight.w800,
                       height: 1.2,
                     ),
                   ),
@@ -239,14 +240,14 @@ class _PreparationScreenState extends State<PreparationScreen> {
                   GlassCard(
                     padding: const EdgeInsets.all(14),
                     radius: 14,
-                    bgColor: AppColors.amber.withValues(alpha: 0.06),
-                    borderColor: AppColors.amber.withValues(alpha: 0.25),
+                    bgColor: AppColors.caution.withValues(alpha: 0.06),
+                    borderColor: AppColors.caution.withValues(alpha: 0.25),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Icon(
                           LucideIcons.lightbulb,
-                          color: AppColors.amber,
+                          color: AppColors.caution,
                           size: 18,
                         ),
                         const SizedBox(width: 10),
@@ -254,7 +255,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                           child: Text(
                             widget.topic.hint,
                             style: const TextStyle(
-                              fontSize: 14,
+                              fontSize: AppFontSize.f14,
                               height: 1.4,
                               color: AppColors.textDark,
                             ),
@@ -279,13 +280,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                           height: 104,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: color.withValues(alpha: 0.25),
-                                blurRadius: 24,
-                                spreadRadius: 4,
-                              ),
-                            ],
+                            border: Border.all(color: color.withValues(alpha: 0.25), width: 2),
                           ),
                         ),
                         SizedBox(
@@ -305,15 +300,15 @@ class _PreparationScreenState extends State<PreparationScreen> {
                             Text(
                               '$_remaining',
                               style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w800,
+                                fontSize: AppFontSize.f30,
+                                fontWeight: AppFontWeight.w800,
                                 color: color,
                               ),
                             ),
                             Text(
                               'seconds',
                               style: const TextStyle(
-                                fontSize: 11,
+                                fontSize: AppFontSize.f11,
                                 color: AppColors.outline,
                               ),
                             ),
@@ -325,7 +320,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                   const SizedBox(height: 28),
 
                   // ── Start button ─────────────────────────────────────────
-                  GestureDetector(
+                  Pressable(
                     onTap: _pickingFile
                         ? null
                         : () {
@@ -335,35 +330,24 @@ class _PreparationScreenState extends State<PreparationScreen> {
                     child: Container(
                       height: 52,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppColors.primaryLight, AppColors.primary],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        color: AppColors.action,
                         borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.35),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
                       ),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             LucideIcons.mic,
-                            color: Color(0xFF490080),
+                            color: AppColors.onAction,
                             size: 20,
                           ),
                           SizedBox(width: 8),
                           Text(
                             "I'm Ready — Start Now",
                             style: TextStyle(
-                              color: Color(0xFF490080),
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
+                              color: AppColors.onAction,
+                              fontSize: AppFontSize.f15,
+                              fontWeight: AppFontWeight.w700,
                             ),
                           ),
                         ],
@@ -373,7 +357,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                   const SizedBox(height: 12),
 
                   // ── Upload button ────────────────────────────────────────
-                  GestureDetector(
+                  Pressable(
                     onTap: _pickingFile ? null : _pickAudioFile,
                     child: Container(
                       height: 52,
@@ -410,8 +394,8 @@ class _PreparationScreenState extends State<PreparationScreen> {
                                 : 'Upload Audio File',
                             style: const TextStyle(
                               color: AppColors.primary,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
+                              fontSize: AppFontSize.f15,
+                              fontWeight: AppFontWeight.w600,
                             ),
                           ),
                         ],
@@ -422,7 +406,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                   const Text(
                     'MP3 · WAV · M4A · AAC · OGG · FLAC  ·  Max 20 MB',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 11, color: AppColors.outline),
+                    style: TextStyle(fontSize: AppFontSize.f11, color: AppColors.outline),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -462,7 +446,7 @@ class _TipsList extends StatelessWidget {
                   Text(
                     tip,
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: AppFontSize.f14,
                       color: AppColors.textDark,
                     ),
                   ),

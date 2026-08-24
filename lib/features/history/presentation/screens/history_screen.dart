@@ -27,7 +27,7 @@ class HistoryScreen extends ConsumerWidget {
           const Positioned(
             bottom: 80,
             left: -50,
-            child: AmbientOrb(color: AppColors.amber, size: 160),
+            child: AmbientOrb(color: AppColors.caution, size: 160),
           ),
           SafeArea(
             child: sessions.isEmpty
@@ -143,7 +143,7 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 8),
             const Text(
               'Complete your first recording to see results here',
-              style: TextStyle(color: AppColors.textMedium, fontSize: 14),
+              style: TextStyle(color: AppColors.textMedium, fontSize: AppFontSize.f14),
               textAlign: TextAlign.center,
             ),
           ],
@@ -206,28 +206,21 @@ class _StatChip extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: color.withValues(alpha: 0.25)),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
       ),
       child: Column(
         children: [
           Text(
             value,
             style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
+              fontSize: AppFontSize.f22,
+              fontWeight: AppFontWeight.w800,
               color: color,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(fontSize: 11, color: AppColors.textMedium),
+            style: const TextStyle(fontSize: AppFontSize.f11, color: AppColors.textMedium),
           ),
         ],
       ),

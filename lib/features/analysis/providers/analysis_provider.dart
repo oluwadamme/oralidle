@@ -1,5 +1,5 @@
 import 'dart:developer' show log;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../data/models/analysis_result.dart';
@@ -23,80 +23,78 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
     state = const AsyncValue.loading();
     try {
       AnalysisResult? result;
+      Object? primaryError;
 
-      // On Web, use Ollama directly to prevent exposing Gemini API key in browser network traffic.
-      // if (kIsWeb) {
-      //   log('Web platform detected: using local Ollama service to protect API keys');
-      //   if (session.hasTranscript) {
-      //     result = await _ollama.analyseTranscript(
-      //       topic: session.topicTitle,
-      //       transcript: session.transcript,
-      //       durationSeconds: session.durationSeconds,
-      //       metrics: SpeechAnalyser.analyse(
-      //         session.transcript,
-      //         session.durationSeconds,
-      //       ),
-      //     );
-      //   } else {
-      //     throw Exception(
-      //       'Speech analysis on web requires a transcript. Make sure audio input was captured.',
-      //     );
-      //   }
-      // } else {
-      //   // On native platforms (iOS, Android, macOS), attempt Gemini first, then fallback to Ollama
+      // Pre-compute metrics once for transcript-based analysis
+      final metrics = session.hasTranscript
+          ? SpeechAnalyser.analyse(session.transcript, session.durationSeconds)
+          : null;
 
-      // }
-      Object? geminiError;
-      try {
-        if (session.hasAudio) {
-          result = await _gemini.analyseAudioFile(
-            topic: session.topicTitle,
-            audioBytes: session.audioBytes!,
-            mimeType: session.audioMimeType ?? 'audio/wav',
-            durationSeconds: session.durationSeconds > 0
-                ? session.durationSeconds
-                : null,
-          );
-        } else if (session.hasTranscript) {
-          result = await _gemini.analyseTranscript(
+      final useOllama =
+          kDebugMode && dotenv.env['USE_OLLAMA'] == 'true';
+
+      if (useOllama && session.hasTranscript && metrics != null) {
+        log('USE_OLLAMA=true: analysing transcript with local Ollama...');
+        try {
+          result = await _ollama.analyseTranscript(
             topic: session.topicTitle,
             transcript: session.transcript,
             durationSeconds: session.durationSeconds,
-            metrics: SpeechAnalyser.analyse(
-              session.transcript,
-              session.durationSeconds,
-            ),
+            metrics: metrics,
           );
+        } catch (e) {
+          primaryError = e;
+          log('Primary Ollama analysis failed: $e');
         }
-      } catch (error) {
-        geminiError = error;
-        log('GeminiService analysis failed: $error');
       }
 
-      // Ollama runs on a local address, so it is only reachable from a device
-      // on the same machine or network — never from a deployed web build.
-      // Attempting it there would just stall and then report the wrong cause.
-      if (result == null && !kIsWeb && session.hasTranscript) {
-        log('Falling back to Ollama local LLM for transcript analysis...');
-        result = await _ollama.analyseTranscript(
-          topic: session.topicTitle,
-          transcript: session.transcript,
-          durationSeconds: session.durationSeconds,
-          metrics: SpeechAnalyser.analyse(
-            session.transcript,
-            session.durationSeconds,
-          ),
-        );
+      // 2. If no result yet, try Gemini (audio or transcript)
+      if (result == null) {
+        try {
+          if (session.hasAudio) {
+            result = await _gemini.analyseAudioFile(
+              topic: session.topicTitle,
+              audioBytes: session.audioBytes!,
+              mimeType: session.audioMimeType ?? 'audio/wav',
+              durationSeconds: session.durationSeconds > 0 ? session.durationSeconds : null,
+            );
+          } else if (session.hasTranscript && metrics != null) {
+            result = await _gemini.analyseTranscript(
+              topic: session.topicTitle,
+              transcript: session.transcript,
+              durationSeconds: session.durationSeconds,
+              metrics: metrics,
+            );
+          }
+        } catch (error) {
+          primaryError ??= error;
+          log('GeminiService analysis failed: $error');
+        }
+      }
+
+      // 3. Fallback to Ollama if Gemini failed or wasn't used
+      if (result == null && session.hasTranscript && metrics != null) {
+        final isOllamaUp = await _ollama.isAvailable();
+        if (isOllamaUp) {
+          log('Falling back to local Ollama LLM for transcript analysis...');
+          try {
+            result = await _ollama.analyseTranscript(
+              topic: session.topicTitle,
+              transcript: session.transcript,
+              durationSeconds: session.durationSeconds,
+              metrics: metrics,
+            );
+          } catch (e) {
+            log('Fallback Ollama analysis failed: $e');
+          }
+        }
       }
 
       if (result == null) {
-        // Report what actually went wrong rather than pointing at Ollama on a
-        // platform that never tried it.
         throw Exception(
-          geminiError != null
-              ? 'Analysis failed: $geminiError'
-              : 'Analysis failed: this session had neither audio nor a '
-                    'transcript to analyse.',
+          primaryError != null
+              ? 'Analysis failed: $primaryError'
+              : 'Analysis failed: session has neither audio nor transcript to analyse.',
         );
       }
 
@@ -109,9 +107,14 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
         result: result,
       );
       await _storage.saveSession(record);
-      state = AsyncValue.data(record);
+
+      if (mounted) {
+        state = AsyncValue.data(record);
+      }
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (mounted) {
+        state = AsyncValue.error(e, st);
+      }
     }
   }
 

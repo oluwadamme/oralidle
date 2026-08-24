@@ -130,8 +130,8 @@ class _WebResults extends StatelessWidget {
                                   const Text(
                                     'CLARITY SCORE',
                                     style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
+                                      fontSize: AppFontSize.f11,
+                                      fontWeight: AppFontWeight.w700,
                                       color: AppColors.textMedium,
                                       letterSpacing: 1.0,
                                     ),
@@ -147,8 +147,8 @@ class _WebResults extends StatelessWidget {
                                   Text(
                                     _scoreLabel(overall),
                                     style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
+                                      fontSize: AppFontSize.f16,
+                                      fontWeight: AppFontWeight.w700,
                                       color: color,
                                     ),
                                   ),
@@ -387,8 +387,8 @@ class _MobileResults extends StatelessWidget {
                         child: Text(
                           _scoreLabel(overall),
                           style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
+                            fontSize: AppFontSize.f18,
+                            fontWeight: AppFontWeight.w700,
                             color: color,
                           ),
                         ),
@@ -547,8 +547,8 @@ class _KeyInsightsSection extends StatelessWidget {
                         Text(
                           '${result.wpm} WPM',
                           style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                            fontSize: AppFontSize.f12,
+                            fontWeight: AppFontWeight.w700,
                             color: wpmColor,
                           ),
                         ),
@@ -564,7 +564,7 @@ class _KeyInsightsSection extends StatelessWidget {
                           ? 'A little slow — aim for ${AppConstants.idealWpmMin}+ WPM'
                           : 'A little fast — try to slow down',
                       style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: AppFontSize.f12,
                         color: AppColors.textMedium,
                       ),
                     ),
@@ -578,15 +578,15 @@ class _KeyInsightsSection extends StatelessWidget {
                     const Icon(
                       LucideIcons.alertTriangle,
                       size: 14,
-                      color: AppColors.amber,
+                      color: AppColors.caution,
                     ),
                     const SizedBox(width: 6),
                     const Text(
                       'FILLER WORDS DETECTED',
                       style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.amber,
+                        fontSize: AppFontSize.f11,
+                        fontWeight: AppFontWeight.w700,
+                        color: AppColors.caution,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -614,9 +614,9 @@ class _KeyInsightsSection extends StatelessWidget {
                     Text(
                       'No filler words detected — excellent!',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: AppFontSize.f13,
                         color: AppColors.good,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: AppFontWeight.w600,
                       ),
                     ),
                   ],
@@ -640,9 +640,9 @@ class _FillerChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: AppColors.amber.withValues(alpha: 0.1),
+        color: AppColors.caution.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.amber.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.caution.withValues(alpha: 0.3)),
       ),
       child: RichText(
         text: TextSpan(
@@ -650,17 +650,17 @@ class _FillerChip extends StatelessWidget {
             TextSpan(
               text: '"$word"',
               style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontSize: AppFontSize.f12,
+                fontWeight: AppFontWeight.w600,
                 color: AppColors.textDark,
               ),
             ),
             TextSpan(
               text: '  $count×',
               style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: AppColors.amber,
+                fontSize: AppFontSize.f12,
+                fontWeight: AppFontWeight.w700,
+                color: AppColors.caution,
               ),
             ),
           ],
@@ -711,8 +711,8 @@ class _CoachingTipCard extends StatelessWidget {
                 Text(
                   tip.area,
                   style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontSize: AppFontSize.f12,
+                    fontWeight: AppFontWeight.w700,
                     color: AppColors.primary,
                     letterSpacing: 0.2,
                   ),
@@ -721,7 +721,7 @@ class _CoachingTipCard extends StatelessWidget {
                 Text(
                   tip.tip,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: AppFontSize.f13,
                     height: 1.45,
                     color: AppColors.textDark,
                   ),
@@ -778,8 +778,8 @@ class _SpeechTranscriptSection extends StatelessWidget {
                     Text(
                       'Copy',
                       style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontSize: AppFontSize.f12,
+                        fontWeight: AppFontWeight.w600,
                         color: AppColors.primary,
                       ),
                     ),

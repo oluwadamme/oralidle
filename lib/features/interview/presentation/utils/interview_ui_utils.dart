@@ -12,7 +12,7 @@ extension QuestionTypeUI on QuestionType {
       case QuestionType.technical:
         return AppColors.primary;
       case QuestionType.behavioral:
-        return AppColors.amber;
+        return AppColors.caution;
       case QuestionType.leetcode:
         return AppColors.poor;
     }

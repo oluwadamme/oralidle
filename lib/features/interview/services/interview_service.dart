@@ -23,6 +23,10 @@ class InterviewService {
   // the text-only and audio request paths.
   static const _generationConfig = {
     'maxOutputTokens': 4096,
+    // See GeminiService: reasoning tokens are drawn from maxOutputTokens, and
+    // this budget is smaller, so it starves first.
+    'thinkingConfig': {'thinkingBudget': 0},
+    'responseMimeType': 'application/json',
     'temperature': 0.7,
   };
 
@@ -395,7 +399,17 @@ class InterviewService {
         .replaceAll(RegExp(r'```json|```', multiLine: true), '')
         .trim();
     try {
-      return jsonDecode(cleaned) as Map<String, dynamic>;
+      try {
+        return jsonDecode(cleaned) as Map<String, dynamic>;
+      } on FormatException {
+        // A model that ignores responseMimeType may prepend prose; recover
+        // the object from the outermost braces.
+        final start = cleaned.indexOf('{');
+        final end = cleaned.lastIndexOf('}');
+        if (start == -1 || end <= start) rethrow;
+        return jsonDecode(cleaned.substring(start, end + 1))
+            as Map<String, dynamic>;
+      }
     } catch (e) {
       log('InterviewService: failed to parse response: $text');
       throw Exception(

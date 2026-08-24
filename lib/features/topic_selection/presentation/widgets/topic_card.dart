@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/models/topic.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/widgets/pressable.dart';
 
 class TopicCard extends StatelessWidget {
   final Topic topic;
@@ -11,20 +12,13 @@ class TopicCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = topic.category.categoryColor;
-    return GestureDetector(
+    return Pressable(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color.withValues(alpha: 0.3)),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.12),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -40,15 +34,15 @@ class TopicCard extends StatelessWidget {
               child: Text(
                 topic.category,
                 style: TextStyle(
-                    fontSize: 10, fontWeight: FontWeight.w600, color: color),
+                    fontSize: AppFontSize.f10, fontWeight: AppFontWeight.w600, color: color),
               ),
             ),
             const SizedBox(height: 10),
             Text(
               topic.title,
               style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                  fontSize: AppFontSize.f14,
+                  fontWeight: AppFontWeight.w600,
                   height: 1.3,
                   color: AppColors.textDark),
               maxLines: 3,
@@ -58,7 +52,7 @@ class TopicCard extends StatelessWidget {
             Text(
               topic.hint,
               style: const TextStyle(
-                  fontSize: 11, color: AppColors.textMedium, height: 1.3),
+                  fontSize: AppFontSize.f11, color: AppColors.textMedium, height: 1.3),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),

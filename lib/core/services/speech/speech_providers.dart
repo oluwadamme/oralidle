@@ -7,10 +7,6 @@ import 'speech_recognition_service.dart';
 
 /// App-lifetime, deliberately not `autoDispose`.
 ///
-/// Loading Moonshine costs a 49 MB download once and a few hundred
-/// milliseconds of model load on every `getActiveStt()`. Tearing it down
-/// between sessions would repay that cost each time the user starts an
-/// answer, so one instance lives for the life of the app.
 final speechRecognitionServiceProvider = Provider<SpeechRecognitionService>((
   ref,
 ) {

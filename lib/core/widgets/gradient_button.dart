@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_constants.dart';
+import 'pressable.dart';
 
 class PrimaryGradientButton extends StatelessWidget {
   final String label;
@@ -19,8 +20,8 @@ class PrimaryGradientButton extends StatelessWidget {
     this.icon,
     this.height = 54,
     this.gradientColors,
-    this.textColor = const Color(0xFF490080),
-    this.iconColor = const Color(0xFF490080),
+    this.textColor = AppColors.onAction,
+    this.iconColor = AppColors.onAction,
     this.fontSize = 15,
     this.borderRadius,
   });
@@ -31,25 +32,15 @@ class PrimaryGradientButton extends StatelessWidget {
         const [AppColors.primaryLight, AppColors.primary];
     final effectiveBorderRadius = borderRadius ?? BorderRadius.circular(14);
 
-    return GestureDetector(
+    return Pressable(
       onTap: onTap,
       child: Container(
         height: height,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: effectiveGradient,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: AppColors.action,
           borderRadius: effectiveBorderRadius,
-          boxShadow: [
-            BoxShadow(
-              color: effectiveGradient.last.withValues(alpha: 0.35),
-              blurRadius: 18,
-              offset: const Offset(0, 5),
-            ),
-          ],
         ),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -62,7 +53,7 @@ class PrimaryGradientButton extends StatelessWidget {
               label,
               style: TextStyle(
                 color: textColor,
-                fontWeight: FontWeight.w800,
+                fontWeight: AppFontWeight.w800,
                 fontSize: fontSize,
               ),
             ),

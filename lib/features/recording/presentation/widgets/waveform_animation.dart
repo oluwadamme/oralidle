@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_constants.dart';
 
@@ -35,10 +34,6 @@ class _WaveformAnimationState extends State<WaveformAnimation>
   late List<double> _heights;
 
   static const _barCount = 28;
-
-  // Gradient: primary purple → amber (Oralidle design spec)
-  static const _colorStart = AppColors.primary; // #DDB7FF
-  static const _colorEnd = AppColors.amber; // #FFB95F
 
   @override
   void initState() {
@@ -86,13 +81,11 @@ class _WaveformAnimationState extends State<WaveformAnimation>
     super.dispose();
   }
 
+  /// Colour encodes loudness, not position: cool while speaking normally,
+  /// warm at peak. A gradient across the row would only decorate.
   Color _barColor(int index, double height) {
-    final t = index / (_barCount - 1);
-    final r = lerpDouble(_colorStart.r, _colorEnd.r, t)!;
-    final g = lerpDouble(_colorStart.g, _colorEnd.g, t)!;
-    final b = lerpDouble(_colorStart.b, _colorEnd.b, t)!;
-    final alpha = widget.isActive ? 0.55 + height * 0.45 : 0.25;
-    return Color.from(alpha: alpha, red: r, green: g, blue: b);
+    if (!widget.isActive) return AppColors.levelRest;
+    return AppColors.levelColor(height);
   }
 
   @override

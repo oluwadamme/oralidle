@@ -127,8 +127,8 @@ class _RouteNotFound extends StatelessWidget {
               const Text(
                 'Page not found',
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
+                  fontSize: AppFontSize.f18,
+                  fontWeight: AppFontWeight.w700,
                   color: AppColors.textDark,
                 ),
               ),
@@ -137,7 +137,7 @@ class _RouteNotFound extends StatelessWidget {
                 uri.path,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: AppFontSize.f13,
                   color: AppColors.textMedium,
                 ),
               ),
