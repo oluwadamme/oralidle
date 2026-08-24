@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../constants/app_constants.dart';
 import '../theme/app_spacing.dart';
+import 'waveform_loader.dart';
 
 enum AppButtonSize {
   small(40, IconSize.sm),
@@ -198,13 +199,11 @@ class _Content extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           Opacity(opacity: 0, child: _row(context)),
-          SizedBox(
-            width: size.icon,
-            height: size.icon,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation(foreground),
-            ),
+          WaveformLoader.compact(
+            height: size.icon * 0.85,
+            barCount: 4,
+            barWidth: 2.5,
+            color: foreground,
           ),
         ],
       );

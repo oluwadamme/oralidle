@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../providers/analysis_provider.dart';
 import '../../../recording/data/models/recording_session.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/surface_card.dart';
+import '../../../../core/widgets/waveform_loader.dart';
 import '../../../../core/theme/text_styles.dart';
 
 class ProcessingScreen extends ConsumerStatefulWidget {
@@ -93,7 +95,7 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen>
                                     ),
                                   ),
                                   child: const Icon(
-                                    Icons.psychology_rounded,
+                                    LucideIcons.brain,
                                     size: 52,
                                     color: AppColors.ink,
                                   ),
@@ -112,15 +114,17 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen>
                           const SizedBox(height: 10),
                           Text(
                             widget.session.isAudioUpload
-                                ? 'Gemini is transcribing "${widget.session.audioFileName ?? "your audio"}" and coaching your fluency, grammar, and more…'
-                                : 'Gemini is reviewing your fluency, grammar, vocabulary, and more…',
+                                ? 'Oradile is transcribing "${widget.session.audioFileName ?? "your audio"}" and coaching your fluency, grammar, and more…'
+                                : 'Oradile is reviewing your fluency, grammar, vocabulary, and more…',
                             style: Theme.of(context).textTheme.bodyMedium,
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 36),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: const LinearProgressIndicator(minHeight: 3),
+                          const WaveformLoader.hero(
+                            height: 40,
+                            barCount: 60,
+                            barWidth: 4,
+                            barSpacing: 3,
                           ),
                           const SizedBox(height: 36),
                           Wrap(
@@ -208,7 +212,7 @@ class _ErrorView extends StatelessWidget {
                 ),
               ),
               child: const Icon(
-                Icons.error_outline_rounded,
+                LucideIcons.alertCircle,
                 size: 36,
                 color: AppColors.critical,
               ),
@@ -228,7 +232,7 @@ class _ErrorView extends StatelessWidget {
             const SizedBox(height: 36),
             ElevatedButton.icon(
               onPressed: onRetry,
-              icon: const Icon(Icons.refresh_rounded),
+              icon: const Icon(LucideIcons.rotateCcw),
               label: const Text('Try Again'),
             ),
             const SizedBox(height: 12),

@@ -173,12 +173,8 @@ class RecordingNotifier extends StateNotifier<RecordingState> {
       topicTitle: state.topicTitle,
       topicCategory: state.topicCategory,
       transcript: transcript,
-      // Prefer the measured length of the audio over the wall-clock timer:
-      // it is what the words-per-minute figure is actually divided by.
       durationSeconds: usableAudio?.duration.inSeconds ?? seconds,
-      // Upload form: these bytes go straight to Gemini and are never
-      // played back locally.
-      audioBytes: usableAudio?.uploadBytes,
+      audioBytes: usableAudio?.playbackBytes,
       audioMimeType: usableAudio?.mimeType,
     );
 

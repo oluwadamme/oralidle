@@ -99,13 +99,26 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
         );
       }
 
+      final sessionId = const Uuid().v4();
+      String? savedAudioPath;
+      if (session.hasAudio) {
+        final ext = session.audioFileName?.split('.').last ?? 'wav';
+        savedAudioPath = await _storage.saveAudioFile(
+          sessionId,
+          session.audioBytes!,
+          extension: ext,
+          mimeType: session.audioMimeType,
+        );
+      }
+
       final record = SessionRecord(
-        id: const Uuid().v4(),
+        id: sessionId,
         topicTitle: session.topicTitle,
         topicCategory: session.topicCategory,
         timestamp: DateTime.now(),
         durationSeconds: session.durationSeconds,
         result: result,
+        audioPath: savedAudioPath,
       );
       await _storage.saveSession(record);
 

@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/text_styles.dart';
 
@@ -22,7 +23,7 @@ class FillerWordsBarChart extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.check_circle_rounded,
+              LucideIcons.circleCheck,
               color: AppColors.positive,
               size: 18,
             ),

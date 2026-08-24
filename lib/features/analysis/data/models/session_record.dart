@@ -7,6 +7,7 @@ class SessionRecord {
   final DateTime timestamp;
   final int durationSeconds;
   final AnalysisResult result;
+  final String? audioPath;
 
   const SessionRecord({
     required this.id,
@@ -15,6 +16,7 @@ class SessionRecord {
     required this.timestamp,
     required this.durationSeconds,
     required this.result,
+    this.audioPath,
   });
 
   factory SessionRecord.fromJson(Map<String, dynamic> json) => SessionRecord(
@@ -24,6 +26,7 @@ class SessionRecord {
     timestamp: DateTime.parse(json['timestamp'] as String),
     durationSeconds: (json['duration_seconds'] as num).toInt(),
     result: AnalysisResult.fromJson(json['result'] as Map<String, dynamic>),
+    audioPath: json['audio_path'] as String?,
   );
 
   Map<String, dynamic> toJson() => {
@@ -33,6 +36,7 @@ class SessionRecord {
     'timestamp': timestamp.toIso8601String(),
     'duration_seconds': durationSeconds,
     'result': result.toJson(),
+    if (audioPath != null) 'audio_path': audioPath,
   };
 
   String get formattedDuration {
