@@ -30,9 +30,11 @@ void main() {
     test('no raw Material palette hues', () {
       _expectNoMatch(
         sources,
-        RegExp(r'Colors\.(red|pink|purple|indigo|blue|cyan|teal|green|lime|'
-            r'yellow|orange|brown|grey|blueGrey|deepPurple|deepOrange|'
-            r'lightBlue|lightGreen|amber)\b'),
+        RegExp(
+          r'Colors\.(red|pink|purple|indigo|blue|cyan|teal|green|lime|'
+          r'yellow|orange|brown|grey|blueGrey|deepPurple|deepOrange|'
+          r'lightBlue|lightGreen|amber)\b',
+        ),
       );
     });
   });
@@ -60,11 +62,46 @@ void main() {
       _expectOnlyIn(sources, RegExp(r'fontSize:\s*\d'), _typographyAllowlist);
     });
 
-    test('no inline font weight', () {
+    // A named constant for an arbitrary size is still an arbitrary size:
+    // `AppFontSize.f13` and `fontSize: 13` are the same decision. Sizes come
+    // from the type scale, so only the theme may name one.
+    test('type sizes come from the scale, not from constants', () {
+      _expectOnlyIn(sources, RegExp(r'AppFontSize\.'), _typographyAllowlist);
+    });
+
+    test('no raw FontWeight outside the tokens', () {
       _expectOnlyIn(
         sources,
         RegExp(r'fontWeight:\s*FontWeight\.'),
         _typographyAllowlist,
+      );
+    });
+  });
+
+  // Two layout bugs shipped this way: a circle with a width but no height
+  // collapses into a squashed pill, and it is invisible in a diff.
+  group('layout', () {
+    test('circular containers declare both axes', () {
+      final bad = <String>[];
+      for (final src in sources) {
+        for (var i = 0; i < src.lines.length; i++) {
+          if (!src.lines[i].contains('BoxShape.circle')) continue;
+          final window = src.lines
+              .sublist((i - 6).clamp(0, src.lines.length), i)
+              .join('\n');
+          final hasWidth = RegExp(r'\bwidth:\s*[\d.]').hasMatch(window);
+          final hasHeight = RegExp(r'\bheight:\s*[\d.]').hasMatch(window);
+          if (hasWidth && !hasHeight) {
+            bad.add('${src.path}:${i + 1}');
+          }
+        }
+      }
+      expect(
+        bad,
+        isEmpty,
+        reason:
+            'a circle sized on one axis renders as a pill:\n'
+            '${bad.join('\n')}',
       );
     });
   });
@@ -90,14 +127,13 @@ const _gradientAllowlist = <String>{
 };
 
 /// `Pressable` is the one place allowed to reach for a raw gesture primitive.
-const _gestureAllowlist = <String>{
-  'lib/core/widgets/pressable.dart',
-};
+const _gestureAllowlist = <String>{'lib/core/widgets/pressable.dart'};
 
-/// §7: ThemeData type scale definitions.
+/// §7: the type scale itself, and the tokens it is built from.
 const _typographyAllowlist = <String>{
   'lib/core/theme/app_theme.dart',
   'lib/core/theme/text_styles.dart',
+  'lib/core/constants/app_constants.dart',
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -159,7 +195,8 @@ void _expectOnlyIn(
   expect(
     hits,
     isEmpty,
-    reason: 'DESIGN.md allows /${pattern.pattern}/ only in '
+    reason:
+        'DESIGN.md allows /${pattern.pattern}/ only in '
         '${allowlist.join(', ')}:\n${hits.join('\n')}',
   );
 }

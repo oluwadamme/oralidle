@@ -30,8 +30,7 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
           ? SpeechAnalyser.analyse(session.transcript, session.durationSeconds)
           : null;
 
-      final useOllama =
-          kDebugMode && dotenv.env['USE_OLLAMA'] == 'true';
+      final useOllama = kDebugMode && dotenv.env['USE_OLLAMA'] == 'true';
 
       if (useOllama && session.hasTranscript && metrics != null) {
         log('USE_OLLAMA=true: analysing transcript with local Ollama...');
@@ -56,7 +55,9 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
               topic: session.topicTitle,
               audioBytes: session.audioBytes!,
               mimeType: session.audioMimeType ?? 'audio/wav',
-              durationSeconds: session.durationSeconds > 0 ? session.durationSeconds : null,
+              durationSeconds: session.durationSeconds > 0
+                  ? session.durationSeconds
+                  : null,
             );
           } else if (session.hasTranscript && metrics != null) {
             result = await _gemini.analyseTranscript(

@@ -16,6 +16,7 @@ import 'features/interview/presentation/screens/interview_home_screen.dart';
 import 'features/interview/presentation/screens/interview_session_screen.dart';
 import 'features/interview/presentation/screens/interview_results_screen.dart';
 import 'features/interview/data/models/interview_models.dart';
+import 'core/theme/text_styles.dart';
 
 GoRouterRedirect _requireExtra<T>(String fallback) {
   return (context, state) => state.extra is T ? null : fallback;
@@ -68,7 +69,8 @@ GoRouter createAppRouter() => GoRouter(
     GoRoute(
       path: AppRoutes.prepare,
       redirect: _requireExtra<Topic>(AppRoutes.topics),
-      builder: (context, state) => PreparationScreen(topic: state.extra as Topic),
+      builder: (context, state) =>
+          PreparationScreen(topic: state.extra as Topic),
     ),
     GoRoute(
       path: AppRoutes.record,
@@ -121,25 +123,21 @@ class _RouteNotFound extends StatelessWidget {
               const Icon(
                 Icons.explore_off_rounded,
                 size: 40,
-                color: AppColors.textMedium,
+                color: AppColors.inkMuted,
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Page not found',
-                style: TextStyle(
-                  fontSize: AppFontSize.f18,
+                style: context.title.copyWith(
+                  color: AppColors.ink,
                   fontWeight: AppFontWeight.w700,
-                  color: AppColors.textDark,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 uri.path,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: AppFontSize.f13,
-                  color: AppColors.textMedium,
-                ),
+                style: context.caption.copyWith(color: AppColors.inkMuted),
               ),
               const SizedBox(height: 24),
               FilledButton(

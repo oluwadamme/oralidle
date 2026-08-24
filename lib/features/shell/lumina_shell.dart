@@ -1,13 +1,22 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/app_button.dart';
 import '../../core/widgets/pressable.dart';
 import '../../core/utils/responsive.dart';
+import '../../core/theme/text_styles.dart';
 
 const _kSidebarWidth = 220.0;
+
+/// Bottom navigation caps at five destinations; this sits at four.
+const _destinations = <({IconData icon, String label})>[
+  (icon: LucideIcons.house, label: 'Home'),
+  (icon: LucideIcons.mic, label: 'Practice'),
+  (icon: LucideIcons.chartBar, label: 'Insights'),
+  (icon: LucideIcons.userCheck, label: 'Interview'),
+];
 
 class LuminaShell extends StatelessWidget {
   final StatefulNavigationShell shell;
@@ -27,7 +36,7 @@ class LuminaShell extends StatelessWidget {
               onTap: (i) =>
                   shell.goBranch(i, initialLocation: i == shell.currentIndex),
             ),
-            Container(width: 1, color: AppColors.cardBorder),
+            const VerticalDivider(width: 1, color: AppColors.line),
             Expanded(child: shell),
           ],
         ),
@@ -36,10 +45,18 @@ class LuminaShell extends StatelessWidget {
 
     return Scaffold(
       body: shell,
-      bottomNavigationBar: _GlassNavBar(
-        currentIndex: shell.currentIndex,
-        onTap: (i) =>
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: shell.currentIndex,
+        onDestinationSelected: (i) =>
             shell.goBranch(i, initialLocation: i == shell.currentIndex),
+        destinations: [
+          for (final d in _destinations)
+            NavigationDestination(
+              icon: Icon(d.icon),
+              label: d.label,
+              tooltip: d.label,
+            ),
+        ],
       ),
     );
   }
@@ -53,18 +70,11 @@ class _SideNav extends StatelessWidget {
 
   const _SideNav({required this.currentIndex, required this.onTap});
 
-  static const _mainItems = [
-    (LucideIcons.home, LucideIcons.home, 'Home'),
-    (LucideIcons.mic, LucideIcons.mic, 'Practice'),
-    (LucideIcons.barChart2, LucideIcons.barChart2, 'Insights'),
-    (LucideIcons.userCheck, LucideIcons.userCheck, 'Interview'),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Container(
       width: _kSidebarWidth,
-      color: AppColors.surfaceLow,
+      color: AppColors.raised,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -85,12 +95,7 @@ class _SideNav extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Oralidle',
-                      style: GoogleFonts.bricolageGrotesque(
-                        fontSize: AppFontSize.f20,
-                        fontWeight: AppFontWeight.w700,
-                        letterSpacing: -0.5,
-                        color: AppColors.ink,
-                      ),
+                      style: context.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -101,12 +106,11 @@ class _SideNav extends StatelessWidget {
           ),
 
           // ── Main nav items ─────────────────────────────────────────────
-          ...List.generate(_mainItems.length, (i) {
-            final item = _mainItems[i];
+          ...List.generate(_destinations.length, (i) {
+            final item = _destinations[i];
             return _SideNavItem(
-              icon: item.$1,
-              activeIcon: item.$2,
-              label: item.$3,
+              icon: item.icon,
+              label: item.label,
               active: currentIndex == i,
               onTap: () => onTap(i),
             );
@@ -131,26 +135,15 @@ class _SideNav extends StatelessWidget {
           // ),
           const SizedBox(height: 12),
 
-          // ── Upgrade CTA ────────────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+            padding: const EdgeInsets.symmetric(horizontal: Space.lg),
             child: SafeArea(
               top: false,
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.action,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.center,
-                child: const Text(
-                  'Upgrade to Pro',
-                  style: TextStyle(
-                    color: AppColors.onAction,
-                    fontWeight: AppFontWeight.w700,
-                    fontSize: AppFontSize.f13,
-                  ),
-                ),
+              child: AppButton.secondary(
+                label: 'Upgrade to Pro',
+                expand: true,
+                size: AppButtonSize.small,
+                onPressed: () {},
               ),
             ),
           ),
@@ -163,14 +156,12 @@ class _SideNav extends StatelessWidget {
 
 class _SideNavItem extends StatelessWidget {
   final IconData icon;
-  final IconData activeIcon;
   final String label;
   final bool active;
   final VoidCallback onTap;
 
   const _SideNavItem({
     required this.icon,
-    required this.activeIcon,
     required this.label,
     required this.active,
     required this.onTap,
@@ -180,31 +171,27 @@ class _SideNavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Pressable(
       onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: active
-              ? AppColors.primary.withValues(alpha: 0.12)
-              : Colors.transparent,
+          color: active ? AppColors.raised2 : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           children: [
             Icon(
-              active ? activeIcon : icon,
-              color: active ? AppColors.primary : AppColors.outline,
+              icon,
+              color: active ? AppColors.ink : AppColors.borderControl,
               size: 18,
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(
-                  fontSize: AppFontSize.f14,
-                  fontWeight: active ? AppFontWeight.w600 : AppFontWeight.w400,
-                  color: active ? AppColors.primary : AppColors.textMedium,
+                style: context.cardTitle.copyWith(
+                  color: active ? AppColors.ink : AppColors.inkMuted,
                 ),
               ),
             ),
@@ -213,120 +200,10 @@ class _SideNavItem extends StatelessWidget {
                 width: 3,
                 height: 16,
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: AppColors.ink,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Bottom nav bar (mobile) ───────────────────────────────────────────────────
-
-class _GlassNavBar extends StatelessWidget {
-  final int currentIndex;
-  final ValueChanged<int> onTap;
-
-  const _GlassNavBar({required this.currentIndex, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.cardBorder)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(
-                icon: LucideIcons.home,
-                activeIcon: LucideIcons.home,
-                label: 'Home',
-                active: currentIndex == 0,
-                onTap: () => onTap(0),
-              ),
-              _NavItem(
-                icon: LucideIcons.mic,
-                activeIcon: LucideIcons.mic,
-                label: 'Practice',
-                active: currentIndex == 1,
-                onTap: () => onTap(1),
-              ),
-              _NavItem(
-                icon: LucideIcons.barChart2,
-                activeIcon: LucideIcons.barChart2,
-                label: 'Insights',
-                active: currentIndex == 2,
-                onTap: () => onTap(2),
-              ),
-              _NavItem(
-                icon: LucideIcons.userCheck,
-                activeIcon: LucideIcons.userCheck,
-                label: 'Interview',
-                active: currentIndex == 3,
-                onTap: () => onTap(3),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-
-  const _NavItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.active,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Pressable(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-        decoration: BoxDecoration(
-          color: active
-              ? AppColors.primary.withValues(alpha: 0.12)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              active ? activeIcon : icon,
-              color: active ? AppColors.primary : AppColors.outline,
-              size: 22,
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: AppFontSize.f11,
-                fontWeight: active ? AppFontWeight.w600 : AppFontWeight.w400,
-                color: active ? AppColors.primary : AppColors.outline,
-              ),
-            ),
           ],
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../../../analysis/data/models/session_record.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/theme/text_styles.dart';
 
 class ProgressLineChart extends StatelessWidget {
   final List<SessionRecord> sessions;
@@ -15,22 +16,26 @@ class ProgressLineChart extends StatelessWidget {
         height: 80,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.05),
+          color: AppColors.raised2,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
           'Complete 2+ sessions to see your progress trend',
-          style: const TextStyle(color: AppColors.outline, fontSize: AppFontSize.f13),
+          style: context.caption.copyWith(color: AppColors.inkMuted),
           textAlign: TextAlign.center,
         ),
       );
     }
 
-    final ordered = [...sessions]..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    final ordered = [...sessions]
+      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
     final spots = ordered
         .asMap()
         .entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value.result.overallScore.toDouble()))
+        .map(
+          (e) =>
+              FlSpot(e.key.toDouble(), e.value.result.overallScore.toDouble()),
+        )
         .toList();
 
     return SizedBox(
@@ -41,7 +46,8 @@ class ProgressLineChart extends StatelessWidget {
           maxY: 100,
           gridData: FlGridData(
             drawVerticalLine: false,
-            getDrawingHorizontalLine: (_) => FlLine(color: AppColors.outlineVariant, strokeWidth: 1),
+            getDrawingHorizontalLine: (_) =>
+                FlLine(color: AppColors.line, strokeWidth: 1),
           ),
           borderData: FlBorderData(show: false),
           titlesData: FlTitlesData(
@@ -50,21 +56,34 @@ class ProgressLineChart extends StatelessWidget {
                 showTitles: true,
                 reservedSize: 30,
                 interval: 25,
-                getTitlesWidget: (v, _) =>
-                    Text('${v.toInt()}', style: const TextStyle(fontSize: AppFontSize.f10, color: AppColors.textMedium)),
+                getTitlesWidget: (v, _) => Text(
+                  '${v.toInt()}',
+                  style: context.overline.copyWith(color: AppColors.inkMuted),
+                ),
               ),
             ),
-            bottomTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
           ),
           lineTouchData: LineTouchData(
             touchTooltipData: LineTouchTooltipData(
               getTooltipItems: (spots) => spots
-                  .map((s) => LineTooltipItem(
-                        '${s.y.toInt()}',
-                        const TextStyle(color: AppColors.ink, fontWeight: AppFontWeight.w700),
-                      ))
+                  .map(
+                    (s) => LineTooltipItem(
+                      '${s.y.toInt()}',
+                      const TextStyle(
+                        color: AppColors.ink,
+                        fontWeight: AppFontWeight.w700,
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
           ),
@@ -72,20 +91,18 @@ class ProgressLineChart extends StatelessWidget {
             LineChartBarData(
               spots: spots,
               isCurved: true,
-              color: AppColors.primary,
+              color: AppColors.ink,
               barWidth: 2.5,
               dotData: FlDotData(
-                getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-                  radius: 4,
-                  color: AppColors.primary,
-                  strokeWidth: 2,
-                  strokeColor: AppColors.background,
-                ),
+                getDotPainter: (spot, percent, barData, index) =>
+                    FlDotCirclePainter(
+                      radius: 4,
+                      color: AppColors.ink,
+                      strokeWidth: 2,
+                      strokeColor: AppColors.canvas,
+                    ),
               ),
-              belowBarData: BarAreaData(
-                show: true,
-                color: AppColors.primary.withValues(alpha: 0.08),
-              ),
+              belowBarData: BarAreaData(show: true, color: AppColors.raised2),
             ),
           ],
         ),

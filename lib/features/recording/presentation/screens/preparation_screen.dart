@@ -6,9 +6,11 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../topic_selection/data/models/topic.dart';
 import '../../data/models/recording_session.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/surface_card.dart';
 import '../../../../core/widgets/pressable.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/theme/text_styles.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class PreparationScreen extends StatefulWidget {
   final Topic topic;
@@ -116,7 +118,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppColors.poor),
+      SnackBar(content: Text(message), backgroundColor: AppColors.critical),
     );
   }
 
@@ -150,23 +152,11 @@ class _PreparationScreenState extends State<PreparationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.topic.category.categoryColor;
     final progress = _remaining / AppConstants.prepCountdownSeconds;
 
     return Scaffold(
       body: Stack(
         children: [
-          // Ambient orbs
-          Positioned(
-            top: -60,
-            right: -40,
-            child: AmbientOrb(color: color, size: 220),
-          ),
-          const Positioned(
-            bottom: 120,
-            left: -60,
-            child: AmbientOrb(color: AppColors.primary, size: 180),
-          ),
           SafeArea(
             child: ResponsiveContainer(
               extraPadding: const EdgeInsets.symmetric(vertical: 20),
@@ -179,7 +169,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                       IconButton(
                         icon: const Icon(
                           LucideIcons.x,
-                          color: AppColors.textMedium,
+                          color: AppColors.inkMuted,
                         ),
                         onPressed: () => context.go(AppRoutes.topics),
                       ),
@@ -192,7 +182,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                         child: const Text(
                           'Skip →',
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: AppColors.ink,
                             fontWeight: AppFontWeight.w600,
                           ),
                         ),
@@ -210,16 +200,15 @@ class _PreparationScreenState extends State<PreparationScreen> {
                         vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.15),
+                        color: AppColors.raised2,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: color.withValues(alpha: 0.3)),
+                        border: Border.all(color: AppColors.line),
                       ),
                       child: Text(
                         widget.topic.category,
-                        style: TextStyle(
-                          fontSize: AppFontSize.f12,
+                        style: context.overline.copyWith(
+                          color: AppColors.ink,
                           fontWeight: AppFontWeight.w600,
-                          color: color,
                         ),
                       ),
                     ),
@@ -237,11 +226,9 @@ class _PreparationScreenState extends State<PreparationScreen> {
                   const SizedBox(height: 16),
 
                   // ── Hint card ────────────────────────────────────────────
-                  GlassCard(
+                  SurfaceCard(
                     padding: const EdgeInsets.all(14),
                     radius: 14,
-                    bgColor: AppColors.caution.withValues(alpha: 0.06),
-                    borderColor: AppColors.caution.withValues(alpha: 0.25),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -254,10 +241,9 @@ class _PreparationScreenState extends State<PreparationScreen> {
                         Expanded(
                           child: Text(
                             widget.topic.hint,
-                            style: const TextStyle(
-                              fontSize: AppFontSize.f14,
+                            style: context.body.copyWith(
                               height: 1.4,
-                              color: AppColors.textDark,
+                              color: AppColors.ink,
                             ),
                           ),
                         ),
@@ -280,7 +266,10 @@ class _PreparationScreenState extends State<PreparationScreen> {
                           height: 104,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: color.withValues(alpha: 0.25), width: 2),
+                            border: Border.all(
+                              color: AppColors.sunken,
+                              width: 2,
+                            ),
                           ),
                         ),
                         SizedBox(
@@ -290,8 +279,10 @@ class _PreparationScreenState extends State<PreparationScreen> {
                             value: progress,
                             strokeWidth: 6,
                             strokeCap: StrokeCap.round,
-                            backgroundColor: AppColors.outlineVariant,
-                            valueColor: AlwaysStoppedAnimation<Color>(color),
+                            backgroundColor: AppColors.line,
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              AppColors.voiceLow,
+                            ),
                           ),
                         ),
                         Column(
@@ -299,17 +290,15 @@ class _PreparationScreenState extends State<PreparationScreen> {
                           children: [
                             Text(
                               '$_remaining',
-                              style: TextStyle(
-                                fontSize: AppFontSize.f30,
+                              style: context.display.copyWith(
+                                color: AppColors.ink,
                                 fontWeight: AppFontWeight.w800,
-                                color: color,
                               ),
                             ),
                             Text(
                               'seconds',
-                              style: const TextStyle(
-                                fontSize: AppFontSize.f11,
-                                color: AppColors.outline,
+                              style: context.overline.copyWith(
+                                color: AppColors.inkMuted,
                               ),
                             ),
                           ],
@@ -333,7 +322,7 @@ class _PreparationScreenState extends State<PreparationScreen> {
                         color: AppColors.action,
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
@@ -344,9 +333,8 @@ class _PreparationScreenState extends State<PreparationScreen> {
                           SizedBox(width: 8),
                           Text(
                             "I'm Ready — Start Now",
-                            style: TextStyle(
+                            style: context.cardTitle.copyWith(
                               color: AppColors.onAction,
-                              fontSize: AppFontSize.f15,
                               fontWeight: AppFontWeight.w700,
                             ),
                           ),
@@ -362,11 +350,9 @@ class _PreparationScreenState extends State<PreparationScreen> {
                     child: Container(
                       height: 52,
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: AppColors.raised,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.4),
-                        ),
+                        border: Border.all(color: AppColors.borderControl),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -378,13 +364,13 @@ class _PreparationScreenState extends State<PreparationScreen> {
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColors.primary,
+                                      AppColors.ink,
                                     ),
                                   ),
                                 )
                               : const Icon(
                                   LucideIcons.upload,
-                                  color: AppColors.primary,
+                                  color: AppColors.ink,
                                   size: 20,
                                 ),
                           const SizedBox(width: 8),
@@ -392,10 +378,8 @@ class _PreparationScreenState extends State<PreparationScreen> {
                             _pickingFile
                                 ? 'Opening file picker…'
                                 : 'Upload Audio File',
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontSize: AppFontSize.f15,
-                              fontWeight: AppFontWeight.w600,
+                            style: context.cardTitle.copyWith(
+                              color: AppColors.ink,
                             ),
                           ),
                         ],
@@ -403,10 +387,10 @@ class _PreparationScreenState extends State<PreparationScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
+                  Text(
                     'MP3 · WAV · M4A · AAC · OGG · FLAC  ·  Max 20 MB',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: AppFontSize.f11, color: AppColors.outline),
+                    style: context.overline.copyWith(color: AppColors.inkMuted),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -436,18 +420,23 @@ class _TipsList extends StatelessWidget {
             (tip) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 5),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    LucideIcons.checkCircle2,
-                    size: 16,
-                    color: AppColors.good,
+                  const Padding(
+                    padding: EdgeInsets.only(top: 3),
+                    child: Icon(
+                      LucideIcons.circleCheck,
+                      size: IconSize.sm,
+                      color: AppColors.positive,
+                    ),
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    tip,
-                    style: const TextStyle(
-                      fontSize: AppFontSize.f14,
-                      color: AppColors.textDark,
+                  const SizedBox(width: Space.md),
+                  // Expanded so a long tip wraps instead of overflowing the
+                  // row on narrow windows.
+                  Expanded(
+                    child: Text(
+                      tip,
+                      style: context.body.copyWith(color: AppColors.ink),
                     ),
                   ),
                 ],

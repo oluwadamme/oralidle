@@ -75,7 +75,10 @@ void main() {
 
       expect(result.overallScore, equals(83));
       expect(result.summary, equals('Solid speech performance overall.'));
-      expect(result.transcript, equals('I believe effective leadership requires active listening.'));
+      expect(
+        result.transcript,
+        equals('I believe effective leadership requires active listening.'),
+      );
       expect(result.scores.fluency, equals(82));
     });
 

@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/theme/text_styles.dart';
 
 class FillerWordsBarChart extends StatelessWidget {
   final Map<String, int> fillerWords;
@@ -14,22 +15,32 @@ class FillerWordsBarChart extends StatelessWidget {
         height: 80,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.good.withValues(alpha: 0.08),
+          color: AppColors.positive.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle_rounded, color: AppColors.good, size: 18),
+            Icon(
+              Icons.check_circle_rounded,
+              color: AppColors.positive,
+              size: 18,
+            ),
             SizedBox(width: 8),
-            Text('No filler words detected! Great job.',
-                style: TextStyle(color: AppColors.good, fontWeight: AppFontWeight.w600)),
+            Text(
+              'No filler words detected! Great job.',
+              style: TextStyle(
+                color: AppColors.positive,
+                fontWeight: AppFontWeight.w600,
+              ),
+            ),
           ],
         ),
       );
     }
 
-    final sorted = fillerWords.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final sorted = fillerWords.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
     final maxVal = sorted.first.value.toDouble();
 
     return SizedBox(
@@ -50,7 +61,7 @@ class FillerWordsBarChart extends StatelessWidget {
                       padding: const EdgeInsets.only(right: 8),
                       child: Text(
                         '"${sorted[idx].key}"',
-                        style: const TextStyle(fontSize: AppFontSize.f12),
+                        style: context.caption,
                         textAlign: TextAlign.right,
                       ),
                     );
@@ -59,20 +70,25 @@ class FillerWordsBarChart extends StatelessWidget {
                 },
               ),
             ),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
                 getTitlesWidget: (value, meta) =>
-                    Text('${value.toInt()}×', style: const TextStyle(fontSize: AppFontSize.f10)),
+                    Text('${value.toInt()}×', style: context.overline),
               ),
             ),
           ),
           gridData: FlGridData(
             drawVerticalLine: true,
             drawHorizontalLine: false,
-            getDrawingVerticalLine: (_) => FlLine(color: AppColors.outlineVariant, strokeWidth: 1),
+            getDrawingVerticalLine: (_) =>
+                FlLine(color: AppColors.line, strokeWidth: 1),
           ),
           borderData: FlBorderData(show: false),
           maxY: maxVal + 1,
@@ -83,9 +99,11 @@ class FillerWordsBarChart extends StatelessWidget {
               barRods: [
                 BarChartRodData(
                   toY: count,
-                  color: AppColors.fair,
+                  color: AppColors.caution,
                   width: 16,
-                  borderRadius: const BorderRadius.horizontal(right: Radius.circular(4)),
+                  borderRadius: const BorderRadius.horizontal(
+                    right: Radius.circular(4),
+                  ),
                   rodStackItems: [],
                 ),
               ],

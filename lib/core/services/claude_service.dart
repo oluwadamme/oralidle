@@ -18,9 +18,12 @@ class ClaudeService {
   }) async {
     final fillerSummary = metrics.fillerWords.isEmpty
         ? 'none detected'
-        : metrics.fillerWords.entries.map((e) => '${e.key} (${e.value}x)').join(', ');
+        : metrics.fillerWords.entries
+              .map((e) => '${e.key} (${e.value}x)')
+              .join(', ');
 
-    final userMessage = '''
+    final userMessage =
+        '''
 Topic: "$topic"
 Duration: ${durationSeconds}s
 Words per minute: ${metrics.wpm}
@@ -68,12 +71,17 @@ Analyse this speech and return ONLY a JSON object — no markdown, no explanatio
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Claude API error ${response.statusCode}: ${response.body}');
+      throw Exception(
+        'Claude API error ${response.statusCode}: ${response.body}',
+      );
     }
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     final content = (body['content'] as List).first['text'] as String;
-    final cleaned = content.trim().replaceAll(RegExp(r'^```json|```$', multiLine: true), '');
+    final cleaned = content.trim().replaceAll(
+      RegExp(r'^```json|```$', multiLine: true),
+      '',
+    );
     return AnalysisResult.fromJson(jsonDecode(cleaned) as Map<String, dynamic>);
   }
 }

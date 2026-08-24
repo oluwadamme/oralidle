@@ -6,8 +6,9 @@ import '../../providers/history_provider.dart';
 import '../widgets/session_tile.dart';
 import '../widgets/progress_line_chart.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/surface_card.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/theme/text_styles.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -19,16 +20,6 @@ class HistoryScreen extends ConsumerWidget {
     return Scaffold(
       body: Stack(
         children: [
-          const Positioned(
-            top: -40,
-            right: -50,
-            child: AmbientOrb(color: AppColors.primary, size: 200),
-          ),
-          const Positioned(
-            bottom: 80,
-            left: -50,
-            child: AmbientOrb(color: AppColors.caution, size: 160),
-          ),
           SafeArea(
             child: sessions.isEmpty
                 ? _EmptyState()
@@ -51,7 +42,7 @@ class HistoryScreen extends ConsumerWidget {
                                 ).textTheme.headlineSmall,
                               ),
                               const SizedBox(height: 16),
-                              GlassCard(
+                              SurfaceCard(
                                 padding: const EdgeInsets.all(16),
                                 radius: 16,
                                 child: Column(
@@ -62,9 +53,7 @@ class HistoryScreen extends ConsumerWidget {
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelMedium
-                                          ?.copyWith(
-                                            color: AppColors.textMedium,
-                                          ),
+                                          ?.copyWith(color: AppColors.inkMuted),
                                     ),
                                     const SizedBox(height: 12),
                                     ProgressLineChart(sessions: sessions),
@@ -124,15 +113,13 @@ class _EmptyState extends StatelessWidget {
               height: 72,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: 0.1),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.25),
-                ),
+                color: AppColors.raised2,
+                border: Border.all(color: AppColors.borderControl),
               ),
               child: const Icon(
                 LucideIcons.history,
                 size: 32,
-                color: AppColors.primary,
+                color: AppColors.ink,
               ),
             ),
             const SizedBox(height: 20),
@@ -141,9 +128,9 @@ class _EmptyState extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Complete your first recording to see results here',
-              style: TextStyle(color: AppColors.textMedium, fontSize: AppFontSize.f14),
+              style: context.body.copyWith(color: AppColors.inkMuted),
               textAlign: TextAlign.center,
             ),
           ],
@@ -172,14 +159,18 @@ class _StatsRow extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: _StatChip(label: 'Avg Score', value: '$avg'),
+          child: _StatChip(
+            label: 'Avg Score',
+            value: '$avg',
+            color: AppColors.scoreColor(avg),
+          ),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: _StatChip(
             label: 'Best Score',
             value: '$best',
-            color: AppColors.good,
+            color: AppColors.scoreColor(best),
           ),
         ),
       ],
@@ -195,7 +186,7 @@ class _StatChip extends StatelessWidget {
   const _StatChip({
     required this.label,
     required this.value,
-    this.color = AppColors.primary,
+    this.color = AppColors.ink,
   });
 
   @override
@@ -203,7 +194,7 @@ class _StatChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.raised,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
@@ -211,16 +202,15 @@ class _StatChip extends StatelessWidget {
         children: [
           Text(
             value,
-            style: TextStyle(
-              fontSize: AppFontSize.f22,
-              fontWeight: AppFontWeight.w800,
+            style: context.title.copyWith(
               color: color,
+              fontWeight: AppFontWeight.w800,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(fontSize: AppFontSize.f11, color: AppColors.textMedium),
+            style: context.overline.copyWith(color: AppColors.inkMuted),
           ),
         ],
       ),

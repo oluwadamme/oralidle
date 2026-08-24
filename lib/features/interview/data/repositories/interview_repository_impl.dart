@@ -15,8 +15,11 @@ class InterviewRepositoryImpl implements InterviewRepository {
   @override
   List<CompletedInterview> getAll() {
     return _box.values
-        .map((raw) => CompletedInterview.fromJson(
-            jsonDecode(raw) as Map<String, dynamic>))
+        .map(
+          (raw) => CompletedInterview.fromJson(
+            jsonDecode(raw) as Map<String, dynamic>,
+          ),
+        )
         .toList()
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
   }

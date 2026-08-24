@@ -18,7 +18,9 @@ class SpeechAnalyser {
   static PreComputedMetrics analyse(String transcript, int durationSeconds) {
     final words = _words(transcript);
     final wordCount = words.length;
-    final wpm = durationSeconds > 0 ? (wordCount / (durationSeconds / 60)).round() : 0;
+    final wpm = durationSeconds > 0
+        ? (wordCount / (durationSeconds / 60)).round()
+        : 0;
     final fillerWords = _detectFillerWords(transcript.toLowerCase());
     final unique = words.map((w) => w.toLowerCase()).toSet();
     final uniqueRatio = wordCount > 0 ? unique.length / wordCount : 0.0;

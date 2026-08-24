@@ -7,12 +7,14 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/services/speech/mic_permission.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/widgets/glass_card.dart';
-import '../../../../core/widgets/gradient_button.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/surface_card.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/pressable.dart';
 import '../../data/models/interview_models.dart';
 import '../../providers/interview_history_provider.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/theme/text_styles.dart';
 
 class InterviewHomeScreen extends ConsumerStatefulWidget {
   const InterviewHomeScreen({super.key});
@@ -60,9 +62,11 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
 
           if (text.trim().isEmpty) {
             if (mounted) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('The selected file appears to be empty.')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('The selected file appears to be empty.'),
+                ),
+              );
             }
             return;
           }
@@ -84,7 +88,9 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load file: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load file: $e')));
       }
     }
   }
@@ -96,7 +102,7 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.raised,
         title: const Text('Paste CV or Project README'),
         content: Form(
           key: formKey,
@@ -106,21 +112,24 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Paste your resume, project README, or candidate bio below:',
-                  style: TextStyle(fontSize: AppFontSize.f13, color: AppColors.textMedium),
+                  style: context.caption.copyWith(color: AppColors.inkMuted),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: controller,
                   maxLines: 8,
                   minLines: 4,
-                  style: const TextStyle(fontSize: AppFontSize.f13),
+                  style: context.caption,
                   decoration: InputDecoration(
-                    hintText: '# Project Overview\n\n## Architecture\nFlutter, Node.js, Gemini API...',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    hintText:
+                        '# Project Overview\n\n## Architecture\nFlutter, Node.js, Gemini API...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     filled: true,
-                    fillColor: AppColors.cardBorder,
+                    fillColor: AppColors.line,
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -134,7 +143,10 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () {
               if (formKey.currentState!.validate()) {
@@ -163,7 +175,10 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
     });
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Reverted to default sample CV (assets/cv.md)'), duration: Duration(seconds: 2)),
+        const SnackBar(
+          content: Text('Reverted to default sample CV (assets/cv.md)'),
+          duration: Duration(seconds: 2),
+        ),
       );
     }
   }
@@ -173,16 +188,6 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          const Positioned(
-            top: -80,
-            left: -60,
-            child: AmbientOrb(color: AppColors.primary, size: 280),
-          ),
-          const Positioned(
-            bottom: 60,
-            right: -80,
-            child: AmbientOrb(color: AppColors.caution, size: 220),
-          ),
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -222,7 +227,7 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
                 const SizedBox(height: 16),
                 _PermissionBanner(onGrant: _requestMicPermission),
                 const SizedBox(height: 16),
-                GlassCard(
+                SurfaceCard(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,9 +235,8 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
                       const Text(
                         'How it works',
                         style: TextStyle(
-                          fontSize: AppFontSize.f14,
                           fontWeight: AppFontWeight.w700,
-                          color: AppColors.textDark,
+                          color: AppColors.ink,
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -350,7 +354,6 @@ class _InterviewHomeScreenState extends ConsumerState<InterviewHomeScreen> {
   }
 }
 
-
 class _PermissionBanner extends ConsumerWidget {
   final VoidCallback onGrant;
 
@@ -374,9 +377,11 @@ class _PermissionBanner extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
+            borderRadius: Radii.mdAll,
             color: AppColors.caution.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.caution.withValues(alpha: 0.35)),
+            border: Border.all(
+              color: AppColors.caution.withValues(alpha: 0.35),
+            ),
           ),
           child: Row(
             children: [
@@ -391,11 +396,7 @@ class _PermissionBanner extends ConsumerWidget {
                   isPermanent
                       ? 'Microphone access was denied. Enable it in Settings to use voice answers.'
                       : 'Microphone access is needed for voice answers.',
-                  style: const TextStyle(
-                    fontSize: AppFontSize.f13,
-                    color: AppColors.caution,
-                    height: 1.4,
-                  ),
+                  style: const TextStyle(color: AppColors.caution),
                 ),
               ),
               const SizedBox(width: 8),
@@ -404,7 +405,6 @@ class _PermissionBanner extends ConsumerWidget {
                 child: Text(
                   isPermanent ? 'Settings' : 'Grant',
                   style: const TextStyle(
-                    fontSize: AppFontSize.f13,
                     fontWeight: AppFontWeight.w700,
                     color: AppColors.caution,
                   ),
@@ -435,9 +435,8 @@ class _RecentSessionsSection extends StatelessWidget {
         const Text(
           'RECENT SESSIONS',
           style: TextStyle(
-            fontSize: AppFontSize.f11,
             fontWeight: AppFontWeight.w700,
-            color: AppColors.textMedium,
+            color: AppColors.inkMuted,
             letterSpacing: 1.0,
           ),
         ),
@@ -455,19 +454,24 @@ class _SessionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = AppColors.scoreColor(session.evaluation.overallScore);
+    final color = AppColors.ink;
 
     return Pressable(
       onTap: () => context.push(AppRoutes.interviewResults, extra: session),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-        decoration: AppColors.glassCard(radius: 10),
+        decoration: BoxDecoration(
+          color: AppColors.raised,
+          borderRadius: BorderRadius.circular(Radii.sm),
+          border: Border.all(color: AppColors.line),
+        ),
         child: Row(
           children: [
             Container(
               width: 36,
               height: 36,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: color.withValues(alpha: 0.12),
@@ -476,7 +480,6 @@ class _SessionRow extends StatelessWidget {
                 child: Text(
                   '${session.evaluation.overallScore}',
                   style: TextStyle(
-                    fontSize: AppFontSize.f13,
                     fontWeight: AppFontWeight.w800,
                     color: color,
                   ),
@@ -491,18 +494,14 @@ class _SessionRow extends StatelessWidget {
                   Text(
                     session.mode.label,
                     style: const TextStyle(
-                      fontSize: AppFontSize.f13,
                       fontWeight: AppFontWeight.w600,
-                      color: AppColors.textDark,
+                      color: AppColors.ink,
                     ),
                   ),
                   Text(
                     '${session.turns.length} questions · '
                     '${DateFormat('MMM d').format(session.timestamp)}',
-                    style: const TextStyle(
-                      fontSize: AppFontSize.f11,
-                      color: AppColors.textMedium,
-                    ),
+                    style: const TextStyle(color: AppColors.inkMuted),
                   ),
                 ],
               ),
@@ -510,7 +509,7 @@ class _SessionRow extends StatelessWidget {
             const Icon(
               LucideIcons.chevronRight,
               size: 18,
-              color: AppColors.outline,
+              color: AppColors.inkMuted,
             ),
           ],
         ),
@@ -532,17 +531,16 @@ class _Header extends StatelessWidget {
             Container(
               width: 36,
               height: 36,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: 0.15),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                ),
+                color: AppColors.raised2,
+                border: Border.all(color: AppColors.borderControl),
               ),
               child: const Icon(
                 LucideIcons.userCheck,
                 size: 18,
-                color: AppColors.primary,
+                color: AppColors.ink,
               ),
             ),
             const SizedBox(width: 12),
@@ -550,9 +548,8 @@ class _Header extends StatelessWidget {
               child: Text(
                 'Interview Prep',
                 style: TextStyle(
-                  fontSize: AppFontSize.f22,
                   fontWeight: AppFontWeight.w800,
-                  color: AppColors.textDark,
+                  color: AppColors.ink,
                 ),
               ),
             ),
@@ -561,11 +558,7 @@ class _Header extends StatelessWidget {
         const SizedBox(height: 10),
         const Text(
           'AI mock interviews personalised to your CV. Sharpen your answers, improve your delivery.',
-          style: TextStyle(
-            fontSize: AppFontSize.f14,
-            color: AppColors.textMedium,
-            height: 1.5,
-          ),
+          style: TextStyle(color: AppColors.inkMuted),
         ),
       ],
     );
@@ -588,9 +581,8 @@ class _ModeSection extends StatelessWidget {
         const Text(
           'INTERVIEW TYPE',
           style: TextStyle(
-            fontSize: AppFontSize.f11,
             fontWeight: AppFontWeight.w700,
-            color: AppColors.textMedium,
+            color: AppColors.inkMuted,
             letterSpacing: 1.0,
           ),
         ),
@@ -621,44 +613,45 @@ class _ModeCard extends StatelessWidget {
   static const _icons = {
     InterviewMode.technical: LucideIcons.code,
     InterviewMode.behavioral: LucideIcons.brain,
-    InterviewMode.mixed: LucideIcons.shuffle,
+    InterviewMode.mixed: LucideIcons.layers,
   };
 
   @override
   Widget build(BuildContext context) {
     return Pressable(
       onTap: onTap,
+      padding: const EdgeInsets.only(bottom: 10),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(bottom: 10),
+
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.1)
-              : AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: Radii.mdAll,
+          color: isSelected ? AppColors.raised2 : AppColors.raised,
           border: Border.all(
-            color: isSelected
-                ? AppColors.primary.withValues(alpha: 0.5)
-                : AppColors.cardBorder,
+            color: isSelected ? AppColors.borderControl : AppColors.line,
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.2)
-                    : AppColors.surfaceHigh,
+                    ? AppColors.accent.withValues(alpha: 0.16)
+                    : AppColors.raised2,
+                border: Border.all(
+                  color: isSelected ? AppColors.accent : AppColors.line,
+                ),
               ),
               child: Icon(
                 _icons[mode],
-                size: 20,
-                color: isSelected ? AppColors.primary : AppColors.outline,
+                size: IconSize.md,
+                color: isSelected ? AppColors.accent : AppColors.inkMuted,
               ),
             ),
             const SizedBox(width: 14),
@@ -666,32 +659,20 @@ class _ModeCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    mode.label,
-                    style: TextStyle(
-                      fontSize: AppFontSize.f15,
-                      fontWeight: AppFontWeight.w700,
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.textDark,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
+                  Text(mode.label, style: context.cardTitle),
+                  const SizedBox(height: Space.xs),
                   Text(
                     mode.description,
-                    style: const TextStyle(
-                      fontSize: AppFontSize.f12,
-                      color: AppColors.textMedium,
-                    ),
+                    style: context.body.copyWith(color: AppColors.inkMuted),
                   ),
                 ],
               ),
             ),
             if (isSelected)
               const Icon(
-                LucideIcons.checkCircle2,
-                size: 18,
-                color: AppColors.primary,
+                LucideIcons.circleCheck,
+                size: IconSize.md,
+                color: AppColors.accent,
               ),
           ],
         ),
@@ -721,9 +702,8 @@ class _CountSection extends StatelessWidget {
         const Text(
           'NUMBER OF QUESTIONS',
           style: TextStyle(
-            fontSize: AppFontSize.f11,
             fontWeight: AppFontWeight.w700,
-            color: AppColors.textMedium,
+            color: AppColors.inkMuted,
             letterSpacing: 1.0,
           ),
         ),
@@ -764,28 +744,32 @@ class _CountPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Pressable(
       onTap: onTap,
+      minSize: 0,
+      borderRadius: Radii.mdAll,
+      semanticLabel: '$count questions',
+      selected: isSelected,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        duration: Motion.fast,
+        curve: Motion.curve,
+        height: TouchTarget.min,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
+          borderRadius: Radii.mdAll,
           color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.12)
-              : AppColors.surface,
-          borderRadius: BorderRadius.circular(10),
+              ? AppColors.accent.withValues(alpha: 0.14)
+              : AppColors.raised,
           border: Border.all(
-            color: isSelected
-                ? AppColors.primary.withValues(alpha: 0.5)
-                : AppColors.cardBorder,
+            color: isSelected ? AppColors.accent : AppColors.line,
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
         child: Text(
           '$count',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: AppFontSize.f16,
-            fontWeight: AppFontWeight.w800,
-            color: isSelected ? AppColors.primary : AppColors.textMedium,
+          style: context.readoutAt(
+            16,
+            color: isSelected ? AppColors.accent : AppColors.inkMuted,
+            weight: AppFontWeight.w700,
           ),
         ),
       ),
@@ -810,10 +794,11 @@ class _StartButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PrimaryGradientButton(
+    return AppButton.primary(
+      expand: true,
       label: 'Start Interview',
       icon: LucideIcons.play,
-      onTap: () => context.push(
+      onPressed: () => context.push(
         AppRoutes.interviewSession,
         extra: InterviewSetup(
           mode: mode,
@@ -846,9 +831,11 @@ class _ContextDocumentSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasCustom = content != null && content!.trim().isNotEmpty;
-    final wordCount = hasCustom ? content!.trim().split(RegExp(r'\s+')).length : 0;
+    final wordCount = hasCustom
+        ? content!.trim().split(RegExp(r'\s+')).length
+        : 0;
 
-    return GlassCard(
+    return SurfaceCard(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -857,24 +844,36 @@ class _ContextDocumentSection extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primary.withValues(alpha: 0.12)),
-                child: const Icon(LucideIcons.fileText, size: 18, color: AppColors.primary),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.raised2,
+                ),
+                child: const Icon(
+                  LucideIcons.fileText,
+                  size: 18,
+                  color: AppColors.ink,
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Interview Context (CV or Project README)',
-                      style: TextStyle(fontSize: AppFontSize.f14, fontWeight: AppFontWeight.w700, color: AppColors.textDark),
+                      style: context.cardTitle.copyWith(
+                        color: AppColors.ink,
+                        fontWeight: AppFontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       hasCustom
                           ? 'Questions will be generated based on your uploaded document'
                           : 'Currently using default sample CV (assets/cv.md)',
-                      style: const TextStyle(fontSize: AppFontSize.f12, color: AppColors.textMedium),
+                      style: context.caption.copyWith(
+                        color: AppColors.inkMuted,
+                      ),
                     ),
                   ],
                 ),
@@ -885,20 +884,29 @@ class _ContextDocumentSection extends StatelessWidget {
 
           // Token recommendation hint banner
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(Space.md),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+              borderRadius: Radii.mdAll,
+              color: AppColors.caution.withValues(alpha: 0.08),
+              border: Border.all(
+                color: AppColors.caution.withValues(alpha: 0.30),
+              ),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(LucideIcons.lightbulb, size: 16, color: AppColors.primary),
-                SizedBox(width: 8),
+                Icon(
+                  LucideIcons.lightbulb,
+                  size: IconSize.sm,
+                  color: AppColors.caution,
+                ),
+                SizedBox(width: Space.sm),
                 Expanded(
                   child: Text(
                     'Markdown (.md) or plain text (.txt) files are recommended for reduced token usage and optimal question tailoring.',
-                    style: TextStyle(fontSize: AppFontSize.f12, color: AppColors.textDark, height: 1.35),
+                    style: context.caption.copyWith(
+                      color: AppColors.inkMuted,
+                      height: 1.45,
+                    ),
                   ),
                 ),
               ],
@@ -910,13 +918,19 @@ class _ContextDocumentSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: AppColors.good.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.good.withValues(alpha: 0.25)),
+                borderRadius: Radii.mdAll,
+                color: AppColors.positive.withValues(alpha: 0.08),
+                border: Border.all(
+                  color: AppColors.positive.withValues(alpha: 0.25),
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(LucideIcons.checkCircle2, size: 18, color: AppColors.good),
+                  const Icon(
+                    LucideIcons.checkCircle2,
+                    size: 18,
+                    color: AppColors.positive,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -924,14 +938,19 @@ class _ContextDocumentSection extends StatelessWidget {
                       children: [
                         Text(
                           fileName ?? 'Custom Document',
-                          style: const TextStyle(fontSize: AppFontSize.f13, fontWeight: AppFontWeight.w700, color: AppColors.textDark),
+                          style: context.overline.copyWith(
+                            color: AppColors.ink,
+                            fontWeight: AppFontWeight.w700,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
                         Text(
                           '$wordCount words parsed',
-                          style: const TextStyle(fontSize: AppFontSize.f11, color: AppColors.textMedium),
+                          style: context.overline.copyWith(
+                            color: AppColors.inkMuted,
+                          ),
                         ),
                       ],
                     ),
@@ -953,7 +972,10 @@ class _ContextDocumentSection extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onUpload,
                   icon: const Icon(LucideIcons.upload, size: 16),
-                  label: Text(hasCustom ? 'Change File' : 'Upload File', style: const TextStyle(fontSize: AppFontSize.f12)),
+                  label: Text(
+                    hasCustom ? 'Change File' : 'Upload File',
+                    style: context.caption,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -961,7 +983,7 @@ class _ContextDocumentSection extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onPaste,
                   icon: const Icon(LucideIcons.fileEdit, size: 16),
-                  label: const Text('Paste Text', style: TextStyle(fontSize: AppFontSize.f12)),
+                  label: Text('Paste Text', style: context.caption),
                 ),
               ),
             ],
@@ -995,20 +1017,18 @@ class _HowItWorksStep extends StatelessWidget {
           Container(
             width: 22,
             height: 22,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primary.withValues(alpha: 0.12),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.3),
-              ),
+              color: AppColors.raised2,
+              border: Border.all(color: AppColors.borderControl),
             ),
             child: Center(
               child: Text(
                 number,
                 style: const TextStyle(
-                  fontSize: AppFontSize.f11,
                   fontWeight: AppFontWeight.w800,
-                  color: AppColors.primary,
+                  color: AppColors.ink,
                 ),
               ),
             ),
@@ -1017,11 +1037,7 @@ class _HowItWorksStep extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                fontSize: AppFontSize.f13,
-                color: AppColors.textMedium,
-                height: 1.4,
-              ),
+              style: const TextStyle(color: AppColors.inkMuted),
             ),
           ),
         ],

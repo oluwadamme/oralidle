@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/text_styles.dart';
+import '../../../../core/widgets/score_meter.dart';
+import '../../../../core/widgets/surface_card.dart';
 
 class MetricScoreCard extends StatelessWidget {
   final String label;
@@ -15,41 +20,33 @@ class MetricScoreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = AppColors.scoreColor(score);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      decoration: AppColors.glassCard(
-        radius: 14,
-        borderColor: color.withValues(alpha: 0.25),
+    return SurfaceCard(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Space.md,
+        vertical: Space.lg,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 6),
-          Text(
-            '$score',
-            style: TextStyle(fontSize: AppFontSize.f22, fontWeight: AppFontWeight.w800, color: color),
+          Row(
+            children: [
+              ExcludeSemantics(
+                child: Icon(icon, color: AppColors.inkMuted, size: IconSize.sm),
+              ),
+              const SizedBox(width: Space.sm),
+              Expanded(
+                child: Text(
+                  label,
+                  style: context.caption,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-                fontSize: AppFontSize.f11, fontWeight: AppFontWeight.w500, color: AppColors.textMedium),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: score / 100,
-              minHeight: 4,
-              backgroundColor: color.withValues(alpha: 0.15),
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-            ),
-          ),
+          const SizedBox(height: Space.sm),
+          ScoreMeter(score: score, label: label, size: ScoreMeterSize.card),
         ],
       ),
     );

@@ -8,10 +8,12 @@ import '../../data/models/session_record.dart';
 import '../../data/models/analysis_result.dart';
 import '../../../history/providers/history_provider.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/widgets/glass_card.dart';
-import '../../../../core/widgets/gradient_button.dart';
+import '../../../../core/theme/text_styles.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/score_meter.dart';
+import '../../../../core/widgets/surface_card.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/meta_chip.dart';
-import '../../../../core/widgets/score_bar.dart';
 import '../../../../core/utils/responsive.dart';
 
 class ResultsScreen extends ConsumerWidget {
@@ -56,20 +58,9 @@ class _WebResults extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = record.result;
     final overall = r.overallScore;
-    final color = AppColors.scoreColor(overall);
 
     return Stack(
       children: [
-        Positioned(
-          top: -40,
-          right: -40,
-          child: AmbientOrb(color: color, size: 220),
-        ),
-        const Positioned(
-          bottom: 80,
-          left: -50,
-          child: AmbientOrb(color: AppColors.primary, size: 160),
-        ),
         SafeArea(
           child: Column(
             children: [
@@ -92,7 +83,7 @@ class _WebResults extends StatelessWidget {
                     IconButton(
                       icon: const Icon(
                         LucideIcons.home,
-                        color: AppColors.textMedium,
+                        color: AppColors.inkMuted,
                       ),
                       onPressed: () {
                         ref.read(historyProvider.notifier).refresh();
@@ -123,36 +114,22 @@ class _WebResults extends StatelessWidget {
                         width: 300,
                         child: Column(
                           children: [
-                            GlassCard(
+                            SurfaceCard(
                               padding: const EdgeInsets.all(24),
                               child: Column(
                                 children: [
-                                  const Text(
-                                    'CLARITY SCORE',
-                                    style: TextStyle(
-                                      fontSize: AppFontSize.f11,
-                                      fontWeight: AppFontWeight.w700,
-                                      color: AppColors.textMedium,
-                                      letterSpacing: 1.0,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  ScoreRing(
-                                    score: overall,
-                                    color: color,
-                                    size: 140,
-                                    strokeWidth: 9,
-                                  ),
-                                  const SizedBox(height: 12),
                                   Text(
-                                    _scoreLabel(overall),
-                                    style: TextStyle(
-                                      fontSize: AppFontSize.f16,
-                                      fontWeight: AppFontWeight.w700,
-                                      color: color,
-                                    ),
+                                    'CLARITY SCORE',
+                                    style: context.overline,
                                   ),
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: Space.lg),
+                                  const SizedBox(height: Space.md),
+                                  ScoreMeter(
+                                    score: overall,
+                                    size: ScoreMeterSize.hero,
+                                    caption: _scoreLabel(overall),
+                                  ),
+                                  const SizedBox(height: Space.md),
                                   Text(
                                     r.summary,
                                     style: Theme.of(context)
@@ -167,7 +144,7 @@ class _WebResults extends StatelessWidget {
                             const SizedBox(height: 16),
 
                             // Meta
-                            GlassCard(
+                            SurfaceCard(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
                                 vertical: 12,
@@ -208,10 +185,12 @@ class _WebResults extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             if (r.transcript.isNotEmpty) ...[
-                              _SpeechTranscriptSection(transcript: r.transcript),
+                              _SpeechTranscriptSection(
+                                transcript: r.transcript,
+                              ),
                               const SizedBox(height: 20),
                             ],
-                            GlassCard(
+                            SurfaceCard(
                               padding: const EdgeInsets.all(24),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,30 +202,35 @@ class _WebResults extends StatelessWidget {
                                     ).textTheme.titleMedium,
                                   ),
                                   const SizedBox(height: 20),
-                                  ScoreBar(
+                                  const SizedBox(height: Space.md),
+                                  ScoreMeter(
                                     label: 'Fluency',
                                     score: r.scores.fluency,
                                   ),
-                                  ScoreBar(
+                                  const SizedBox(height: Space.md),
+                                  ScoreMeter(
                                     label: 'Vocabulary',
                                     score: r.scores.vocabulary,
                                   ),
-                                  ScoreBar(
+                                  const SizedBox(height: Space.md),
+                                  ScoreMeter(
                                     label: 'Grammar',
                                     score: r.scores.grammar,
                                   ),
-                                  ScoreBar(
+                                  const SizedBox(height: Space.md),
+                                  ScoreMeter(
                                     label: 'Coherence',
                                     score: r.scores.coherence,
                                   ),
-                                  ScoreBar(
+                                  const SizedBox(height: Space.md),
+                                  ScoreMeter(
                                     label: 'Confidence',
                                     score: r.scores.confidence,
                                   ),
-                                  ScoreBar(
+                                  const SizedBox(height: Space.md),
+                                  ScoreMeter(
                                     label: 'Topic',
                                     score: r.scores.topicRelevance,
-                                    isLast: true,
                                   ),
                                 ],
                               ),
@@ -266,12 +250,14 @@ class _WebResults extends StatelessWidget {
                             Row(
                               children: [
                                 Expanded(
-                                  child: PrimaryGradientButton(
+                                  child: AppButton.primary(
+                                    expand: true,
                                     label: 'Try a New Topic',
                                     icon: LucideIcons.mic,
-                                    height: 48,
-                                    onTap: () {
-                                      ref.read(historyProvider.notifier).refresh();
+                                    onPressed: () {
+                                      ref
+                                          .read(historyProvider.notifier)
+                                          .refresh();
                                       context.go(AppRoutes.topics);
                                     },
                                   ),
@@ -326,20 +312,9 @@ class _MobileResults extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = record.result;
     final overall = r.overallScore;
-    final color = AppColors.scoreColor(overall);
 
     return Stack(
       children: [
-        Positioned(
-          top: -40,
-          right: -40,
-          child: AmbientOrb(color: color, size: 200),
-        ),
-        const Positioned(
-          bottom: 100,
-          left: -50,
-          child: AmbientOrb(color: AppColors.primary, size: 160),
-        ),
         SafeArea(
           child: Column(
             children: [
@@ -358,7 +333,7 @@ class _MobileResults extends StatelessWidget {
                     IconButton(
                       icon: const Icon(
                         LucideIcons.home,
-                        color: AppColors.textMedium,
+                        color: AppColors.inkMuted,
                       ),
                       onPressed: () {
                         ref.read(historyProvider.notifier).refresh();
@@ -374,26 +349,12 @@ class _MobileResults extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Center(
-                        child: ScoreRing(
-                          score: overall,
-                          color: color,
-                          size: 140,
-                          strokeWidth: 9,
-                        ),
+                      ScoreMeter(
+                        score: overall,
+                        size: ScoreMeterSize.hero,
+                        caption: _scoreLabel(overall),
                       ),
-                      const SizedBox(height: 10),
-                      Center(
-                        child: Text(
-                          _scoreLabel(overall),
-                          style: TextStyle(
-                            fontSize: AppFontSize.f18,
-                            fontWeight: AppFontWeight.w700,
-                            color: color,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: Space.sm),
                       Center(
                         child: Text(
                           '${DateFormat('MMM d, y').format(record.timestamp)}  •  ${record.formattedDuration}  •  ${r.wpm} wpm',
@@ -401,10 +362,8 @@ class _MobileResults extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      GlassCard(
+                      SurfaceCard(
                         padding: const EdgeInsets.all(16),
-                        bgColor: color.withValues(alpha: 0.06),
-                        borderColor: color.withValues(alpha: 0.2),
                         child: Text(
                           r.summary,
                           style: Theme.of(
@@ -423,34 +382,33 @@ class _MobileResults extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 14),
-                      GlassCard(
+                      SurfaceCard(
                         padding: const EdgeInsets.all(18),
                         child: Column(
                           children: [
-                            ScoreBar(
+                            ScoreMeter(
                               label: 'Fluency',
                               score: r.scores.fluency,
                             ),
-                            ScoreBar(
+                            ScoreMeter(
                               label: 'Vocabulary',
                               score: r.scores.vocabulary,
                             ),
-                            ScoreBar(
+                            ScoreMeter(
                               label: 'Grammar',
                               score: r.scores.grammar,
                             ),
-                            ScoreBar(
+                            ScoreMeter(
                               label: 'Coherence',
                               score: r.scores.coherence,
                             ),
-                            ScoreBar(
+                            ScoreMeter(
                               label: 'Confidence',
                               score: r.scores.confidence,
                             ),
-                            ScoreBar(
+                            ScoreMeter(
                               label: 'Topic',
                               score: r.scores.topicRelevance,
-                              isLast: true,
                             ),
                           ],
                         ),
@@ -513,14 +471,14 @@ class _KeyInsightsSection extends StatelessWidget {
     final ideal =
         result.wpm >= AppConstants.idealWpmMin &&
         result.wpm <= AppConstants.idealWpmMax;
-    final wpmColor = ideal ? AppColors.good : AppColors.fair;
+    final wpmColor = ideal ? AppColors.positive : AppColors.caution;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Key Insights', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
-        GlassCard(
+        SurfaceCard(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -533,8 +491,8 @@ class _KeyInsightsSection extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
+                      borderRadius: Radii.pillAll,
                       color: wpmColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: wpmColor.withValues(alpha: 0.3),
                       ),
@@ -547,7 +505,6 @@ class _KeyInsightsSection extends StatelessWidget {
                         Text(
                           '${result.wpm} WPM',
                           style: TextStyle(
-                            fontSize: AppFontSize.f12,
                             fontWeight: AppFontWeight.w700,
                             color: wpmColor,
                           ),
@@ -563,10 +520,7 @@ class _KeyInsightsSection extends StatelessWidget {
                           : result.wpm < AppConstants.idealWpmMin
                           ? 'A little slow — aim for ${AppConstants.idealWpmMin}+ WPM'
                           : 'A little fast — try to slow down',
-                      style: const TextStyle(
-                        fontSize: AppFontSize.f12,
-                        color: AppColors.textMedium,
-                      ),
+                      style: const TextStyle(color: AppColors.inkMuted),
                     ),
                   ),
                 ],
@@ -584,7 +538,6 @@ class _KeyInsightsSection extends StatelessWidget {
                     const Text(
                       'FILLER WORDS DETECTED',
                       style: TextStyle(
-                        fontSize: AppFontSize.f11,
                         fontWeight: AppFontWeight.w700,
                         color: AppColors.caution,
                         letterSpacing: 0.5,
@@ -608,14 +561,13 @@ class _KeyInsightsSection extends StatelessWidget {
                     Icon(
                       LucideIcons.checkCircle2,
                       size: 14,
-                      color: AppColors.good,
+                      color: AppColors.positive,
                     ),
                     SizedBox(width: 6),
                     Text(
                       'No filler words detected — excellent!',
                       style: TextStyle(
-                        fontSize: AppFontSize.f13,
-                        color: AppColors.good,
+                        color: AppColors.positive,
                         fontWeight: AppFontWeight.w600,
                       ),
                     ),
@@ -640,8 +592,8 @@ class _FillerChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
+        borderRadius: Radii.pillAll,
         color: AppColors.caution.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.caution.withValues(alpha: 0.3)),
       ),
       child: RichText(
@@ -650,15 +602,13 @@ class _FillerChip extends StatelessWidget {
             TextSpan(
               text: '"$word"',
               style: const TextStyle(
-                fontSize: AppFontSize.f12,
                 fontWeight: AppFontWeight.w600,
-                color: AppColors.textDark,
+                color: AppColors.ink,
               ),
             ),
             TextSpan(
               text: '  $count×',
               style: const TextStyle(
-                fontSize: AppFontSize.f12,
                 fontWeight: AppFontWeight.w700,
                 color: AppColors.caution,
               ),
@@ -680,9 +630,9 @@ class _CoachingTipCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.cardBorder),
+        borderRadius: Radii.mdAll,
+        color: AppColors.raised,
+        border: Border.all(color: AppColors.line),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -690,17 +640,16 @@ class _CoachingTipCard extends StatelessWidget {
           Container(
             width: 32,
             height: 32,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primary.withValues(alpha: 0.12),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.25),
-              ),
+              color: AppColors.raised2,
+              border: Border.all(color: AppColors.borderControl),
             ),
             child: const Icon(
               LucideIcons.arrowUp,
               size: 16,
-              color: AppColors.primary,
+              color: AppColors.ink,
             ),
           ),
           const SizedBox(width: 12),
@@ -711,21 +660,13 @@ class _CoachingTipCard extends StatelessWidget {
                 Text(
                   tip.area,
                   style: const TextStyle(
-                    fontSize: AppFontSize.f12,
                     fontWeight: AppFontWeight.w700,
-                    color: AppColors.primary,
+                    color: AppColors.ink,
                     letterSpacing: 0.2,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  tip.tip,
-                  style: const TextStyle(
-                    fontSize: AppFontSize.f13,
-                    height: 1.45,
-                    color: AppColors.textDark,
-                  ),
-                ),
+                Text(tip.tip, style: const TextStyle(color: AppColors.ink)),
               ],
             ),
           ),
@@ -754,7 +695,6 @@ class _SpeechTranscriptSection extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             InkWell(
-              borderRadius: BorderRadius.circular(8),
               onTap: () {
                 Clipboard.setData(ClipboardData(text: transcript));
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -769,18 +709,13 @@ class _SpeechTranscriptSection extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      LucideIcons.copy,
-                      size: 14,
-                      color: AppColors.primary,
-                    ),
+                    Icon(LucideIcons.copy, size: 14, color: AppColors.ink),
                     SizedBox(width: 4),
                     Text(
                       'Copy',
                       style: TextStyle(
-                        fontSize: AppFontSize.f12,
                         fontWeight: AppFontWeight.w600,
-                        color: AppColors.primary,
+                        color: AppColors.ink,
                       ),
                     ),
                   ],
@@ -790,10 +725,8 @@ class _SpeechTranscriptSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 10),
-        GlassCard(
+        SurfaceCard(
           padding: const EdgeInsets.all(18),
-          bgColor: AppColors.surface.withValues(alpha: 0.6),
-          borderColor: AppColors.primary.withValues(alpha: 0.25),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -801,12 +734,12 @@ class _SpeechTranscriptSection extends StatelessWidget {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                  color: AppColors.raised2,
                 ),
                 child: const Icon(
                   LucideIcons.quote,
                   size: 18,
-                  color: AppColors.primary,
+                  color: AppColors.ink,
                 ),
               ),
               const SizedBox(width: 14),
@@ -814,8 +747,7 @@ class _SpeechTranscriptSection extends StatelessWidget {
                 child: SelectableText(
                   transcript,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    height: 1.6,
-                    color: AppColors.textDark,
+                    color: AppColors.ink,
                     fontStyle: FontStyle.italic,
                   ),
                 ),

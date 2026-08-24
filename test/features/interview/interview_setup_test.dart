@@ -16,7 +16,8 @@ void main() {
     });
 
     test('initializes with custom project README context', () {
-      const customContent = '# My E-Commerce Microservice\n\n## Tech Stack\nNode.js, Redis, PostgreSQL';
+      const customContent =
+          '# My E-Commerce Microservice\n\n## Tech Stack\nNode.js, Redis, PostgreSQL';
       const fileName = 'README.md';
 
       const setup = InterviewSetup(

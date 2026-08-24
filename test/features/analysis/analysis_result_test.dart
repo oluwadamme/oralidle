@@ -22,11 +22,17 @@ void main() {
           ImprovementTip(area: 'Fluency', tip: 'Reduce um sounds'),
         ],
         summary: 'Solid presentation with strong topic relevance.',
-        transcript: 'I believe effective communication is essential for leadership.',
+        transcript:
+            'I believe effective communication is essential for leadership.',
       );
 
       final json = result.toJson();
-      expect(json['transcript'], equals('I believe effective communication is essential for leadership.'));
+      expect(
+        json['transcript'],
+        equals(
+          'I believe effective communication is essential for leadership.',
+        ),
+      );
 
       final restored = AnalysisResult.fromJson(json);
       expect(restored.transcript, equals(result.transcript));
@@ -87,7 +93,10 @@ void main() {
       final json = record.toJson();
       final restored = SessionRecord.fromJson(json);
 
-      expect(restored.result.transcript, equals('My leadership style relies on empathy and clear goals.'));
+      expect(
+        restored.result.transcript,
+        equals('My leadership style relies on empathy and clear goals.'),
+      );
       expect(restored.topicTitle, equals('Leadership Style'));
     });
   });

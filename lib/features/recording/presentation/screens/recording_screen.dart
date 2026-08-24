@@ -6,7 +6,9 @@ import '../../../topic_selection/data/models/topic.dart';
 import '../../providers/recording_provider.dart';
 import '../widgets/waveform_animation.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/tabular_text.dart';
+import '../../../../core/theme/text_styles.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/pressable.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/services/speech/speech_providers.dart';
@@ -52,7 +54,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
             content: Text(
               next.errorMessage ?? 'Speech recognition unavailable',
             ),
-            backgroundColor: AppColors.poor,
+            backgroundColor: AppColors.critical,
             duration: const Duration(seconds: 5),
           ),
         );
@@ -71,16 +73,6 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
       child: Scaffold(
         body: Stack(
           children: [
-            const Positioned(
-              top: -60,
-              right: -40,
-              child: AmbientOrb(color: AppColors.primary, size: 240),
-            ),
-            const Positioned(
-              bottom: 80,
-              left: -60,
-              child: AmbientOrb(color: AppColors.caution, size: 200),
-            ),
             SafeArea(
               child: Column(
                 children: [
@@ -92,18 +84,16 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                         IconButton(
                           icon: const Icon(
                             LucideIcons.x,
-                            color: AppColors.textMedium,
+                            color: AppColors.inkMuted,
                           ),
                           onPressed: () => _confirmStop(context),
                         ),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Oralidle',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: AppFontSize.f16,
+                            style: context.cardTitle.copyWith(color: AppColors.ink,
                               fontWeight: AppFontWeight.w700,
-                              color: AppColors.textDark,
                             ),
                           ),
                         ),
@@ -145,11 +135,9 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                                 const SizedBox(width: 7),
                                 Text(
                                   widget.topic.category.toUpperCase(),
-                                  style: const TextStyle(
-                                    fontSize: AppFontSize.f11,
-                                    fontWeight: AppFontWeight.w700,
+                                  style: context.overline.copyWith(
                                     color: AppColors.caution,
-                                    letterSpacing: 0.8,
+                                    fontWeight: AppFontWeight.w700,
                                   ),
                                 ),
                               ],
@@ -161,11 +149,10 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                           Text(
                             widget.topic.title,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: AppFontSize.f20,
-                              fontWeight: AppFontWeight.w700,
-                              color: AppColors.textDark,
+                            style: context.title.copyWith(
+                              color: AppColors.ink,
                               height: 1.35,
+                              fontWeight: AppFontWeight.w700,
                             ),
                           ),
 
@@ -181,20 +168,19 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                                     : LucideIcons.activity,
                                 size: 14,
                                 color: state.isRecording || state.isFinalising
-                                    ? AppColors.primary
-                                    : AppColors.outline,
+                                    ? AppColors.voiceLow
+                                    : AppColors.borderControl,
                               ),
                               const SizedBox(width: 6),
                               Flexible(
                                 child: Text(
                                   _statusLabel(state, engineState),
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: AppFontSize.f12,
+                                  style: context.caption.copyWith(
                                     color:
                                         state.isRecording || state.isFinalising
-                                        ? AppColors.primary
-                                        : AppColors.outline,
+                                        ? AppColors.voiceLow
+                                        : AppColors.borderControl,
                                   ),
                                 ),
                               ),
@@ -203,24 +189,17 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                           const SizedBox(height: 14),
 
                           // ── Large timer ─────────────────────────────────
-                          Text(
+                          TabularText(
                             '$minutes:${seconds.toString().padLeft(2, '0')}',
-                            style: TextStyle(
-                              fontSize: context.isShort ? 52 : 72,
-                              fontWeight: AppFontWeight.w800,
-                              color: AppColors.textDark,
-                              letterSpacing: -3,
-                              height: 1,
-                            ),
+                            style: context.timer,
+                            semanticsLabel: '$minutes minutes ${seconds.toString().padLeft(2, '0')} seconds elapsed',
                           ),
                           const SizedBox(height: 6),
                           Text(
                             elapsed < AppConstants.minRecordingSeconds
                                 ? 'Min 1:00 to stop'
                                 : 'Tap the mic to stop',
-                            style: const TextStyle(
-                              fontSize: AppFontSize.f13,
-                              color: AppColors.textMedium,
+                            style: context.caption.copyWith(color: AppColors.inkMuted,
                             ),
                           ),
                           const SizedBox(height: 28),
@@ -244,17 +223,15 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                               width: double.infinity,
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: AppColors.surfaceHigh,
+                                color: AppColors.raised2,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppColors.cardBorder),
+                                border: Border.all(color: AppColors.line),
                               ),
                               child: SingleChildScrollView(
                                 reverse: true,
                                 child: Text(
                                   state.transcript,
-                                  style: const TextStyle(
-                                    fontSize: AppFontSize.f13,
-                                    color: AppColors.textMedium,
+                                  style: context.caption.copyWith(color: AppColors.inkMuted,
                                     height: 1.45,
                                   ),
                                 ),
@@ -265,42 +242,13 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                           const Spacer(),
 
                           // ── Mic / stop button ───────────────────────────
-                          Pressable(
-                            onTap: state.canStop && !state.isFinalising
+                          _RecordControl(
+                            recording: state.isRecording,
+                            onStop: state.canStop && !state.isFinalising
                                 ? () => ref
                                       .read(recordingProvider.notifier)
                                       .stopManually()
                                 : null,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: state.canStop
-                                    ? AppColors.poor
-                                    : AppColors.primary,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color:
-                                        (state.canStop
-                                                ? AppColors.poor
-                                                : AppColors.primary)
-                                            .withValues(alpha: 0.45),
-                                    blurRadius: 32,
-                                    spreadRadius: 6,
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                state.canStop
-                                    ? LucideIcons.square
-                                    : LucideIcons.mic,
-                                color: state.canStop
-                                    ? AppColors.ink : AppColors.onAction,
-                                size: 38,
-                              ),
-                            ),
                           ),
                           const SizedBox(height: 14),
                           Text(
@@ -309,9 +257,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
                                 : state.canStop
                                 ? 'Tap to stop recording'
                                 : 'Keep speaking…',
-                            style: const TextStyle(
-                              fontSize: AppFontSize.f13,
-                              color: AppColors.textMedium,
+                            style: context.caption.copyWith(color: AppColors.inkMuted,
                             ),
                           ),
                           const SizedBox(height: 32),
@@ -352,7 +298,7 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surfaceHigh,
+        backgroundColor: AppColors.raised2,
         title: const Text('Stop Recording?'),
         content: const Text('Your current recording will be discarded.'),
         actions: [
@@ -360,14 +306,14 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textMedium),
+              style: TextStyle(color: AppColors.inkMuted),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text(
               'Discard',
-              style: TextStyle(color: AppColors.poor),
+              style: TextStyle(color: AppColors.critical),
             ),
           ),
         ],
@@ -377,5 +323,49 @@ class _RecordingScreenState extends ConsumerState<RecordingScreen> {
       ref.read(recordingProvider.notifier).reset();
       context.go(AppRoutes.home);
     }
+  }
+}
+
+/// The only circular control in the app, and the only chromatic one.
+/// DESIGN.md §4.
+///
+/// Outlined rather than filled while recording: a glyph on filled `critical`
+/// measures 2.62:1 and fails, while `critical` on the canvas is 8.06:1. The
+/// glow is the single exception DESIGN.md §2 grants, and only while capturing.
+class _RecordControl extends StatelessWidget {
+  const _RecordControl({required this.recording, required this.onStop});
+
+  final bool recording;
+  final VoidCallback? onStop;
+
+  @override
+  Widget build(BuildContext context) {
+    return Pressable(
+      onTap: onStop,
+      borderRadius: BorderRadius.circular(TouchTarget.record),
+      semanticLabel: recording ? 'Stop recording' : 'Recording',
+      semanticHint: onStop == null ? 'Keep speaking to enable' : null,
+      haptic: false,
+      padding: EdgeInsets.all(1),
+      child: AnimatedContainer(
+        duration: context.motion(Motion.base),
+        curve: Motion.curve,
+        width: TouchTarget.record,
+        height: TouchTarget.record,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: recording ? Colors.transparent : AppColors.accent,
+          border: recording ? Border.all(color: AppColors.critical, width: 3) : null,
+          boxShadow: recording
+              ? [BoxShadow(color: AppColors.accent.withValues(alpha: 0.35), blurRadius: 28, spreadRadius: 2)]
+              : null,
+        ),
+        child: Icon(
+          recording ? LucideIcons.square : LucideIcons.mic,
+          color: recording ? AppColors.critical : AppColors.onAccent,
+          size: IconSize.xl,
+        ),
+      ),
+    );
   }
 }
