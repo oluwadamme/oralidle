@@ -55,7 +55,9 @@ class InterviewQuestion {
     final type = QuestionType.values.firstWhere(
       (t) => t.name == typeStr,
       orElse: () {
-        log('InterviewQuestion: unrecognized question_type "$typeStr", defaulting to technical');
+        log(
+          'InterviewQuestion: unrecognized question_type "$typeStr", defaulting to technical',
+        );
         return QuestionType.technical;
       },
     );
@@ -63,9 +65,9 @@ class InterviewQuestion {
   }
 
   Map<String, dynamic> toJson() => {
-        'question': text,
-        'question_type': type.name,
-      };
+    'question': text,
+    'question_type': type.name,
+  };
 }
 
 class TurnEvaluation {
@@ -82,10 +84,10 @@ class TurnEvaluation {
   });
 
   factory TurnEvaluation.fromJson(Map<String, dynamic> json) => TurnEvaluation(
-        contentScore: (json['content_score'] as num).toInt(),
-        feedback: json['feedback'] as String,
-        modelAnswer: json['model_answer'] as String?,
-      );
+    contentScore: (json['content_score'] as num).toInt(),
+    feedback: json['feedback'] as String,
+    modelAnswer: json['model_answer'] as String?,
+  );
 
   Map<String, dynamic> toJson() {
     final m = <String, dynamic>{
@@ -109,18 +111,20 @@ class InterviewTurn {
   });
 
   factory InterviewTurn.fromJson(Map<String, dynamic> json) => InterviewTurn(
-        question: InterviewQuestion.fromJson(
-            json['question'] as Map<String, dynamic>),
-        transcript: json['transcript'] as String,
-        evaluation: TurnEvaluation.fromJson(
-            json['evaluation'] as Map<String, dynamic>),
-      );
+    question: InterviewQuestion.fromJson(
+      json['question'] as Map<String, dynamic>,
+    ),
+    transcript: json['transcript'] as String,
+    evaluation: TurnEvaluation.fromJson(
+      json['evaluation'] as Map<String, dynamic>,
+    ),
+  );
 
   Map<String, dynamic> toJson() => {
-        'question': question.toJson(),
-        'transcript': transcript,
-        'evaluation': evaluation.toJson(),
-      };
+    'question': question.toJson(),
+    'transcript': transcript,
+    'evaluation': evaluation.toJson(),
+  };
 }
 
 class InterviewEvaluation {
@@ -149,11 +153,11 @@ class InterviewEvaluation {
       );
 
   Map<String, dynamic> toJson() => {
-        'overall_score': overallScore,
-        'summary': summary,
-        'strengths': strengths,
-        'improvements': improvements,
-      };
+    'overall_score': overallScore,
+    'summary': summary,
+    'strengths': strengths,
+    'improvements': improvements,
+  };
 }
 
 class CompletedInterview {
@@ -171,36 +175,40 @@ class CompletedInterview {
     required this.turns,
     required this.evaluation,
     DateTime? timestamp,
-  })  : id = id ?? const Uuid().v4(),
-        timestamp = timestamp ?? DateTime.now();
+  }) : id = id ?? const Uuid().v4(),
+       timestamp = timestamp ?? DateTime.now();
 
-  factory CompletedInterview.fromJson(Map<String, dynamic> json) =>
-      CompletedInterview(
-        id: json['id'] as String,
-        mode: InterviewMode.values.firstWhere(
-          (m) => m.name == json['mode'] as String,
-          orElse: () {
-            log('CompletedInterview: unrecognized mode "${json['mode']}", defaulting to mixed');
-            return InterviewMode.mixed;
-          },
-        ),
-        targetQuestions: (json['target_questions'] as num).toInt(),
-        turns: (json['turns'] as List<dynamic>)
-            .map((e) => InterviewTurn.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        evaluation: InterviewEvaluation.fromJson(
-            json['evaluation'] as Map<String, dynamic>),
-        timestamp: DateTime.parse(json['timestamp'] as String),
-      );
+  factory CompletedInterview.fromJson(
+    Map<String, dynamic> json,
+  ) => CompletedInterview(
+    id: json['id'] as String,
+    mode: InterviewMode.values.firstWhere(
+      (m) => m.name == json['mode'] as String,
+      orElse: () {
+        log(
+          'CompletedInterview: unrecognized mode "${json['mode']}", defaulting to mixed',
+        );
+        return InterviewMode.mixed;
+      },
+    ),
+    targetQuestions: (json['target_questions'] as num).toInt(),
+    turns: (json['turns'] as List<dynamic>)
+        .map((e) => InterviewTurn.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    evaluation: InterviewEvaluation.fromJson(
+      json['evaluation'] as Map<String, dynamic>,
+    ),
+    timestamp: DateTime.parse(json['timestamp'] as String),
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'mode': mode.name,
-        'target_questions': targetQuestions,
-        'turns': turns.map((t) => t.toJson()).toList(),
-        'evaluation': evaluation.toJson(),
-        'timestamp': timestamp.toIso8601String(),
-      };
+    'id': id,
+    'mode': mode.name,
+    'target_questions': targetQuestions,
+    'turns': turns.map((t) => t.toJson()).toList(),
+    'evaluation': evaluation.toJson(),
+    'timestamp': timestamp.toIso8601String(),
+  };
 
   int get averageContentScore {
     if (turns.isEmpty) return 0;

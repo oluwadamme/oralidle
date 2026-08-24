@@ -1,4 +1,4 @@
-# Oralidle — Voice
+# Oralidle — Warm Signal
 
 The design system for a speech-coaching and mock-interview app.
 
@@ -11,30 +11,33 @@ rounded away.
 
 ## 1. Visual Theme & Atmosphere
 
-**The app is an instrument, and the only thing that lights up is the user's
-voice.**
+**Warm, confident, and encouraging — a coach, not a grading machine.**
 
 Oralidle asks people to do something exposing: speak alone into a microphone
 and be measured on it. They usually do it in private, often anxious, often the
-night before something that matters. The interface answers that by being
-quiet, precise, and encouraging — never clinical, never gamified, and never
-loud enough to compete with the thing the user is producing.
+night before something that matters. A cold, clinical interface makes that
+worse. So the canvas is a warm umber-black rather than a neutral or cool one,
+and the product carries a real accent that shows up wherever the user is meant
+to act.
 
-Colour is the scarcest resource in this system, and it is spent almost
-entirely on one thing: a live trace of the user's amplitude. Because that
-trace is generated from their own audio, no competitor can copy it. Every
-trace is different. It is the one visual element this product owns outright,
-and it recurs as the record meter, the loading state, and the shape of a past
-session in history.
+Two colour systems coexist, and keeping them apart is the whole discipline:
+
+- **The accent** — apricot — is the brand. It marks primary actions, active
+  navigation, selected state, score fills, and section markers. It is used
+  generously, because an interface with no colour reads as unfinished rather
+  than restrained.
+- **The voice ramp** is cool where everything else is warm, and encodes real
+  microphone amplitude and nothing else. Because it never appears except as
+  measurement, the waveform can never be mistaken for decoration.
 
 **Density:** calm and generous while recording, compact and scannable while
 reviewing. The recording screen holds one idea; the results screen holds many.
 
 **Key characteristics**
-- Deep petrol canvas. Chroma rationed to almost nothing.
-- A four-stop voice ramp that always encodes real microphone amplitude.
-- Actions are achromatic. The record control is the sole exception.
+- Warm umber canvas with a real accent, used freely.
+- A four-stop cool voice ramp that always encodes real amplitude.
 - Scores read as measurement and trajectory, never as verdict.
+- Hierarchy is earned by size and placement, not by making everything loud.
 
 ---
 
@@ -45,8 +48,8 @@ first and with its arithmetic.
 
 A dark-on-dark surface ladder **cannot** produce legible depth. The WCAG
 luminance formula compresses hard at the bottom of the range: for a surface to
-reach even 1.5:1 against a `#08100E` canvas it would have to be `#293431` — a
-mid-grey, not a dark surface. 3:1 would require `#4F635E`. Any system that
+reach even 1.5:1 against a `#16110F` canvas it would have to be `#382E2A` — a
+mid-brown, not a dark surface. 3:1 would require `#5C4E48`. Any system that
 claims "depth comes from the surface ladder, not from borders" is describing
 something that does not survive contact with a contrast checker.
 
@@ -60,13 +63,13 @@ So the two jobs are split:
 
 | Token | Hex | vs `canvas` | Role |
 |---|---|---|---|
-| `canvas` | `#08100E` | — | App background |
-| `raised` | `#111A18` | 1.09:1 | Cards, sheets, the default raised plane |
-| `raised2` | `#1A2523` | 1.22:1 | Inputs, nested cards, hovered rows |
-| `sunken` | `#050B0A` | 1.03:1 | Wells, meter tracks, scrub tracks |
-| `line` | `#2A3937` | 1.59:1 | Decorative separation |
-| `lineStrong` | `#3E524E` | 2.31:1 | Structural dividers |
-| `borderControl` | `#5E736D` | **3.80:1** | Every interactive boundary |
+| `canvas` | `#16110F` | — | App background. Warm umber-black |
+| `raised` | `#221A17` | 1.10:1 | Cards, sheets, the default raised plane |
+| `raised2` | `#2E2320` | 1.23:1 | Inputs, nested cards, hovered rows |
+| `sunken` | `#0E0A09` | — | Wells, meter tracks, scrub tracks |
+| `line` | `#3A2D28` | — | Decorative separation |
+| `lineStrong` | `#4E3E37` | — | Structural dividers |
+| `borderControl` | `#8A756B` | 4.31:1 | Every interactive boundary. **3.51:1 on `raised2`** |
 
 `line` and `lineStrong` are **decorative**. They are legitimate for separating
 content, and they are explicitly *not* a WCAG claim — do not use either as the
@@ -90,103 +93,126 @@ listening" and appears nowhere else.
 
 ---
 
-## 3. Chroma budget: colour belongs to the voice
+## 3. Colour: an accent for the product, a ramp for the voice
 
-The voice ramp has four stops, not two. A two-ended ramp can tell a speaker
-*louder* or *quieter*, but never answers the question they actually have:
+### The accent
+
+| Token | Hex | vs `raised2` | Role |
+|---|---|---|---|
+| `accent` | `#FF8A5B` | 6.56:1 | Primary actions, active nav, selected state, score fills |
+| `accentSoft` | `#FFB392` | 8.80:1 | Hover, subtle marks |
+| `onAccent` | `#2B1206` | **7.58:1 on `accent`** | Label on an accent fill |
+
+Use it freely. A browse screen with no accent on it is a bug, not restraint.
+What the accent must **not** do is encode a measurement — that is the ramp's
+job.
+
+### The voice ramp
+
+Four stops, because a speaker's real question is not *louder or quieter* but
 **am I in a good range?** The sweet spot needs its own stop.
 
-| Token | Hex | vs `canvas` | Meaning |
+| Token | Hex | vs `raised2` | Meaning |
 |---|---|---|---|
-| `voiceRest` | `#55746E` | **3.77:1** | Silence. An unlit meter bar |
-| `voiceLow` | `#46C8BC` | 9.40:1 | Quiet — audible, but soft |
-| `voiceMid` | `#7BD98A` | 11.12:1 | **The sweet spot** |
-| `voicePeak` | `#F2B33F` | 10.36:1 | At the edge — too loud |
+| `voiceRest` | `#856F66` | 3.24:1 | Silence. An unlit meter bar |
+| `voiceLow` | `#58C7D4` | 7.65:1 | Quiet — audible, but soft |
+| `voiceMid` | `#5FD9A4` | 8.67:1 | **The sweet spot** |
+| `voicePeak` | `#E03131` | 3.38:1 | At the edge — too loud |
 
-`voiceColor(t)` interpolates the ramp for `t` in 0..1. **Any gradient between
-these stops must be driven by real amplitude.** Never as decoration, never
-across a row by position — colour encodes loudness, so a bar's colour comes
-from its own height, not from where it sits.
+The ramp is **cool where the interface is warm**, so the waveform reads as
+instrumentation rather than brand furniture. `voicePeak` is a true red, not an
+orange, so it can never be confused with `accent` — the two appear together on
+the recording screen.
 
-`voiceRest` is a meaningful graphic, not decoration: a row of unlit bars is
-the entire "we're listening, you're silent" signal. It therefore has to clear
-3:1, and at 3.77:1 it does.
+`voiceColor(t)` interpolates the ramp. **Any gradient between these stops must
+be driven by real amplitude** — never by position, never as decoration.
 
 ### Text
 
-| Token | Hex | vs `canvas` | vs `raised` | Role |
+| Token | Hex | vs `canvas` | vs `raised2` | Role |
 |---|---|---|---|---|
-| `ink` | `#ECF1EF` | 16.86:1 | 15.53:1 | Primary text. Never pure `#FFF` |
-| `inkMuted` | `#A7B7B2` | 9.22:1 | 8.49:1 | Secondary text, labels, timestamps |
-| `inkFaint` | `#7C8E89` | 5.58:1 | 5.14:1 | Placeholders, disabled, axis labels |
-
-All three clear 4.5:1 on every surface in the ladder, so any of them is safe
-for body copy anywhere. `inkFaint` means *disabled or de-emphasised*, not
-"small" — an unselected tab is neither, and gets `inkMuted`.
+| `ink` | `#F5EFEA` | 16.43:1 | 13.37:1 | Primary text. Never pure `#FFF` |
+| `inkMuted` | `#B0A099` | 7.43:1 | 6.05:1 | Secondary text, labels, timestamps |
+| `inkFaint` | `#9C8B82` | 5.73:1 | 4.67:1 | Placeholders, disabled |
 
 ### Semantic
 
-Hue is reserved for genuine system state. It never renders a score.
-
-| Token | Hex | vs `canvas` | Role |
+| Token | Hex | vs `raised2` | Role |
 |---|---|---|---|
-| `positive` | `#5FC98F` | 9.39:1 | Confirmed success only (saved, uploaded) |
-| `caution` | `#F2B33F` | 10.36:1 | Recoverable problems (mic unavailable, retrying) |
-| `critical` | `#E8917F` | 8.06:1 | Destructive or failed. Soft, never alarm-red |
+| `positive` | `#4FC98A` | 7.30:1 | Confirmed success only |
+| `caution` | `#F5B93C` | 8.63:1 | Recoverable problems |
+| `critical` | `#E03131` | 3.38:1 | Destructive or failed |
 
-`caution` and `voicePeak` are deliberately the same value. Both mean "you are
-at the edge" — in the meter that is volume, in a banner that is system state.
-The overlap is coherent rather than accidental.
-
-Semantic colour never travels alone. Per WCAG 1.4.1, every use pairs with an
-icon or text.
+`critical` and `voicePeak` are the same value: both mean "you are at the edge".
+Semantic colour never travels alone — every use pairs with an icon or text.
 
 ---
 
-## 4. Actions are achromatic — with exactly one exception
-
-Chroma is spent on the voice, so buttons don't get any. This also means the
-primary action is the highest-contrast object on any screen, which is what a
-primary action should be.
+## 4. Actions
 
 | Role | Spec | Ratio |
 |---|---|---|
-| Primary | `action` `#ECF1EF` fill, `onAction` `#08100E` label | **16.86:1** |
-| Secondary | `raised2` fill, 1px `borderControl` | 3.80:1 border |
-| Destructive | `critical` outline + label, never a filled red block | 8.06:1 |
-| Quiet | Label only, `inkMuted` | 8.49:1 |
-| Focus ring | `voiceLow`, 2px, on every focusable control | 9.40:1 |
+| Primary | `accent` fill, `onAccent` label | **7.58:1** |
+| Secondary | `raised2` fill, 1px `borderControl` | 3.51:1 border |
+| Destructive | `critical` outline + label, never a filled red block | — |
+| Quiet | Label only, `inkMuted` | 6.05:1 |
+| Focus ring | `accent`, 2px, on every focusable control | 6.56:1 |
 
-Radius 12, height 48. Labels are Manrope — Bricolage is a display face and
-does not belong on a control.
+Radius 12, height 48. Labels are Bricolage at weight 600.
 
-**The exception: the record control.** A single 76px circle, filled `voiceLow`
-when idle, `critical` **outlined** when recording. It is the only circular
-control in the app, so the shape alone means "record", and it is the only
-chromatic control in the app, because it is the one button that is *about your
-voice*. Outlining while recording is not stylistic: a white glyph on filled
-`critical` measures 2.62:1 and fails, while `critical` on canvas is 8.06:1.
+**Buttons size to their content by default.** A full-bleed button is a claim
+that it is the single most important thing on the screen, so `expand` is opt-in
+and belongs to at most one control per view. A shortcut ("Surprise me"), an
+upsell, or anything competing with the screen's real content takes the
+secondary treatment. Two full-width primaries on one screen is a bug.
+
+**The record control** is a 76px circle — the only circular control in the app,
+so the shape alone means "record". `accent` filled when idle, `critical`
+**outlined** while recording. Outlining is not stylistic: a glyph on filled
+`critical` fails contrast, while `critical` on the canvas clears it
+comfortably. It carries the one permitted glow, and only while capturing.
 
 ---
 
-## 5. Score is achromatic and relative
+## 5. Score reads in bands, and relative to your own average
 
-Red-to-green pass/fail is wrong here. Someone practising their own voice
-should read a number as diagnostic, not as a verdict — and a red 58 is a
-reason to close the app.
+A score meter is a fill on a `sunken` track, with the number above it and a
+tick marking the user's previous average.
 
-Encoding score as a position on the voice ramp is worse, and it is worth
-naming because it is a tempting mistake: it paints a 95 in `voicePeak`, the
-same colour as the warning state.
+### Bands
 
-**A score meter is an `ink` fill on a `sunken` track, with the number set in
-tabular mono above it, and a tick marking the user's previous average.**
+The fill and the readout take the band the score falls in, so a breakdown is
+scannable without reading every number:
 
-Colour does no work. Position does. "72" on its own is an unanswerable
-question; "72, with the tick at 68" is a trajectory. Every meter pairs with
-one concrete next action.
+| Band | Token | Hex |
+|---|---|---|
+| under 40 | `scoreLow` | `#E0705C` |
+| 40–59 | `scoreFair` | `#F0894B` |
+| 60–79 | `scoreGood` | `#E2C24E` |
+| 80+ | `scoreHigh` | `#4FC98A` |
 
-Never a coloured ring. Never a red-to-green gradient.
+This is a deliberate reversal of an earlier rule in this document, which held
+that colour must never grade. The argument against banding is real — a red 58
+is a discouraging thing to show someone practising — and it is recorded here so
+nobody re-litigates it by accident. It was overridden because an all-one-hue
+breakdown gave the reader no way to triage six numbers at a glance.
+
+The mitigations that make it acceptable:
+
+- The low band is a **soft coral**, not an alarm red, and the ramp passes
+  through the brand's own orange rather than jumping red-to-green.
+- Colour is never the only signal: the number and the bar length both carry
+  the value, per WCAG 1.4.1.
+- Every score is paired with `previousAverage`, so the meter reports a
+  **trajectory** rather than a verdict — "46, and your average is 62" is
+  actionable in a way that "46" alone is not.
+
+### Never
+
+The score bands must never borrow the **voice ramp**. Those two systems mean
+different things, and an earlier version of this product painted a 95 in the
+same amber it used for "too loud". Never a ring, and never a raw red-to-green
+two-stop gradient.
 
 ---
 
@@ -209,30 +235,39 @@ type is ever painted in `critical` — a LeetCode question is not an error.
 
 ## 7. Typography
 
-A characterful display face against a neutral body face, plus a mono for
-anything measured. The display carries enough warmth that the product does not
-read as a grading machine; the body stays out of the way at small sizes on
-dark backgrounds; the mono makes the readouts read as instrument readouts.
+**One family: `Bricolage Grotesque`.** A single variable grotesque carries the
+whole system, from a 32px screen title down to an 11px meter label. Hierarchy
+comes from size, weight and tracking rather than from a change of voice, which
+keeps the interface feeling like one object — appropriate for something
+presented as an instrument.
 
-- **Display:** `Bricolage Grotesque` — weight 600–700, negative tracking
-- **Body / UI:** `Manrope` — excellent at 12–16px
-- **Data:** `IBM Plex Mono` — every *measured* value
+| Style | Size | Weight | Tracking | Use |
+|---|---|---|---|---|
+| Display | 32 | 700 | −0.5 | Screen titles, score headline |
+| Title | 22 | 600 | −0.25 | Section and card titles |
+| Card title | 16 | 600 | 0 | Card headers |
+| Body L | 16 | 400 | 0 | Questions, prompts, transcript |
+| Body | 14 | 400 | 0 | Default UI text |
+| Caption | 12 | 400 | 0 | Secondary detail |
+| Overline | 12 | 500 | +0.7, upper | Meter labels, chips |
+| Readout | 14 | 500 | 0 | Any measured value |
+| Timer | 56 | 500 | −2 | The recording clock |
 
-| Style | Family | Size | Weight | Tracking | Use |
-|---|---|---|---|---|---|
-| Display | Bricolage | 32 | 700 | −0.5 | Screen titles, score headline |
-| Title | Bricolage | 22 | 600 | −0.25 | Section and card titles |
-| Card title | Bricolage | 16 | 600 | 0 | Card headers |
-| Body L | Manrope | 16 | 400 | 0 | Questions, prompts, transcript |
-| Body | Manrope | 14 | 400 | 0 | Default UI text |
-| Caption | Manrope | 12 | 400 | 0 | Secondary detail |
-| Overline | IBM Plex Mono | 12 | 500 | +0.7, upper | Meter labels, chips |
-| Readout | IBM Plex Mono | 14 | 500 | 0 | Any measured value |
-| Timer | IBM Plex Mono | 56 | 500 | −2 | The recording clock |
+### Measured values need fixed-width slots
 
-**Every mono style sets `FontFeature.tabularFigures()`.** This is not optional
-polish: without it a running timer and an animating score shift their own
-layout on every frame as glyph widths change.
+Bricolage Grotesque is proportional, so a `1` is narrower than a `0`. Any
+number that changes while on screen — the recording timer, an animating score,
+a live word count — will therefore shift its own layout on every update. A
+clock that jitters as it counts is the single most visible way for an
+instrument to look cheap.
+
+`FontFeature.tabularFigures()` does not solve this here: it is a request the
+font is free to ignore, and a proportional grotesque generally does.
+
+**So changing numbers are laid out in fixed-width slots instead**, via
+`TabularText`, which measures the widest digit at the given style and gives
+every character an identical box. Static numbers can be set normally; only
+values that update in place need it.
 
 Body copy runs 1.5–1.6 line height and caps at ~65 characters. The timer drops
 from 56 to 44 on short viewports.
@@ -327,19 +362,33 @@ Breakpoints come from `lib/core/utils/responsive.dart`:
 ## 12. Do's and Don'ts
 
 **Do**
-- Let the waveform be the hero. Give it room.
+- Let the waveform be the hero on the recording screen. Give it room.
 - Drive every voice-coloured gradient from real amplitude.
-- Use tabular figures for anything that counts.
+- Use the accent freely on actions, active state, and section markers.
+- Set any number that changes in place in `TabularText`.
 - Identify interactive things with `borderControl`, not with a fill step.
 - Pair every score with one concrete next action.
 - Pair every semantic colour with an icon or text.
 
 **Don't**
-- **No purple or indigo**, and **no gradient fills on controls.** Both are
+- **No purple or indigo**, and **no gradient fills on controls.** Both are the
+  current defaults of AI-product design; this system exists partly to avoid
+  them.
+- **No glassmorphism or backdrop blur.**
+- **No score rendered on the voice ramp**, and no raw red-to-green two-stop
+  gradient — scores use the four bands in §5.
+- **No more than one full-bleed primary action per screen.**
+- No warm colour in the voice ramp other than `voicePeak`, and no accent used
+  to encode a measurement.
+- No emoji as iconography.
+- No decorative motion, and no decorative glow.
+- No pure white text or pure black backgrounds.
+- No raw hex in a widget. Tokens only.
   the current defaults of AI-product design; this system exists partly to
   avoid them.
 - **No glassmorphism or backdrop blur.**
-- **No red/green pass-fail scoring**, and no score rendered on the voice ramp.
+- **No score rendered on the voice ramp**, and no raw red-to-green two-stop
+  gradient — scores use the four bands in §5.
 - No chroma on a control other than the record button.
 - No emoji as iconography.
 - No decorative motion, and no decorative glow.
@@ -352,26 +401,27 @@ Breakpoints come from `lib/core/utils/responsive.dart`:
 
 When generating a new screen in this system:
 
-> Build `<screen>` for Oralidle. Canvas `#08100E`; cards `raised` `#111A18`
-> with a 1px `line` border and no blur; interactive surfaces step to `raised2`
-> `#1A2523` with a `borderControl` `#5E736D` border. Depth comes from borders,
-> not from fills or shadows.
-> Chroma is reserved for the user's voice: a four-stop ramp from `voiceRest`
-> `#55746E` (silent) through `voiceLow` `#46C8BC` (quiet) and `voiceMid`
-> `#7BD98A` (ideal) to `voicePeak` `#F2B33F` (too loud), used only where it
-> encodes real amplitude. Buttons are achromatic — `action` `#ECF1EF` fill
-> with `onAction` `#08100E` text — except the record control, which is
-> `voiceLow`.
-> Display type is Bricolage Grotesque 600–700 with negative tracking; body is
-> Manrope; every measured value is IBM Plex Mono with tabular figures.
-> Spacing comes from the 4/8/12/16/24/32/48/64 scale. Show scores as an `ink`
+> Build `<screen>` for Oralidle. Canvas `#16110F` (warm umber-black); cards
+> `raised` `#221A17` with a 1px `line` border and no blur; interactive surfaces
+> step to `raised2` `#2E2320` with a `borderControl` `#8A756B` border. Depth
+> comes from borders, not from fills or shadows.
+> The brand accent is apricot `#FF8A5B` with `onAccent` `#2B1206` on top, and
+> it is used generously — primary actions, active navigation, selected state,
+> score fills, section markers. Buttons size to their content; at most one
+> full-bleed primary per screen.
+> Amplitude uses a separate cool ramp — `voiceRest` `#856F66`, `voiceLow`
+> `#58C7D4`, `voiceMid` `#5FD9A4` (ideal), `voicePeak` `#E03131` (too loud) —
+> and only ever encodes real level.
+> Type is Bricolage Grotesque throughout, hierarchy from size and weight; any
+> number that updates in place is wrapped in `TabularText`.
+> Spacing comes from the 4/8/12/16/24/32/48/64 scale. Show scores as an accent
 > fill on a `sunken` track with the previous average marked — never a ring,
 > never red-to-green. Categories get an icon and a word, never a hue.
 > Every tap target is 48×48 with a press response and an accessible name.
 
 Token names for prompts: `canvas`, `raised`, `raised2`, `sunken`, `line`,
-`lineStrong`, `borderControl`, `voiceRest`, `voiceLow`, `voiceMid`,
-`voicePeak`, `action`, `onAction`, `ink`, `inkMuted`, `inkFaint`, `positive`,
+`lineStrong`, `borderControl`, `accent`, `accentSoft`, `onAccent`, `voiceRest`,
+`voiceLow`, `voiceMid`, `voicePeak`, `ink`, `inkMuted`, `inkFaint`, `positive`,
 `caution`, `critical`.
 
 ---

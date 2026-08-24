@@ -27,18 +27,31 @@ void main() {
     'interview': const InterviewHomeScreen(),
   };
 
+  // The second axis matters as much as the first: every text metric in the app
+  // changed in the v2 migration, and Dynamic Type is where that shows.
   for (final entry in screens.entries) {
     for (final w in [390.0, 700.0, 1000.0, 1440.0]) {
-      testWidgets('${entry.key} @ ${w.toInt()} lays out cleanly', (tester) async {
-        tester.view.physicalSize = Size(w, 1000);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(tester.view.reset);
-        await tester.pumpWidget(
-          ProviderScope(child: MaterialApp(home: entry.value)),
-        );
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-      });
+      for (final scale in [1.0, 1.5]) {
+        testWidgets('${entry.key} @ ${w.toInt()} x$scale lays out cleanly', (
+          tester,
+        ) async {
+          tester.view.physicalSize = Size(w, 1000);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(tester.view.reset);
+          await tester.pumpWidget(
+            ProviderScope(
+              child: MaterialApp(
+                home: MediaQuery(
+                  data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+                  child: entry.value,
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+        });
+      }
     }
   }
 }

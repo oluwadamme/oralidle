@@ -9,13 +9,10 @@ class OllamaService {
   final String model;
   final http.Client _client;
 
-  OllamaService({
-    String? baseUrl,
-    String? model,
-    http.Client? client,
-  })  : baseUrl = baseUrl ?? 'http://localhost:11434',
-        model = model ?? 'llama3.2',
-        _client = client ?? http.Client();
+  OllamaService({String? baseUrl, String? model, http.Client? client})
+    : baseUrl = baseUrl ?? 'http://localhost:11434',
+      model = model ?? 'llama3.2',
+      _client = client ?? http.Client();
 
   /// Quick health check to verify if the local Ollama instance is reachable.
   Future<bool> isAvailable() async {
@@ -38,10 +35,11 @@ class OllamaService {
     final fillerSummary = metrics.fillerWords.isEmpty
         ? 'none detected'
         : metrics.fillerWords.entries
-            .map((e) => '${e.key} (${e.value}x)')
-            .join(', ');
+              .map((e) => '${e.key} (${e.value}x)')
+              .join(', ');
 
-    final userMessage = '''
+    final userMessage =
+        '''
 Topic: "$topic"
 Duration: ${durationSeconds}s
 Words per minute: ${metrics.wpm}

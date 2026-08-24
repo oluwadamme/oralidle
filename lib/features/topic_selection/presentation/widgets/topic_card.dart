@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../data/models/topic.dart';
+
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/widgets/pressable.dart';
+
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/text_styles.dart';
+import '../../../../core/widgets/category_badge.dart';
+import '../../../../core/widgets/surface_card.dart';
+import '../../data/models/topic.dart';
+import '../../data/models/topic_category.dart';
 
 class TopicCard extends StatelessWidget {
   final Topic topic;
@@ -11,53 +17,44 @@ class TopicCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = topic.category.categoryColor;
-    return Pressable(
+    final category = TopicCategory.fromLabel(topic.category);
+
+    return SurfaceCard(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: color.withValues(alpha: 0.25)),
-              ),
-              child: Text(
-                topic.category,
-                style: TextStyle(
-                    fontSize: AppFontSize.f10, fontWeight: AppFontWeight.w600, color: color),
-              ),
+      padding: const EdgeInsets.all(Space.lg),
+      semanticLabel: '${topic.title}. ${category.label}',
+      semanticHint: topic.hint,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: CategoryBadge(
+              label: category.label,
+              icon: category.icon,
+              dense: true,
             ),
-            const SizedBox(height: 10),
-            Text(
-              topic.title,
-              style: const TextStyle(
-                  fontSize: AppFontSize.f14,
-                  fontWeight: AppFontWeight.w600,
-                  height: 1.3,
-                  color: AppColors.textDark),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: Space.lg),
+          Text(
+            topic.title,
+            style: context.cardTitle.copyWith(height: 1.3),
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: Space.md),
+          const Spacer(),
+          Text(
+            topic.hint,
+            style: context.caption.copyWith(
+              color: AppColors.inkMuted,
+              height: 1.45,
             ),
-            const Spacer(),
-            Text(
-              topic.hint,
-              style: const TextStyle(
-                  fontSize: AppFontSize.f11, color: AppColors.textMedium, height: 1.3),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const Spacer(),
+        ],
       ),
     );
   }

@@ -73,8 +73,7 @@ extension MotionContext on BuildContext {
   ///
   /// Under this, data keeps flowing and only decoration stops — meters snap to
   /// their value, the waveform still reports level but stops its ticker. (§10)
-  bool get reduceMotion =>
-      MediaQuery.maybeOf(this)?.disableAnimations ?? false;
+  bool get reduceMotion => MediaQuery.maybeOf(this)?.disableAnimations ?? false;
 
   /// A duration that collapses to zero under reduced motion.
   Duration motion(Duration d) => reduceMotion ? Duration.zero : d;

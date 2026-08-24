@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../analysis/data/models/session_record.dart';
+
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/text_styles.dart';
+import '../../../../core/widgets/category_badge.dart';
 import '../../../../core/widgets/pressable.dart';
-import '../../../topic_selection/data/models/topic.dart';
+import '../../../../core/widgets/tabular_text.dart';
+import '../../../analysis/data/models/session_record.dart';
+import '../../../topic_selection/data/models/topic_category.dart';
 
 class SessionTile extends StatelessWidget {
   final SessionRecord record;
@@ -15,74 +20,93 @@ class SessionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final score = record.result.overallScore;
-    final color = AppColors.scoreColor(score);
-    final categoryColor = record.topicCategory.categoryColor;
+    final band = AppColors.scoreColor(score);
+    final category = TopicCategory.fromLabel(record.topicCategory);
+    final transcript = record.result.transcript.trim();
 
     return Pressable(
       onTap: onTap,
+      minSize: 0,
+      borderRadius: Radii.mdAll,
+      semanticLabel: record.topicTitle,
+      semanticHint: '$score out of 100, ${category.label}',
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
-        decoration: AppColors.glassCard(radius: 14),
+        margin: const EdgeInsets.only(bottom: Space.md),
+        padding: const EdgeInsets.all(Space.lg),
+        decoration: BoxDecoration(
+          color: AppColors.raised,
+          borderRadius: Radii.mdAll,
+          border: Border.all(color: AppColors.line),
+        ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // The score is the tile's headline, so it takes its band colour
+            // rather than a flat disc that told the reader nothing.
             Container(
               width: 48,
               height: 48,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: color),
               alignment: Alignment.center,
-              child: Text(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: band.withValues(alpha: 0.16),
+                border: Border.all(color: band.withValues(alpha: 0.45)),
+              ),
+              child: TabularText(
                 '$score',
-                style: const TextStyle(
-                    color: AppColors.ink, fontWeight: AppFontWeight.w800, fontSize: AppFontSize.f15),
+                style: context.readoutAt(
+                  16,
+                  color: band,
+                  weight: AppFontWeight.w700,
+                ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: Space.lg),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Four tiers, so the eye can rank them: title, then the
+                  // category and measurements, then when, then what was said.
                   Text(
                     record.topicTitle,
-                    style: const TextStyle(fontWeight: AppFontWeight.w600, fontSize: AppFontSize.f14),
+                    style: context.cardTitle,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
-                  Row(
+                  const SizedBox(height: Space.sm),
+                  Wrap(
+                    spacing: Space.sm,
+                    runSpacing: Space.xs,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: categoryColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          record.topicCategory,
-                          style: TextStyle(
-                              fontSize: AppFontSize.f10, color: categoryColor, fontWeight: AppFontWeight.w600),
+                      CategoryBadge(
+                        label: category.label,
+                        icon: category.icon,
+                        dense: true,
+                      ),
+                      Text(
+                        '${record.formattedDuration}  ·  ${record.result.wpm} wpm',
+                        style: context.caption.copyWith(
+                          color: AppColors.inkMuted,
                         ),
                       ),
-                      const SizedBox(width: 8),
                       Text(
-                        '${record.formattedDuration} • ${record.result.wpm} wpm',
-                        style: const TextStyle(fontSize: AppFontSize.f11, color: AppColors.textMedium),
+                        DateFormat('MMM d, h:mm a').format(record.timestamp),
+                        style: context.caption.copyWith(
+                          color: AppColors.inkFaint,
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    DateFormat('MMM d, h:mm a').format(record.timestamp),
-                    style: const TextStyle(fontSize: AppFontSize.f11, color: AppColors.outline),
-                  ),
-                  if (record.result.transcript.trim().isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                  if (transcript.isNotEmpty) ...[
+                    const SizedBox(height: Space.sm),
                     Text(
-                      '"${record.result.transcript.trim()}"',
-                      style: const TextStyle(
-                        fontSize: AppFontSize.f11,
+                      '"$transcript"',
+                      style: context.caption.copyWith(
                         fontStyle: FontStyle.italic,
-                        color: AppColors.textMedium,
+                        color: AppColors.inkFaint,
+                        height: 1.45,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -91,7 +115,15 @@ class SessionTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(LucideIcons.chevronRight, color: AppColors.outline),
+            const SizedBox(width: Space.sm),
+            const Padding(
+              padding: EdgeInsets.only(top: Space.md),
+              child: Icon(
+                LucideIcons.chevronRight,
+                size: IconSize.md,
+                color: AppColors.inkFaint,
+              ),
+            ),
           ],
         ),
       ),

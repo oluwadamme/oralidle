@@ -101,10 +101,8 @@ class ImprovementTip {
 
   const ImprovementTip({required this.area, required this.tip});
 
-  factory ImprovementTip.fromJson(Map<String, dynamic> json) => ImprovementTip(
-    area: json['area'] as String,
-    tip: json['tip'] as String,
-  );
+  factory ImprovementTip.fromJson(Map<String, dynamic> json) =>
+      ImprovementTip(area: json['area'] as String, tip: json['tip'] as String);
 
   Map<String, dynamic> toJson() => {'area': area, 'tip': tip};
 }

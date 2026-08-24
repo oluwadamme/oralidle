@@ -6,15 +6,16 @@ import 'app_spacing.dart';
 
 /// The app theme. See DESIGN.md §7 for the type scale and §4 for controls.
 class AppTheme {
-  /// Mono readouts are tabular so numbers keep their own width as they
-  /// change. Without this a running timer reflows on every tick. (§7)
+  /// Requested on readout styles, but not relied on: Bricolage Grotesque is
+  /// proportional and is free to ignore `tnum`. Numbers that change in place
+  /// get fixed-width slots from `TabularText` instead. (§7)
   static const _tabular = [FontFeature.tabularFigures()];
 
   /// Every focusable control gets the same 2px [AppColors.voiceLow] ring. (§4)
   static WidgetStateProperty<BorderSide?> _focusRing({BorderSide? base}) =>
       WidgetStateProperty.resolveWith(
         (states) => states.contains(WidgetState.focused)
-            ? const BorderSide(color: AppColors.voiceLow, width: 2)
+            ? const BorderSide(color: AppColors.accent, width: 2)
             : base,
       );
 
@@ -27,8 +28,9 @@ class AppTheme {
           displayLarge: GoogleFonts.bricolageGrotesque(
             fontSize: AppFontSize.f40,
             fontWeight: AppFontWeight.w700,
-              letterSpacing: -0.8,
-              color: AppColors.ink),
+            letterSpacing: -0.8,
+            color: AppColors.ink,
+          ),
           displayMedium: GoogleFonts.bricolageGrotesque(
             fontSize: AppFontSize.f34,
             fontWeight: AppFontWeight.w700,
@@ -37,8 +39,9 @@ class AppTheme {
           headlineLarge: GoogleFonts.bricolageGrotesque(
             fontSize: AppFontSize.f32,
             fontWeight: AppFontWeight.w700,
-              letterSpacing: -0.5,
-              color: AppColors.ink),
+            letterSpacing: -0.5,
+            color: AppColors.ink,
+          ),
           headlineMedium: GoogleFonts.bricolageGrotesque(
             fontSize: AppFontSize.f24,
             fontWeight: AppFontWeight.w600,
@@ -47,8 +50,9 @@ class AppTheme {
           headlineSmall: GoogleFonts.bricolageGrotesque(
             fontSize: AppFontSize.f22,
             fontWeight: AppFontWeight.w600,
-              letterSpacing: -0.25,
-              color: AppColors.ink),
+            letterSpacing: -0.25,
+            color: AppColors.ink,
+          ),
           titleLarge: GoogleFonts.bricolageGrotesque(
             fontSize: AppFontSize.f18,
             fontWeight: AppFontWeight.w600,
@@ -64,33 +68,50 @@ class AppTheme {
             fontWeight: AppFontWeight.w600,
             color: AppColors.ink,
           ),
-          // Body — bricolageGrotesque
-          bodyLarge: GoogleFonts.bricolageGrotesque(fontSize: AppFontSize.f16, height: 1.55, color: AppColors.ink),
-          bodyMedium: GoogleFonts.bricolageGrotesque(fontSize: AppFontSize.f14, height: 1.5, color: AppColors.inkMuted),
-          bodySmall: GoogleFonts.bricolageGrotesque(fontSize: AppFontSize.f12, height: 1.5, color: AppColors.inkMuted),
-          // Readouts — IBM Plex Mono, tabular
+          // Body
+          bodyLarge: GoogleFonts.bricolageGrotesque(
+            fontSize: AppFontSize.f16,
+            height: 1.55,
+            color: AppColors.ink,
+          ),
+          bodyMedium: GoogleFonts.bricolageGrotesque(
+            fontSize: AppFontSize.f14,
+            height: 1.5,
+            color: AppColors.inkMuted,
+          ),
+          bodySmall: GoogleFonts.bricolageGrotesque(
+            fontSize: AppFontSize.f12,
+            height: 1.5,
+            color: AppColors.inkMuted,
+          ),
+          // Readouts — same family, distinguished by weight
           labelLarge: GoogleFonts.bricolageGrotesque(
             fontSize: AppFontSize.f14,
             fontWeight: AppFontWeight.w500,
-              fontFeatures: _tabular,
-              color: AppColors.ink),
+            fontFeatures: _tabular,
+            color: AppColors.ink,
+          ),
           labelMedium: GoogleFonts.bricolageGrotesque(
             fontSize: AppFontSize.f12,
             fontWeight: AppFontWeight.w500,
-              letterSpacing: 0.7,
-              fontFeatures: _tabular,
-              color: AppColors.inkMuted),
+            letterSpacing: 0.7,
+            fontFeatures: _tabular,
+            color: AppColors.inkMuted,
+          ),
           labelSmall: GoogleFonts.bricolageGrotesque(
             fontSize: AppFontSize.f11,
             fontWeight: AppFontWeight.w500,
-              fontFeatures: _tabular,
-              color: AppColors.inkMuted),
+            fontFeatures: _tabular,
+            color: AppColors.inkMuted,
+          ),
         )
         .apply(bodyColor: AppColors.ink, displayColor: AppColors.ink);
 
-    // bricolageGrotesque, not Bricolage: a display face does not belong on a control.
-    final controlLabel =
-        GoogleFonts.bricolageGrotesque(fontSize: AppFontSize.f15, fontWeight: AppFontWeight.w600);
+    // One family throughout; controls are distinguished by weight, not voice.
+    final controlLabel = GoogleFonts.bricolageGrotesque(
+      fontSize: AppFontSize.f15,
+      fontWeight: AppFontWeight.w600,
+    );
 
     return base.copyWith(
       colorScheme: const ColorScheme.dark(
@@ -140,8 +161,6 @@ class AppTheme {
         ),
         margin: EdgeInsets.zero,
       ),
-      // Primary: an achromatic fill, which makes it the highest-contrast
-      // object on the screen at 16.86:1. (§4)
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.action,
@@ -167,18 +186,19 @@ class AppTheme {
         ).copyWith(side: _focusRing()),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.ink,
-          backgroundColor: AppColors.raised2,
-          disabledForegroundColor: AppColors.inkFaint,
-          minimumSize: const Size(TouchTarget.min, TouchTarget.min),
-          shape: const RoundedRectangleBorder(borderRadius: Radii.mdAll),
-          textStyle: controlLabel,
-        ).copyWith(
-          side: _focusRing(
-            base: const BorderSide(color: AppColors.borderControl),
-          ),
-        ),
+        style:
+            OutlinedButton.styleFrom(
+              foregroundColor: AppColors.ink,
+              backgroundColor: AppColors.raised2,
+              disabledForegroundColor: AppColors.inkFaint,
+              minimumSize: const Size(TouchTarget.min, TouchTarget.min),
+              shape: const RoundedRectangleBorder(borderRadius: Radii.mdAll),
+              textStyle: controlLabel,
+            ).copyWith(
+              side: _focusRing(
+                base: const BorderSide(color: AppColors.borderControl),
+              ),
+            ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
@@ -203,16 +223,18 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         height: 68,
-        indicatorShape:
-            const RoundedRectangleBorder(borderRadius: Radii.pillAll),
+        indicatorShape: const RoundedRectangleBorder(
+          borderRadius: Radii.pillAll,
+        ),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => GoogleFonts.bricolageGrotesque(
             fontSize: AppFontSize.f11,
             fontWeight: states.contains(WidgetState.selected)
-                ? AppFontWeight.w600 : AppFontWeight.w500,
+                ? AppFontWeight.w600
+                : AppFontWeight.w500,
             color: states.contains(WidgetState.selected)
-                ? AppColors.ink
+                ? AppColors.accent
                 : AppColors.inkMuted,
           ),
         ),
@@ -220,7 +242,7 @@ class AppTheme {
           (states) => IconThemeData(
             size: IconSize.md,
             color: states.contains(WidgetState.selected)
-                ? AppColors.ink
+                ? AppColors.accent
                 : AppColors.inkMuted,
           ),
         ),
@@ -228,10 +250,14 @@ class AppTheme {
       navigationRailTheme: const NavigationRailThemeData(
         backgroundColor: AppColors.canvas,
         indicatorColor: AppColors.raised2,
-        selectedIconTheme:
-            IconThemeData(color: AppColors.ink, size: IconSize.md),
-        unselectedIconTheme:
-            IconThemeData(color: AppColors.inkMuted, size: IconSize.md),
+        selectedIconTheme: IconThemeData(
+          color: AppColors.ink,
+          size: IconSize.md,
+        ),
+        unselectedIconTheme: IconThemeData(
+          color: AppColors.inkMuted,
+          size: IconSize.md,
+        ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.raised2,
@@ -240,7 +266,9 @@ class AppTheme {
         shape: const RoundedRectangleBorder(borderRadius: Radii.pillAll),
         labelStyle: textTheme.labelMedium!,
         padding: const EdgeInsets.symmetric(
-            horizontal: Space.md, vertical: Space.sm),
+          horizontal: Space.md,
+          vertical: Space.sm,
+        ),
       ),
       dividerTheme: const DividerThemeData(
         color: AppColors.line,
@@ -273,7 +301,7 @@ class AppTheme {
         ),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.voiceLow,
+        color: AppColors.accent,
         linearTrackColor: AppColors.sunken,
         circularTrackColor: AppColors.sunken,
       ),
@@ -287,13 +315,17 @@ class AppTheme {
         ),
         textStyle: textTheme.bodySmall!.copyWith(color: AppColors.ink),
         padding: const EdgeInsets.symmetric(
-            horizontal: Space.sm, vertical: Space.xs),
+          horizontal: Space.sm,
+          vertical: Space.xs,
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.raised2,
         contentPadding: const EdgeInsets.symmetric(
-            horizontal: Space.lg, vertical: Space.md),
+          horizontal: Space.lg,
+          vertical: Space.md,
+        ),
         border: const OutlineInputBorder(
           borderRadius: Radii.mdAll,
           borderSide: BorderSide(color: AppColors.borderControl),
@@ -304,7 +336,7 @@ class AppTheme {
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: Radii.mdAll,
-          borderSide: BorderSide(color: AppColors.voiceLow, width: 2),
+          borderSide: BorderSide(color: AppColors.accent, width: 2),
         ),
         errorBorder: const OutlineInputBorder(
           borderRadius: Radii.mdAll,

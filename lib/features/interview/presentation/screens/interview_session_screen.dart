@@ -6,7 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/category_badge.dart';
+import '../../../../core/theme/text_styles.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/score_meter.dart';
+import '../../../../core/widgets/surface_card.dart';
 import '../../../../core/widgets/pressable.dart';
 import '../../../recording/presentation/widgets/waveform_animation.dart';
 import '../../../recording/providers/recording_provider.dart';
@@ -54,16 +58,6 @@ class _InterviewSessionScreenState
       child: Scaffold(
         body: Stack(
           children: [
-            const Positioned(
-              top: -60,
-              right: -40,
-              child: AmbientOrb(color: AppColors.primary, size: 240),
-            ),
-            const Positioned(
-              bottom: 80,
-              left: -60,
-              child: AmbientOrb(color: AppColors.caution, size: 200),
-            ),
             SafeArea(
               child: Column(
                 children: [
@@ -94,27 +88,23 @@ class _InterviewSessionScreenState
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(LucideIcons.x, color: AppColors.textMedium),
+            icon: const Icon(LucideIcons.x, color: AppColors.inkMuted),
             onPressed: () => _confirmExit(context),
           ),
           Expanded(
             child: Column(
               children: [
-                const Text(
+                Text(
                   'Mock Interview',
-                  style: TextStyle(
-                    fontSize: AppFontSize.f15,
+                  style: context.cardTitle.copyWith(
+                    color: AppColors.ink,
                     fontWeight: AppFontWeight.w700,
-                    color: AppColors.textDark,
                   ),
                 ),
                 if (state.phase != InterviewPhase.loading)
                   Text(
                     'Q$current of $total  ·  ${widget.setup.mode.label}',
-                    style: const TextStyle(
-                      fontSize: AppFontSize.f11,
-                      color: AppColors.textMedium,
-                    ),
+                    style: context.overline.copyWith(color: AppColors.inkMuted),
                   ),
               ],
             ),
@@ -194,7 +184,7 @@ class _InterviewSessionScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surfaceHigh,
+        backgroundColor: AppColors.raised2,
         title: const Text('End Interview?'),
         content: const Text(
           'Your progress will be lost and the interview will end.',
@@ -204,12 +194,15 @@ class _InterviewSessionScreenState
             onPressed: () => Navigator.pop(ctx, false),
             child: const Text(
               'Continue',
-              style: TextStyle(color: AppColors.textMedium),
+              style: TextStyle(color: AppColors.inkMuted),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('End', style: TextStyle(color: AppColors.poor)),
+            child: const Text(
+              'End',
+              style: TextStyle(color: AppColors.critical),
+            ),
           ),
         ],
       ),
@@ -227,7 +220,7 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -236,22 +229,18 @@ class _LoadingView extends StatelessWidget {
             height: 48,
             child: CircularProgressIndicator(
               strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.ink),
             ),
           ),
           SizedBox(height: 20),
           Text(
             'Preparing your interview…',
-            style: TextStyle(
-              fontSize: AppFontSize.f16,
-              fontWeight: AppFontWeight.w600,
-              color: AppColors.textDark,
-            ),
+            style: context.cardTitle.copyWith(color: AppColors.ink),
           ),
           SizedBox(height: 8),
           Text(
             'Reading your CV and crafting questions',
-            style: TextStyle(fontSize: AppFontSize.f13, color: AppColors.textMedium),
+            style: context.caption.copyWith(color: AppColors.inkMuted),
           ),
         ],
       ),
@@ -278,17 +267,13 @@ class _ErrorView extends StatelessWidget {
             const Icon(
               LucideIcons.alertCircle,
               size: 48,
-              color: AppColors.poor,
+              color: AppColors.critical,
             ),
             const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: AppFontSize.f14,
-                color: AppColors.textDark,
-                height: 1.5,
-              ),
+              style: context.body.copyWith(color: AppColors.ink, height: 1.5),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -345,14 +330,12 @@ class _QuestionView extends ConsumerWidget {
 
           const SizedBox(height: 16),
 
-          GlassCard(
+          SurfaceCard(
             padding: const EdgeInsets.all(20),
             child: Text(
               question?.text ?? '',
-              style: const TextStyle(
-                fontSize: AppFontSize.f17,
-                fontWeight: AppFontWeight.w600,
-                color: AppColors.textDark,
+              style: context.cardTitle.copyWith(
+                color: AppColors.ink,
                 height: 1.5,
               ),
             ),
@@ -366,17 +349,16 @@ class _QuestionView extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.surfaceHigh,
+                color: AppColors.raised2,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.cardBorder),
+                border: Border.all(color: AppColors.line),
               ),
               child: SingleChildScrollView(
                 reverse: true,
                 child: Text(
                   transcript,
-                  style: const TextStyle(
-                    fontSize: AppFontSize.f13,
-                    color: AppColors.textMedium,
+                  style: context.caption.copyWith(
+                    color: AppColors.inkMuted,
                     height: 1.45,
                   ),
                 ),
@@ -397,8 +379,8 @@ class _QuestionView extends ConsumerWidget {
                     : LucideIcons.mic,
                 size: 14,
                 color: isRecording || isFinalising
-                    ? AppColors.primary
-                    : AppColors.outline,
+                    ? AppColors.ink
+                    : AppColors.borderControl,
               ),
               const SizedBox(width: 6),
               Flexible(
@@ -413,11 +395,10 @@ class _QuestionView extends ConsumerWidget {
                             '${(InterviewNotifier.maxAnswerSeconds % 60).toString().padLeft(2, '0')}'
                       : 'Tap the mic to answer',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: AppFontSize.f12,
+                  style: context.caption.copyWith(
                     color: isRecording || isFinalising
-                        ? AppColors.primary
-                        : AppColors.outline,
+                        ? AppColors.ink
+                        : AppColors.borderControl,
                   ),
                 ),
               ),
@@ -443,11 +424,11 @@ class _QuestionView extends ConsumerWidget {
                 height: 76,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isRecording ? AppColors.poor : AppColors.primary,
+                  color: isRecording ? AppColors.critical : AppColors.ink,
                 ),
                 child: Icon(
                   isRecording ? LucideIcons.square : LucideIcons.mic,
-                  color: isRecording ? AppColors.ink : AppColors.onPrimary,
+                  color: isRecording ? AppColors.ink : AppColors.onAction,
                   size: 34,
                 ),
               ),
@@ -459,7 +440,7 @@ class _QuestionView extends ConsumerWidget {
               child: Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.ink),
                 ),
               ),
             ),
@@ -474,7 +455,7 @@ class _QuestionView extends ConsumerWidget {
                 : isRecording
                 ? 'Tap to stop when done'
                 : 'Tap to start answering',
-            style: const TextStyle(fontSize: AppFontSize.f13, color: AppColors.textMedium),
+            style: context.caption.copyWith(color: AppColors.inkMuted),
           ),
 
           const SizedBox(height: 32),
@@ -505,7 +486,7 @@ class _FeedbackView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scoreColor = AppColors.scoreColor(evaluation.contentScore);
+    final scoreColor = AppColors.ink;
 
     return SingleChildScrollView(
       padding: centeredPagePadding(
@@ -520,14 +501,12 @@ class _FeedbackView extends StatelessWidget {
         children: [
           _TypeBadge(type: turn.question.type),
           const SizedBox(height: 10),
-          GlassCard(
+          SurfaceCard(
             padding: const EdgeInsets.all(16),
             child: Text(
               turn.question.text,
-              style: const TextStyle(
-                fontSize: AppFontSize.f15,
-                fontWeight: AppFontWeight.w600,
-                color: AppColors.textDark,
+              style: context.cardTitle.copyWith(
+                color: AppColors.ink,
                 height: 1.45,
               ),
             ),
@@ -535,43 +514,23 @@ class _FeedbackView extends StatelessWidget {
           const SizedBox(height: 20),
 
           // ── Score + feedback ──────────────────────────────────────────────
-          GlassCard(
+          SurfaceCard(
             padding: const EdgeInsets.all(20),
-            borderColor: scoreColor.withValues(alpha: 0.3),
-            bgColor: scoreColor.withValues(alpha: 0.05),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    ScoreRing(
-                      score: evaluation.contentScore,
-                      color: scoreColor,
-                      size: 72,
-                      strokeWidth: 6,
-                    ),
-                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'ANSWER QUALITY',
-                            style: TextStyle(
-                              fontSize: AppFontSize.f10,
-                              fontWeight: AppFontWeight.w700,
-                              color: AppColors.textMedium,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _scoreLabel(evaluation.contentScore),
-                            style: TextStyle(
-                              fontSize: AppFontSize.f16,
-                              fontWeight: AppFontWeight.w700,
-                              color: scoreColor,
-                            ),
+                          Text('ANSWER QUALITY', style: context.overline),
+                          const SizedBox(height: Space.sm),
+                          ScoreMeter(
+                            score: evaluation.contentScore,
+                            size: ScoreMeterSize.card,
+                            caption: _scoreLabel(evaluation.contentScore),
                           ),
                         ],
                       ),
@@ -579,7 +538,7 @@ class _FeedbackView extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                const Divider(color: AppColors.cardBorder, height: 1),
+                const Divider(color: AppColors.line, height: 1),
                 const SizedBox(height: 14),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -593,9 +552,8 @@ class _FeedbackView extends StatelessWidget {
                     Expanded(
                       child: Text(
                         evaluation.feedback,
-                        style: const TextStyle(
-                          fontSize: AppFontSize.f14,
-                          color: AppColors.textDark,
+                        style: context.body.copyWith(
+                          color: AppColors.ink,
                           height: 1.55,
                         ),
                       ),
@@ -609,21 +567,19 @@ class _FeedbackView extends StatelessWidget {
           const SizedBox(height: 16),
 
           // ── Your answer (transcript + optional audio playback) ────────────
-          GlassCard(
+          SurfaceCard(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'YOUR ANSWER',
-                        style: TextStyle(
-                          fontSize: AppFontSize.f10,
+                        style: context.overline.copyWith(
+                          color: AppColors.inkMuted,
                           fontWeight: AppFontWeight.w700,
-                          color: AppColors.textMedium,
-                          letterSpacing: 0.8,
                         ),
                       ),
                     ),
@@ -634,26 +590,23 @@ class _FeedbackView extends StatelessWidget {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
+                          color: AppColors.raised2,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: AppColors.primary.withValues(alpha: 0.25),
-                          ),
+                          border: Border.all(color: AppColors.borderControl),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               LucideIcons.headphones,
                               size: 10,
-                              color: AppColors.primary,
+                              color: AppColors.ink,
                             ),
                             SizedBox(width: 4),
                             Text(
                               'Recording',
-                              style: TextStyle(
-                                fontSize: AppFontSize.f9,
-                                color: AppColors.primary,
+                              style: context.overline.copyWith(
+                                color: AppColors.ink,
                                 fontWeight: AppFontWeight.w600,
                               ),
                             ),
@@ -666,14 +619,13 @@ class _FeedbackView extends StatelessWidget {
                   const SizedBox(height: 14),
                   _AudioPlayerWidget(audio: recordingAudio!),
                   const SizedBox(height: 14),
-                  const Divider(color: AppColors.cardBorder, height: 1),
+                  const Divider(color: AppColors.line, height: 1),
                 ],
                 const SizedBox(height: 10),
                 Text(
                   turn.transcript,
-                  style: const TextStyle(
-                    fontSize: AppFontSize.f13,
-                    color: AppColors.textMedium,
+                  style: context.caption.copyWith(
+                    color: AppColors.inkMuted,
                     height: 1.5,
                     fontStyle: FontStyle.italic,
                   ),
@@ -703,19 +655,16 @@ class _FeedbackView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    isFinal
-                        ? LucideIcons.barChart2
-                        : LucideIcons.arrowRight,
-                    color: AppColors.onPrimary,
+                    isFinal ? LucideIcons.barChart2 : LucideIcons.arrowRight,
+                    color: AppColors.onAction,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     isFinal ? 'See Final Results' : 'Next Question',
-                    style: const TextStyle(
-                      color: AppColors.onPrimary,
+                    style: context.cardTitle.copyWith(
+                      color: AppColors.onAction,
                       fontWeight: AppFontWeight.w800,
-                      fontSize: AppFontSize.f15,
                     ),
                   ),
                 ],
@@ -745,36 +694,8 @@ class _TypeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = type.color;
     return Center(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withValues(alpha: 0.35)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-            ),
-            const SizedBox(width: 7),
-            Text(
-              type.label.toUpperCase(),
-              style: TextStyle(
-                fontSize: AppFontSize.f11,
-                fontWeight: AppFontWeight.w700,
-                color: color,
-                letterSpacing: 0.8,
-              ),
-            ),
-          ],
-        ),
-      ),
+      child: CategoryBadge(label: type.label, icon: type.icon),
     );
   }
 }
@@ -804,10 +725,10 @@ class _ProgressDots extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(3),
             color: isDone
-                ? AppColors.good
+                ? AppColors.positive
                 : isCurrent
-                ? AppColors.primary
-                : AppColors.outlineVariant,
+                ? AppColors.ink
+                : AppColors.line,
           ),
         );
       }),
@@ -901,7 +822,12 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
       } else if (_playerState == PlayerState.paused) {
         await _player.resume();
       } else {
-        await _player.play(BytesSource(widget.audio.playbackBytes, mimeType: widget.audio.mimeType));
+        await _player.play(
+          BytesSource(
+            widget.audio.playbackBytes,
+            mimeType: widget.audio.mimeType,
+          ),
+        );
       }
     } catch (e) {
       log('AudioPlayerWidget: play error: $e');
@@ -926,17 +852,13 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     if (_hasError) {
-      return const Row(
+      return Row(
         children: [
-          Icon(
-            LucideIcons.alertCircle,
-            size: 15,
-            color: AppColors.textMedium,
-          ),
+          Icon(LucideIcons.alertCircle, size: 15, color: AppColors.inkMuted),
           SizedBox(width: 6),
           Text(
             'Playback unavailable',
-            style: TextStyle(fontSize: AppFontSize.f12, color: AppColors.textMedium),
+            style: context.caption.copyWith(color: AppColors.inkMuted),
           ),
         ],
       );
@@ -951,7 +873,7 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
             height: 18,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.ink),
             ),
           ),
         ),
@@ -973,14 +895,12 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
             height: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primary.withValues(alpha: 0.15),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.4),
-              ),
+              color: AppColors.raised2,
+              border: Border.all(color: AppColors.borderControl),
             ),
             child: Icon(
               isPlaying ? LucideIcons.pause : LucideIcons.play,
-              color: AppColors.primary,
+              color: AppColors.ink,
               size: 22,
             ),
           ),
@@ -999,10 +919,10 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
                   overlayShape: const RoundSliderOverlayShape(
                     overlayRadius: 14,
                   ),
-                  activeTrackColor: AppColors.primary,
-                  inactiveTrackColor: AppColors.outlineVariant,
-                  thumbColor: AppColors.primary,
-                  overlayColor: AppColors.primary.withValues(alpha: 0.2),
+                  activeTrackColor: AppColors.ink,
+                  inactiveTrackColor: AppColors.line,
+                  thumbColor: AppColors.ink,
+                  overlayColor: AppColors.borderControl,
                 ),
                 child: Slider(
                   value: _isSeeking ? _seekValue : progress,
@@ -1024,16 +944,14 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
                   children: [
                     Text(
                       _fmt(_position),
-                      style: const TextStyle(
-                        fontSize: AppFontSize.f10,
-                        color: AppColors.textMedium,
+                      style: context.overline.copyWith(
+                        color: AppColors.inkMuted,
                       ),
                     ),
                     Text(
                       _fmt(_duration),
-                      style: const TextStyle(
-                        fontSize: AppFontSize.f10,
-                        color: AppColors.textMedium,
+                      style: context.overline.copyWith(
+                        color: AppColors.inkMuted,
                       ),
                     ),
                   ],
@@ -1063,10 +981,8 @@ class _ModelAnswerCardState extends State<_ModelAnswerCard> {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return SurfaceCard(
       padding: const EdgeInsets.all(16),
-      borderColor: AppColors.primary.withValues(alpha: 0.3),
-      bgColor: AppColors.primary.withValues(alpha: 0.05),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1079,23 +995,21 @@ class _ModelAnswerCardState extends State<_ModelAnswerCard> {
                   height: 24,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.primary.withValues(alpha: 0.15),
+                    color: AppColors.raised2,
                   ),
                   child: const Icon(
                     LucideIcons.sparkles,
                     size: 13,
-                    color: AppColors.primary,
+                    color: AppColors.ink,
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
                     "ALEX'S IDEAL ANSWER",
-                    style: TextStyle(
-                      fontSize: AppFontSize.f10,
+                    style: context.overline.copyWith(
+                      color: AppColors.ink,
                       fontWeight: AppFontWeight.w700,
-                      color: AppColors.primary,
-                      letterSpacing: 0.8,
                     ),
                   ),
                 ),
@@ -1105,7 +1019,7 @@ class _ModelAnswerCardState extends State<_ModelAnswerCard> {
                   child: const Icon(
                     LucideIcons.chevronDown,
                     size: 18,
-                    color: AppColors.primary,
+                    color: AppColors.ink,
                   ),
                 ),
               ],
@@ -1120,13 +1034,12 @@ class _ModelAnswerCardState extends State<_ModelAnswerCard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Divider(color: AppColors.cardBorder, height: 1),
+                        const Divider(color: AppColors.line, height: 1),
                         const SizedBox(height: 12),
                         Text(
                           widget.answer,
-                          style: const TextStyle(
-                            fontSize: AppFontSize.f14,
-                            color: AppColors.textDark,
+                          style: context.body.copyWith(
+                            color: AppColors.ink,
                             height: 1.65,
                           ),
                         ),

@@ -12,7 +12,10 @@ class StorageService {
 
   List<SessionRecord> getSessions() {
     return _box.values
-        .map((raw) => SessionRecord.fromJson(jsonDecode(raw) as Map<String, dynamic>))
+        .map(
+          (raw) =>
+              SessionRecord.fromJson(jsonDecode(raw) as Map<String, dynamic>),
+        )
         .toList()
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
   }
@@ -25,11 +28,18 @@ class StorageService {
     final sessions = getSessions();
     if (sessions.isEmpty) return 0;
 
-    final dates = sessions
-        .map((s) => DateTime(s.timestamp.year, s.timestamp.month, s.timestamp.day))
-        .toSet()
-        .toList()
-      ..sort((a, b) => b.compareTo(a));
+    final dates =
+        sessions
+            .map(
+              (s) => DateTime(
+                s.timestamp.year,
+                s.timestamp.month,
+                s.timestamp.day,
+              ),
+            )
+            .toSet()
+            .toList()
+          ..sort((a, b) => b.compareTo(a));
 
     final today = DateTime.now();
     final todayNorm = DateTime(today.year, today.month, today.day);

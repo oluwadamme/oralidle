@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class WaveformAnimation extends StatefulWidget {
   final bool isActive;
@@ -84,8 +85,8 @@ class _WaveformAnimationState extends State<WaveformAnimation>
   /// Colour encodes loudness, not position: cool while speaking normally,
   /// warm at peak. A gradient across the row would only decorate.
   Color _barColor(int index, double height) {
-    if (!widget.isActive) return AppColors.levelRest;
-    return AppColors.levelColor(height);
+    if (!widget.isActive) return AppColors.voiceRest;
+    return AppColors.voiceColor(height);
   }
 
   @override
@@ -103,7 +104,7 @@ class _WaveformAnimationState extends State<WaveformAnimation>
             height: widget.height * _heights[i],
             decoration: BoxDecoration(
               color: _barColor(i, _heights[i]),
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(Radii.bar),
             ),
           );
         }),

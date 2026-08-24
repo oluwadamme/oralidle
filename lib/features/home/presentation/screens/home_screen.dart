@@ -9,11 +9,14 @@ import '../../../history/presentation/widgets/progress_line_chart.dart';
 import '../../../history/providers/history_provider.dart';
 import '../../../analysis/data/models/session_record.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/widgets/glass_card.dart';
-import '../../../../core/widgets/gradient_button.dart';
+import '../../../../core/widgets/surface_card.dart';
+import '../../../../core/widgets/tabular_text.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/pressable.dart';
 import '../../../../core/widgets/ad_banner_widget.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/theme/text_styles.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -89,20 +92,8 @@ class _WebHome extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Stack(
       children: [
-        const Positioned(
-          top: -60,
-          right: -40,
-          child: AmbientOrb(color: AppColors.primary, size: 260),
-        ),
-        const Positioned(
-          bottom: 60,
-          left: -60,
-          child: AmbientOrb(color: AppColors.caution, size: 180),
-        ),
         SafeArea(
           child: SingleChildScrollView(
-            // Side margins grow on wide windows so the content stops
-            // widening, while the ambient-orb backdrop stays full-bleed.
             padding: centeredPagePadding(
               availableWidth,
               minHorizontal: 32,
@@ -125,18 +116,15 @@ class _WebHome extends ConsumerWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.3),
-                            ),
+                            borderRadius: Radii.pillAll,
+                            color: AppColors.raised2,
+                            border: Border.all(color: AppColors.borderControl),
                           ),
                           child: Text(
                             level,
                             style: const TextStyle(
-                              fontSize: AppFontSize.f12,
                               fontWeight: AppFontWeight.w600,
-                              color: AppColors.primary,
+                              color: AppColors.ink,
                             ),
                           ),
                         ),
@@ -144,7 +132,7 @@ class _WebHome extends ConsumerWidget {
                         Text(
                           '$greeting,',
                           style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(color: AppColors.textMedium),
+                              ?.copyWith(color: AppColors.inkMuted),
                         ),
                         Text(
                           'Speaker!',
@@ -162,8 +150,8 @@ class _WebHome extends ConsumerWidget {
                           vertical: 7,
                         ),
                         decoration: BoxDecoration(
+                          borderRadius: Radii.pillAll,
                           color: AppColors.caution.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: AppColors.caution.withValues(alpha: 0.3),
                           ),
@@ -180,7 +168,6 @@ class _WebHome extends ConsumerWidget {
                             Text(
                               '$streak-day streak',
                               style: const TextStyle(
-                                fontSize: AppFontSize.f13,
                                 fontWeight: AppFontWeight.w600,
                                 color: AppColors.caution,
                               ),
@@ -203,7 +190,7 @@ class _WebHome extends ConsumerWidget {
                         children: [
                           // Stats card
                           if (allSessions.isNotEmpty) ...[
-                            GlassCard(
+                            SurfaceCard(
                               padding: const EdgeInsets.all(20),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,36 +200,35 @@ class _WebHome extends ConsumerWidget {
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleSmall
-                                        ?.copyWith(color: AppColors.textMedium),
+                                        ?.copyWith(color: AppColors.inkMuted),
                                   ),
                                   const SizedBox(height: 16),
                                   _StatRow(
                                     icon: LucideIcons.barChart2,
                                     label: 'Sessions',
                                     value: '${allSessions.length}',
-                                    color: AppColors.primary,
                                   ),
                                   const SizedBox(height: 12),
                                   _StatRow(
                                     icon: LucideIcons.trophy,
                                     label: 'Best Score',
-                                    value:
-                                        '${allSessions.map((s) => s.result.overallScore).reduce((a, b) => a > b ? a : b)}',
-                                    color: AppColors.good,
+                                    score: allSessions
+                                        .map((s) => s.result.overallScore)
+                                        .reduce((a, b) => a > b ? a : b),
                                   ),
                                   const SizedBox(height: 12),
                                   _StatRow(
                                     icon: LucideIcons.trendingUp,
                                     label: 'Avg Score',
-                                    value:
-                                        '${allSessions.map((s) => s.result.overallScore).reduce((a, b) => a + b) ~/ allSessions.length}',
-                                    color: AppColors.fair,
+                                    score:
+                                        allSessions.map((s) => s.result.overallScore).reduce((a, b) => a + b) ~/
+                                        allSessions.length,
                                   ),
                                 ],
                               ),
                             ),
                             const SizedBox(height: 16),
-                            GlassCard(
+                            SurfaceCard(
                               padding: const EdgeInsets.all(16),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,7 +238,7 @@ class _WebHome extends ConsumerWidget {
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleSmall
-                                        ?.copyWith(color: AppColors.textMedium),
+                                        ?.copyWith(color: AppColors.inkMuted),
                                   ),
                                   const SizedBox(height: 12),
                                   ProgressLineChart(sessions: allSessions),
@@ -260,29 +246,24 @@ class _WebHome extends ConsumerWidget {
                               ),
                             ),
                           ] else
-                            GlassCard(
+                            SurfaceCard(
                               padding: const EdgeInsets.all(20),
-                              bgColor: AppColors.primary.withValues(
-                                alpha: 0.05,
-                              ),
-                              borderColor: AppColors.primary.withValues(
-                                alpha: 0.2,
-                              ),
                               child: Column(
                                 children: [
                                   Container(
                                     width: 52,
                                     height: 52,
+                                    alignment: Alignment.center,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: AppColors.primary.withValues(
+                                      color: AppColors.ink.withValues(
                                         alpha: 0.12,
                                       ),
                                     ),
                                     child: const Icon(
                                       LucideIcons.mic,
                                       size: 24,
-                                      color: AppColors.primary,
+                                      color: AppColors.ink,
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -290,17 +271,14 @@ class _WebHome extends ConsumerWidget {
                                     'No sessions yet',
                                     style: TextStyle(
                                       fontWeight: AppFontWeight.w600,
-                                      color: AppColors.textDark,
+                                      color: AppColors.ink,
                                     ),
                                   ),
                                   const SizedBox(height: 6),
                                   const Text(
                                     'Complete your first session to see stats here.',
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: AppFontSize.f13,
-                                      color: AppColors.textMedium,
-                                    ),
+                                    style: TextStyle(color: AppColors.inkMuted),
                                   ),
                                 ],
                               ),
@@ -316,13 +294,10 @@ class _WebHome extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           // CTA card
-                          GlassCard(
+                          SurfaceCard(
                             padding: const EdgeInsets.all(24),
-                            bgColor: AppColors.primary.withValues(alpha: 0.05),
-                            borderColor: AppColors.primary.withValues(
-                              alpha: 0.15,
-                            ),
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
                                   child: Column(
@@ -336,23 +311,20 @@ class _WebHome extends ConsumerWidget {
                                         ).textTheme.titleMedium,
                                       ),
                                       const SizedBox(height: 6),
-                                      const Text(
+                                      Text(
                                         'AI analysis will coach your fluency, pace, and filler word frequency in real-time.',
-                                        style: TextStyle(
-                                          fontSize: AppFontSize.f13,
-                                          color: AppColors.textMedium,
-                                          height: 1.4,
-                                        ),
+                                        style: context.body,
                                       ),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 24),
-                                PrimaryGradientButton(
-                                  label: 'Practice',
-                                  icon: LucideIcons.mic,
-                                  height: 48,
-                                  onTap: () => context.go(AppRoutes.topics),
+                                const SizedBox(width: Space.xl),
+                                Flexible(
+                                  child: AppButton.primary(
+                                    label: 'Practice',
+                                    icon: LucideIcons.mic,
+                                    onPressed: () => context.go(AppRoutes.topics),
+                                  ),
                                 ),
                               ],
                             ),
@@ -375,13 +347,13 @@ class _WebHome extends ConsumerWidget {
                                       context.go(AppRoutes.history),
                                   child: const Text(
                                     'View All →',
-                                    style: TextStyle(color: AppColors.primary),
+                                    style: TextStyle(color: AppColors.ink),
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 10),
-                            GlassCard(
+                            SurfaceCard(
                               padding: EdgeInsets.zero,
                               child: _SessionsTable(sessions: recent, ref: ref),
                             ),
@@ -418,7 +390,8 @@ class _SessionsTable extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: AppColors.cardBorder)),
+            borderRadius: Radii.mdAll,
+            border: Border(bottom: BorderSide(color: AppColors.line)),
           ),
           child: const Row(
             children: [
@@ -427,9 +400,8 @@ class _SessionsTable extends StatelessWidget {
                 child: Text(
                   'SESSION',
                   style: TextStyle(
-                    fontSize: AppFontSize.f11,
                     fontWeight: AppFontWeight.w700,
-                    color: AppColors.outline,
+                    color: AppColors.inkMuted,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -439,9 +411,8 @@ class _SessionsTable extends StatelessWidget {
                 child: Text(
                   'DATE',
                   style: TextStyle(
-                    fontSize: AppFontSize.f11,
                     fontWeight: AppFontWeight.w700,
-                    color: AppColors.outline,
+                    color: AppColors.inkMuted,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -451,9 +422,8 @@ class _SessionsTable extends StatelessWidget {
                 child: Text(
                   'DURATION',
                   style: TextStyle(
-                    fontSize: AppFontSize.f11,
                     fontWeight: AppFontWeight.w700,
-                    color: AppColors.outline,
+                    color: AppColors.inkMuted,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -463,9 +433,8 @@ class _SessionsTable extends StatelessWidget {
                 child: Text(
                   'SCORE',
                   style: TextStyle(
-                    fontSize: AppFontSize.f11,
                     fontWeight: AppFontWeight.w700,
-                    color: AppColors.outline,
+                    color: AppColors.inkMuted,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -483,15 +452,14 @@ class _SessionsTable extends StatelessWidget {
 
           return InkWell(
             onTap: () => context.push(AppRoutes.results, extra: s),
-            hoverColor: AppColors.primary.withValues(alpha: 0.04),
+            hoverColor: AppColors.raised2,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               decoration: BoxDecoration(
+                borderRadius: Radii.mdAll,
                 border: isLast
                     ? null
-                    : const Border(
-                        bottom: BorderSide(color: AppColors.cardBorder),
-                      ),
+                    : const Border(bottom: BorderSide(color: AppColors.line)),
               ),
               child: Row(
                 children: [
@@ -500,9 +468,8 @@ class _SessionsTable extends StatelessWidget {
                     child: Text(
                       s.topicTitle,
                       style: const TextStyle(
-                        fontSize: AppFontSize.f14,
                         fontWeight: AppFontWeight.w500,
-                        color: AppColors.textDark,
+                        color: AppColors.ink,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -512,20 +479,14 @@ class _SessionsTable extends StatelessWidget {
                     flex: 2,
                     child: Text(
                       DateFormat('MMM d, y').format(s.timestamp),
-                      style: const TextStyle(
-                        fontSize: AppFontSize.f13,
-                        color: AppColors.textMedium,
-                      ),
+                      style: const TextStyle(color: AppColors.inkMuted),
                     ),
                   ),
                   Expanded(
                     flex: 2,
                     child: Text(
                       s.formattedDuration,
-                      style: const TextStyle(
-                        fontSize: AppFontSize.f13,
-                        color: AppColors.textMedium,
-                      ),
+                      style: const TextStyle(color: AppColors.inkMuted),
                     ),
                   ),
                   Expanded(
@@ -538,8 +499,8 @@ class _SessionsTable extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
+                            borderRadius: Radii.pillAll,
                             color: color.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: color.withValues(alpha: 0.3),
                             ),
@@ -547,7 +508,6 @@ class _SessionsTable extends StatelessWidget {
                           child: Text(
                             '$score',
                             style: TextStyle(
-                              fontSize: AppFontSize.f13,
                               fontWeight: AppFontWeight.w700,
                               color: color,
                             ),
@@ -571,15 +531,18 @@ class _SessionsTable extends StatelessWidget {
 class _StatRow extends StatelessWidget {
   final IconData icon;
   final String label;
-  final String value;
-  final Color color;
+  final String? value;
+
+  /// When present the row is a score, so it takes its band colour.
+  final int? score;
 
   const _StatRow({
     required this.icon,
     required this.label,
-    required this.value,
-    required this.color,
+    this.value, this.score,
   });
+
+  Color get color => score == null ? AppColors.inkMuted : AppColors.scoreColor(score!);
 
   @override
   Widget build(BuildContext context) {
@@ -588,25 +551,25 @@ class _StatRow extends StatelessWidget {
         Container(
           width: 32,
           height: 32,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: color.withValues(alpha: 0.12),
           ),
-          child: Icon(icon, size: 15, color: color),
+          child: Icon(icon, size: IconSize.sm, color: color),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: Space.md),
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(fontSize: AppFontSize.f13, color: AppColors.textMedium),
+            style: context.body.copyWith(color: AppColors.inkMuted),
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: AppFontSize.f16,
-            fontWeight: AppFontWeight.w700,
+        TabularText(
+          value ?? '${score ?? 0}',
+          style: context.readoutAt(16,
             color: color,
+            weight: AppFontWeight.w700,
           ),
         ),
       ],
@@ -635,16 +598,6 @@ class _MobileHome extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Stack(
       children: [
-        const Positioned(
-          top: -40,
-          right: -40,
-          child: AmbientOrb(color: AppColors.primary, size: 220),
-        ),
-        const Positioned(
-          top: 120,
-          left: -60,
-          child: AmbientOrb(color: AppColors.caution, size: 140),
-        ),
         CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
@@ -664,7 +617,7 @@ class _MobileHome extends ConsumerWidget {
                                 Text(
                                   '$greeting,',
                                   style: Theme.of(context).textTheme.bodyLarge
-                                      ?.copyWith(color: AppColors.textMedium),
+                                      ?.copyWith(color: AppColors.inkMuted),
                                 ),
                                 Text(
                                   'Speaker!',
@@ -682,18 +635,17 @@ class _MobileHome extends ConsumerWidget {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: Radii.pillAll,
+                              color: AppColors.raised2,
                               border: Border.all(
-                                color: AppColors.primary.withValues(alpha: 0.4),
+                                color: AppColors.borderControl,
                               ),
                             ),
                             child: Text(
                               level,
                               style: const TextStyle(
-                                fontSize: AppFontSize.f12,
                                 fontWeight: AppFontWeight.w600,
-                                color: AppColors.primary,
+                                color: AppColors.ink,
                               ),
                             ),
                           ),
@@ -707,8 +659,8 @@ class _MobileHome extends ConsumerWidget {
                             vertical: 5,
                           ),
                           decoration: BoxDecoration(
+                            borderRadius: Radii.pillAll,
                             color: AppColors.caution.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: AppColors.caution.withValues(alpha: 0.3),
                             ),
@@ -725,7 +677,6 @@ class _MobileHome extends ConsumerWidget {
                               Text(
                                 '$streak-day streak — keep it up!',
                                 style: const TextStyle(
-                                  fontSize: AppFontSize.f12,
                                   fontWeight: AppFontWeight.w600,
                                   color: AppColors.caution,
                                 ),
@@ -734,12 +685,11 @@ class _MobileHome extends ConsumerWidget {
                           ),
                         ),
                       const SizedBox(height: 28),
-                      PrimaryGradientButton(
+                      AppButton.primary(
+                        expand: true,
                         label: 'Practice',
                         icon: LucideIcons.mic,
-                        height: 60,
-                        fontSize: AppFontSize.f17,
-                        onTap: () => context.go(AppRoutes.topics),
+                        onPressed: () => context.go(AppRoutes.topics),
                       ),
                       const SizedBox(height: 24),
                       if (allSessions.isNotEmpty) ...[
@@ -759,7 +709,9 @@ class _MobileHome extends ConsumerWidget {
                                 value:
                                     '${allSessions.map((s) => s.result.overallScore).reduce((a, b) => a > b ? a : b)}',
                                 label: 'Best',
-                                color: AppColors.good,
+                                color: AppColors.scoreColor(
+                                  allSessions.map((s) => s.result.overallScore).reduce((a, b) => a > b ? a : b),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -769,7 +721,10 @@ class _MobileHome extends ConsumerWidget {
                                 value:
                                     '${allSessions.map((s) => s.result.overallScore).reduce((a, b) => a + b) ~/ allSessions.length}',
                                 label: 'Avg',
-                                color: AppColors.fair,
+                                color: AppColors.scoreColor(
+                                  allSessions.map((s) => s.result.overallScore).reduce((a, b) => a + b) ~/
+                                      allSessions.length,
+                                ),
                               ),
                             ),
                           ],
@@ -780,7 +735,7 @@ class _MobileHome extends ConsumerWidget {
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 10),
-                        GlassCard(
+                        SurfaceCard(
                           padding: const EdgeInsets.all(16),
                           child: ProgressLineChart(sessions: allSessions),
                         ),
@@ -797,7 +752,7 @@ class _MobileHome extends ConsumerWidget {
                                 onPressed: () => context.go(AppRoutes.history),
                                 child: const Text(
                                   'See all',
-                                  style: TextStyle(color: AppColors.primary),
+                                  style: TextStyle(color: AppColors.ink),
                                 ),
                               ),
                           ],
@@ -839,7 +794,7 @@ class _MiniStatCard extends StatelessWidget {
     required this.icon,
     required this.value,
     required this.label,
-    this.color = AppColors.primary,
+    this.color = AppColors.ink,
   });
 
   @override
@@ -847,24 +802,20 @@ class _MiniStatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: Radii.mdAll,
+        color: AppColors.raised,
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
           Text(
             value,
-            style: TextStyle(
-              fontSize: AppFontSize.f20,
-              fontWeight: AppFontWeight.w800,
-              color: color,
-            ),
+            style: TextStyle(fontWeight: AppFontWeight.w800, color: color),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(fontSize: AppFontSize.f11, color: AppColors.textMedium),
+            style: context.overline.copyWith(color: AppColors.inkMuted),
           ),
         ],
       ),
@@ -878,27 +829,20 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return SurfaceCard(
       padding: const EdgeInsets.all(32),
-      bgColor: AppColors.primary.withValues(alpha: 0.05),
-      borderColor: AppColors.primary.withValues(alpha: 0.2),
       child: Column(
         children: [
           Container(
             width: 64,
             height: 64,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primary.withValues(alpha: 0.12),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.3),
-              ),
+              color: AppColors.raised2,
+              border: Border.all(color: AppColors.borderControl),
             ),
-            child: const Icon(
-              LucideIcons.mic,
-              size: 30,
-              color: AppColors.primary,
-            ),
+            child: const Icon(LucideIcons.mic, size: 30, color: AppColors.ink),
           ),
           const SizedBox(height: 16),
           Text(
@@ -917,16 +861,12 @@ class _EmptyState extends StatelessWidget {
             onTap: onStart,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.action,
-                borderRadius: BorderRadius.circular(12),
-              ),
+              decoration: BoxDecoration(color: AppColors.action),
               child: const Text(
                 'Pick Your First Topic',
                 style: TextStyle(
                   color: AppColors.onAction,
                   fontWeight: AppFontWeight.w700,
-                  fontSize: AppFontSize.f15,
                 ),
               ),
             ),

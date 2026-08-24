@@ -44,6 +44,7 @@ class _AdSenseWebWidget extends StatefulWidget {
 
 class _AdSenseWebWidgetState extends State<_AdSenseWebWidget> {
   late final String _viewId;
+  bool _pushed = false;
 
   @override
   void initState() {
@@ -53,6 +54,7 @@ class _AdSenseWebWidgetState extends State<_AdSenseWebWidget> {
 
     ui_web.platformViewRegistry.registerViewFactory(_viewId, (int id) {
       final ins = web.document.createElement('ins') as web.HTMLElement;
+      ins.id = _viewId;
       ins.className = 'adsbygoogle';
       ins.style.display = 'block';
       ins.style.width = '100%';
@@ -73,19 +75,45 @@ class _AdSenseWebWidgetState extends State<_AdSenseWebWidget> {
       return div;
     });
 
-    // Safely trigger adsbygoogle.push AFTER Flutter Web attaches the platform view to the DOM
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (mounted) {
-          try {
-            _jsEval(
-                '(window.adsbygoogle = window.adsbygoogle || []).push({});');
-          } catch (e) {
-            debugPrint('AdSense push error: $e');
-          }
+      _tryPushAd(attempts: 0);
+    });
+  }
+
+  void _tryPushAd({int attempts = 0}) {
+    if (!mounted || _pushed) return;
+
+    try {
+      final el = web.document.getElementById(_viewId);
+      if (el != null) {
+        final status =
+            el.getAttribute('data-adsbygoogle-status') ??
+            el.getAttribute('data-ad-status');
+        if (status != null && status.isNotEmpty) {
+          _pushed = true;
+          return;
+        }
+
+        try {
+          _jsEval('(window.adsbygoogle = window.adsbygoogle || []).push({});');
+        } catch (e) {
+          debugPrint('AdSense push caught: $e');
+        }
+        _pushed = true;
+        return;
+      }
+    } catch (e) {
+      debugPrint('AdSense element check error: $e');
+    }
+
+    // If element is not in DOM yet, retry after a delay
+    if (attempts < 10) {
+      Future.delayed(const Duration(milliseconds: 250), () {
+        if (mounted && !_pushed) {
+          _tryPushAd(attempts: attempts + 1);
         }
       });
-    });
+    }
   }
 
   @override

@@ -3,11 +3,15 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/category_badge.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/score_meter.dart';
+import '../../../../core/widgets/surface_card.dart';
 import '../../../../core/widgets/pressable.dart';
 import '../../data/models/interview_models.dart';
 import '../utils/interview_ui_utils.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/theme/text_styles.dart';
 
 class InterviewResultsScreen extends StatelessWidget {
   final CompletedInterview interview;
@@ -52,21 +56,7 @@ class _ResultsScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          top: -40,
-          right: -40,
-          child: AmbientOrb(color: accentColor, size: 200),
-        ),
-        const Positioned(
-          bottom: 80,
-          left: -50,
-          child: AmbientOrb(color: AppColors.primary, size: 160),
-        ),
-        SafeArea(child: child),
-      ],
-    );
+    return Stack(children: [SafeArea(child: child)]);
   }
 }
 
@@ -83,10 +73,9 @@ class _WideResults extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final eval = interview.evaluation;
-    final color = AppColors.scoreColor(eval.overallScore);
 
     return _ResultsScaffold(
-      accentColor: color,
+      accentColor: AppColors.ink,
       child: Column(
         children: [
           Padding(
@@ -104,10 +93,7 @@ class _WideResults extends StatelessWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(
-                    LucideIcons.home,
-                    color: AppColors.textMedium,
-                  ),
+                  icon: const Icon(LucideIcons.home, color: AppColors.inkMuted),
                   onPressed: () => context.go(AppRoutes.home),
                 ),
               ],
@@ -168,10 +154,9 @@ class _MobileResults extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final eval = interview.evaluation;
-    final color = AppColors.scoreColor(eval.overallScore);
 
     return _ResultsScaffold(
-      accentColor: color,
+      accentColor: AppColors.ink,
       child: Column(
         children: [
           Padding(
@@ -187,10 +172,7 @@ class _MobileResults extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(
-                    LucideIcons.home,
-                    color: AppColors.textMedium,
-                  ),
+                  icon: const Icon(LucideIcons.home, color: AppColors.inkMuted),
                   onPressed: () => context.go(AppRoutes.home),
                 ),
               ],
@@ -229,38 +211,25 @@ class _OverallCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final eval = interview.evaluation;
-    final color = AppColors.scoreColor(eval.overallScore);
 
-    return GlassCard(
+    return SurfaceCard(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const Text(
-            'OVERALL SCORE',
-            style: TextStyle(
-              fontSize: AppFontSize.f11,
-              fontWeight: AppFontWeight.w700,
-              color: AppColors.textMedium,
-              letterSpacing: 1.0,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ScoreRing(
-            score: eval.overallScore,
-            color: color,
-            size: 140,
-            strokeWidth: 9,
-          ),
-          const SizedBox(height: 12),
           Text(
-            _overallLabel(eval.overallScore),
-            style: TextStyle(
-              fontSize: AppFontSize.f16,
+            'OVERALL SCORE',
+            style: context.overline.copyWith(
+              color: AppColors.inkMuted,
               fontWeight: AppFontWeight.w700,
-              color: color,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: Space.lg),
+          ScoreMeter(
+            score: eval.overallScore,
+            size: ScoreMeterSize.hero,
+            caption: _overallLabel(eval.overallScore),
+          ),
+          const SizedBox(height: Space.md),
           Text(
             eval.summary,
             style: Theme.of(
@@ -269,7 +238,7 @@ class _OverallCard extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          const Divider(color: AppColors.cardBorder),
+          const Divider(color: AppColors.line),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -312,7 +281,7 @@ class _InsightsCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        GlassCard(
+        SurfaceCard(
           padding: const EdgeInsets.all(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,7 +291,7 @@ class _InsightsCard extends StatelessWidget {
                   const Icon(
                     LucideIcons.sparkles,
                     size: 16,
-                    color: AppColors.good,
+                    color: AppColors.positive,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -333,13 +302,13 @@ class _InsightsCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               ...eval.strengths.map(
-                (s) => _BulletItem(text: s, color: AppColors.good),
+                (s) => _BulletItem(text: s, color: AppColors.positive),
               ),
             ],
           ),
         ),
         const SizedBox(height: 12),
-        GlassCard(
+        SurfaceCard(
           padding: const EdgeInsets.all(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -349,7 +318,7 @@ class _InsightsCard extends StatelessWidget {
                   const Icon(
                     LucideIcons.arrowUp,
                     size: 16,
-                    color: AppColors.primary,
+                    color: AppColors.ink,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -360,7 +329,7 @@ class _InsightsCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               ...eval.improvements.map(
-                (s) => _BulletItem(text: s, color: AppColors.primary),
+                (s) => _BulletItem(text: s, color: AppColors.ink),
               ),
             ],
           ),
@@ -409,15 +378,14 @@ class _TurnTileState extends State<_TurnTile> {
   @override
   Widget build(BuildContext context) {
     final eval = widget.turn.evaluation;
-    final color = AppColors.scoreColor(eval.contentScore);
     final type = widget.turn.question.type;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.raised,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.cardBorder),
+        border: Border.all(color: AppColors.line),
       ),
       child: Column(
         children: [
@@ -432,15 +400,14 @@ class _TurnTileState extends State<_TurnTile> {
                     height: 30,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: color.withValues(alpha: 0.12),
+                      color: AppColors.raised2,
                     ),
                     child: Center(
                       child: Text(
                         '${widget.index + 1}',
-                        style: TextStyle(
-                          fontSize: AppFontSize.f13,
+                        style: context.overline.copyWith(
+                          color: AppColors.ink,
                           fontWeight: AppFontWeight.w800,
-                          color: color,
                         ),
                       ),
                     ),
@@ -454,11 +421,10 @@ class _TurnTileState extends State<_TurnTile> {
                           widget.turn.question.text,
                           maxLines: _expanded ? null : 2,
                           overflow: _expanded ? null : TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: AppFontSize.f13,
-                            fontWeight: AppFontWeight.w600,
-                            color: AppColors.textDark,
+                          style: context.overline.copyWith(
+                            color: AppColors.ink,
                             height: 1.4,
+                            fontWeight: AppFontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -469,26 +435,23 @@ class _TurnTileState extends State<_TurnTile> {
                   const SizedBox(width: 10),
                   Text(
                     '${eval.contentScore}%',
-                    style: TextStyle(
-                      fontSize: AppFontSize.f14,
+                    style: context.cardTitle.copyWith(
+                      color: AppColors.ink,
                       fontWeight: AppFontWeight.w800,
-                      color: color,
                     ),
                   ),
                   const SizedBox(width: 6),
                   Icon(
-                    _expanded
-                        ? LucideIcons.chevronUp
-                        : LucideIcons.chevronDown,
+                    _expanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
                     size: 20,
-                    color: AppColors.outline,
+                    color: AppColors.inkMuted,
                   ),
                 ],
               ),
             ),
           ),
           if (_expanded) ...[
-            const Divider(height: 1, color: AppColors.cardBorder),
+            const Divider(height: 1, color: AppColors.line),
             Padding(
               padding: const EdgeInsets.all(14),
               child: Column(
@@ -500,15 +463,14 @@ class _TurnTileState extends State<_TurnTile> {
                       Icon(
                         LucideIcons.messageSquare,
                         size: 13,
-                        color: AppColors.scoreColor(eval.contentScore),
+                        color: AppColors.ink,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           eval.feedback,
-                          style: const TextStyle(
-                            fontSize: AppFontSize.f13,
-                            color: AppColors.textDark,
+                          style: context.caption.copyWith(
+                            color: AppColors.ink,
                             height: 1.5,
                           ),
                         ),
@@ -520,27 +482,24 @@ class _TurnTileState extends State<_TurnTile> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceHigh,
+                      color: AppColors.raised2,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'YOUR ANSWER',
-                          style: TextStyle(
-                            fontSize: AppFontSize.f10,
+                          style: context.overline.copyWith(
+                            color: AppColors.inkMuted,
                             fontWeight: AppFontWeight.w700,
-                            color: AppColors.textMedium,
-                            letterSpacing: 0.6,
                           ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           widget.turn.transcript,
-                          style: const TextStyle(
-                            fontSize: AppFontSize.f12,
-                            color: AppColors.textMedium,
+                          style: context.caption.copyWith(
+                            color: AppColors.inkMuted,
                             height: 1.5,
                             fontStyle: FontStyle.italic,
                           ),
@@ -555,30 +514,26 @@ class _TurnTileState extends State<_TurnTile> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.08),
+                        color: AppColors.raised2,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.25),
-                        ),
+                        border: Border.all(color: AppColors.borderControl),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
+                          Row(
                             children: [
                               Icon(
                                 LucideIcons.sparkles,
                                 size: 12,
-                                color: AppColors.primary,
+                                color: AppColors.ink,
                               ),
                               SizedBox(width: 6),
                               Text(
                                 'GEMINI SAMPLE / IDEAL ANSWER',
-                                style: TextStyle(
-                                  fontSize: AppFontSize.f10,
+                                style: context.overline.copyWith(
+                                  color: AppColors.ink,
                                   fontWeight: AppFontWeight.w700,
-                                  color: AppColors.primary,
-                                  letterSpacing: 0.6,
                                 ),
                               ),
                             ],
@@ -586,9 +541,8 @@ class _TurnTileState extends State<_TurnTile> {
                           const SizedBox(height: 6),
                           Text(
                             eval.modelAnswer!,
-                            style: const TextStyle(
-                              fontSize: AppFontSize.f12,
-                              color: AppColors.textDark,
+                            style: context.caption.copyWith(
+                              color: AppColors.ink,
                               height: 1.5,
                             ),
                           ),
@@ -627,14 +581,14 @@ class _ActionButtons extends StatelessWidget {
               children: [
                 Icon(
                   LucideIcons.rotateCcw,
-                  color: AppColors.onPrimary,
+                  color: AppColors.onAction,
                   size: 18,
                 ),
                 SizedBox(width: 8),
                 Text(
                   'Practice Again',
                   style: TextStyle(
-                    color: AppColors.onPrimary,
+                    color: AppColors.onAction,
                     fontWeight: AppFontWeight.w700,
                   ),
                 ),
@@ -666,12 +620,9 @@ class _MetaChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 13, color: AppColors.outline),
+        Icon(icon, size: 13, color: AppColors.inkMuted),
         const SizedBox(width: 5),
-        Text(
-          label,
-          style: const TextStyle(fontSize: AppFontSize.f12, color: AppColors.textMedium),
-        ),
+        Text(label, style: context.caption.copyWith(color: AppColors.inkMuted)),
       ],
     );
   }
@@ -700,9 +651,8 @@ class _BulletItem extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                fontSize: AppFontSize.f13,
-                color: AppColors.textDark,
+              style: context.caption.copyWith(
+                color: AppColors.ink,
                 height: 1.45,
               ),
             ),
@@ -720,21 +670,6 @@ class _TypePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = type.color;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        type.label,
-        style: TextStyle(
-          fontSize: AppFontSize.f10,
-          fontWeight: AppFontWeight.w700,
-          color: color,
-        ),
-      ),
-    );
+    return CategoryBadge(label: type.label, icon: type.icon, dense: true);
   }
 }

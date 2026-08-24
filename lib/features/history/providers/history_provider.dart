@@ -22,5 +22,5 @@ class HistoryNotifier extends StateNotifier<List<SessionRecord>> {
 
 final historyProvider =
     StateNotifierProvider<HistoryNotifier, List<SessionRecord>>((ref) {
-  return HistoryNotifier(ref.watch(storageServiceProvider));
-});
+      return HistoryNotifier(ref.watch(storageServiceProvider));
+    });

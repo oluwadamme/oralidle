@@ -1,20 +1,23 @@
-import 'package:flutter/material.dart';
-import '../../../../core/constants/app_constants.dart';
+import 'package:flutter/widgets.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+
 import '../../data/models/interview_models.dart';
 
-/// UI-layer colour mapping for question types.
-/// Kept here (not in models) so model layer stays free of Flutter dependencies.
+/// Question types carry a glyph, not a hue. See DESIGN.md §6.
+///
+/// The previous mapping painted `leetcode` in the danger colour, so a coding
+/// question rendered as an error state.
 extension QuestionTypeUI on QuestionType {
-  Color get color {
+  IconData get icon {
     switch (this) {
       case QuestionType.cvBased:
-        return AppColors.good;
+        return LucideIcons.fileText;
       case QuestionType.technical:
-        return AppColors.primary;
+        return LucideIcons.cpu;
       case QuestionType.behavioral:
-        return AppColors.caution;
+        return LucideIcons.messagesSquare;
       case QuestionType.leetcode:
-        return AppColors.poor;
+        return LucideIcons.code;
     }
   }
 }

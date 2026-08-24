@@ -13,8 +13,8 @@ class MetaChip extends StatelessWidget {
     super.key,
     required this.icon,
     required this.label,
-    this.iconColor = AppColors.outline,
-    this.textColor = AppColors.textMedium,
+    this.iconColor = AppColors.borderControl,
+    this.textColor = AppColors.inkMuted,
     this.iconSize = 13,
     this.fontSize = 12,
   });

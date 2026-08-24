@@ -20,7 +20,10 @@ abstract final class AiEndpoint {
   static bool get isLocalWeb {
     if (!kIsWeb) return false;
     final host = Uri.base.host.toLowerCase();
-    return host == 'localhost' || host == '127.0.0.1' || host == '0.0.0.0' || host == '::1';
+    return host == 'localhost' ||
+        host == '127.0.0.1' ||
+        host == '0.0.0.0' ||
+        host == '::1';
   }
 
   static bool get usesProxy {
@@ -31,14 +34,17 @@ abstract final class AiEndpoint {
 
   /// Whether callers should attach the `x-goog-api-key` header.
   static bool get sendsApiKey => !usesProxy;
-  
-  static bool get requiresApiKey => sendsApiKey || (isLocalWeb && proxyBase.isEmpty);
+
+  static bool get requiresApiKey =>
+      sendsApiKey || (isLocalWeb && proxyBase.isEmpty);
 
   /// Where to POST a `generateContent` request.
   static Uri get generateContent {
     if (usesProxy) {
       if (proxyBase.isNotEmpty) {
-        return Uri.parse('${proxyBase.replaceAll(RegExp(r'/+$'), '')}$_proxyPath');
+        return Uri.parse(
+          '${proxyBase.replaceAll(RegExp(r'/+$'), '')}$_proxyPath',
+        );
       }
       if (kIsWeb) return Uri.base.resolve(_proxyPath);
     }
@@ -48,6 +54,9 @@ abstract final class AiEndpoint {
   /// Headers for a `generateContent` request, given the configured [apiKey].
   static Map<String, String> headers(String apiKey) {
     final key = apiKey.isNotEmpty ? apiKey : localApiKey;
-    return {'Content-Type': 'application/json', if (sendsApiKey) 'x-goog-api-key': key};
+    return {
+      'Content-Type': 'application/json',
+      if (sendsApiKey) 'x-goog-api-key': key,
+    };
   }
 }

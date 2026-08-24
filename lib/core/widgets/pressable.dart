@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import '../constants/app_constants.dart';
 import '../theme/app_spacing.dart';
 
-
 class Pressable extends StatelessWidget {
   const Pressable({
     super.key,
@@ -19,6 +18,7 @@ class Pressable extends StatelessWidget {
     this.minSize = TouchTarget.min,
     this.haptic = true,
     this.tooltip,
+    this.padding,
   });
 
   final Widget child;
@@ -39,6 +39,7 @@ class Pressable extends StatelessWidget {
 
   /// Also serves as the accessible name when [semanticLabel] is null.
   final String? tooltip;
+  final EdgeInsetsGeometry? padding;
 
   bool get _enabled => onTap != null || onLongPress != null;
 
@@ -62,11 +63,11 @@ class Pressable extends StatelessWidget {
         onTap: onTap == null ? null : _handleTap,
         onLongPress: onLongPress,
         borderRadius: borderRadius,
-        splashColor: AppColors.voiceLow.withValues(alpha: 0.10),
-        highlightColor: AppColors.voiceLow.withValues(alpha: 0.06),
+        splashColor: AppColors.accent.withValues(alpha: 0.10),
+        highlightColor: AppColors.accent.withValues(alpha: 0.06),
         hoverColor: AppColors.ink.withValues(alpha: 0.04),
-        focusColor: AppColors.voiceLow.withValues(alpha: 0.12),
-        child: child,
+        focusColor: AppColors.accent.withValues(alpha: 0.12),
+        child: minSize > 0 ? Center(child: child) : child,
       ),
     );
 
@@ -81,13 +82,17 @@ class Pressable extends StatelessWidget {
       result = Tooltip(message: tooltip!, child: result);
     }
 
-    return Semantics(
-      button: true,
-      enabled: _enabled,
-      selected: selected,
-      label: semanticLabel ?? tooltip,
-      hint: semanticHint,
-      child: result,
+    return Padding(
+      padding: padding ?? EdgeInsets.zero,
+      child: Semantics(
+        container: true,
+        button: true,
+        enabled: _enabled,
+        selected: selected,
+        label: semanticLabel ?? tooltip,
+        hint: semanticHint,
+        child: result,
+      ),
     );
   }
 }

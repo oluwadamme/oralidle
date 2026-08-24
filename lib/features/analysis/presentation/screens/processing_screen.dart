@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../providers/analysis_provider.dart';
 import '../../../recording/data/models/recording_session.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/widgets/glass_card.dart';
+import '../../../../core/widgets/surface_card.dart';
+import '../../../../core/theme/text_styles.dart';
 
 class ProcessingScreen extends ConsumerStatefulWidget {
   final RecordingSession session;
@@ -56,17 +57,6 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen>
     return Scaffold(
       body: Stack(
         children: [
-          // Ambient orbs
-          const Positioned(
-            top: -60,
-            left: -60,
-            child: AmbientOrb(color: AppColors.primary, size: 260),
-          ),
-          const Positioned(
-            bottom: 80,
-            right: -50,
-            child: AmbientOrb(color: AppColors.caution, size: 180),
-          ),
           SafeArea(
             child: state.hasError
                 ? _ErrorView(
@@ -92,18 +82,20 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen>
                                   height: 120,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: AppColors.primary.withValues(
-                                        alpha: 0.08 + _pulse.value * 0.06),
+                                    color: AppColors.ink.withValues(
+                                      alpha: 0.08 + _pulse.value * 0.06,
+                                    ),
                                     border: Border.all(
-                                      color: AppColors.primary.withValues(
-                                          alpha: 0.3 + _pulse.value * 0.2),
+                                      color: AppColors.ink.withValues(
+                                        alpha: 0.3 + _pulse.value * 0.2,
+                                      ),
                                       width: 1.5,
                                     ),
                                   ),
                                   child: const Icon(
                                     Icons.psychology_rounded,
                                     size: 52,
-                                    color: AppColors.primary,
+                                    color: AppColors.ink,
                                   ),
                                 ),
                               );
@@ -159,7 +151,9 @@ class _ProcessingScreenState extends ConsumerState<ProcessingScreen>
     final raw = error is Exception
         ? error.toString().replaceFirst('Exception: ', '')
         : error.toString();
-    if (raw.length > 200) return 'Analysis failed. Please check your connection and try again.';
+    if (raw.length > 200) {
+      return 'Analysis failed. Please check your connection and try again.';
+    }
     return raw;
   }
 }
@@ -170,13 +164,15 @@ class _CheckChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return SurfaceCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       radius: 20,
-      borderColor: AppColors.primary.withValues(alpha: 0.25),
       child: Text(
         label,
-        style: const TextStyle(fontSize: AppFontSize.f12, color: AppColors.primary, fontWeight: AppFontWeight.w500),
+        style: context.caption.copyWith(
+          color: AppColors.ink,
+          fontWeight: AppFontWeight.w500,
+        ),
       ),
     );
   }
@@ -187,7 +183,11 @@ class _ErrorView extends StatelessWidget {
   final VoidCallback onRetry;
   final VoidCallback onBack;
 
-  const _ErrorView({required this.message, required this.onRetry, required this.onBack});
+  const _ErrorView({
+    required this.message,
+    required this.onRetry,
+    required this.onBack,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -202,10 +202,16 @@ class _ErrorView extends StatelessWidget {
               height: 80,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.poor.withValues(alpha: 0.1),
-                border: Border.all(color: AppColors.poor.withValues(alpha: 0.3)),
+                color: AppColors.critical.withValues(alpha: 0.1),
+                border: Border.all(
+                  color: AppColors.critical.withValues(alpha: 0.3),
+                ),
               ),
-              child: const Icon(Icons.error_outline_rounded, size: 36, color: AppColors.poor),
+              child: const Icon(
+                Icons.error_outline_rounded,
+                size: 36,
+                color: AppColors.critical,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
@@ -228,7 +234,10 @@ class _ErrorView extends StatelessWidget {
             const SizedBox(height: 12),
             TextButton(
               onPressed: onBack,
-              child: const Text('Go to Home', style: TextStyle(color: AppColors.textMedium)),
+              child: const Text(
+                'Go to Home',
+                style: TextStyle(color: AppColors.inkMuted),
+              ),
             ),
           ],
         ),

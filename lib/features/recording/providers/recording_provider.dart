@@ -69,8 +69,8 @@ class RecordingState {
 }
 
 class RecordingNotifier extends StateNotifier<RecordingState> {
-  RecordingNotifier({
-    required this._capture, required this._recognition}) : super(const RecordingState());
+  RecordingNotifier({required this._capture, required this._recognition})
+    : super(const RecordingState());
 
   /// Hard cap on a single take, matching the coaching format.
   static const _maxSeconds = 120;
