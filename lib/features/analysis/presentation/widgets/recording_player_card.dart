@@ -14,11 +14,15 @@ import '../../../../core/widgets/waveform_loader.dart';
 class RecordingPlayerCard extends StatefulWidget {
   final String audioPath;
   final int? fallbackDurationSeconds;
+  final VoidCallback? onToggleTranscript;
+  final bool isTranscriptVisible;
 
   const RecordingPlayerCard({
     super.key,
     required this.audioPath,
     this.fallbackDurationSeconds,
+    this.onToggleTranscript,
+    this.isTranscriptVisible = false,
   });
 
   @override
@@ -186,13 +190,55 @@ class _RecordingPlayerCardState extends State<RecordingPlayerCard> {
                 ),
               ),
               const Spacer(),
-              if (!_isReady)
+              if (!_isReady) ...[
                 const WaveformLoader.compact(
                   height: 14,
                   barCount: 3,
                   barWidth: 2,
                   barSpacing: 1.5,
                   color: AppColors.inkMuted,
+                ),
+                if (widget.onToggleTranscript != null) const SizedBox(width: 10),
+              ],
+              if (widget.onToggleTranscript != null)
+                Pressable(
+                  onTap: widget.onToggleTranscript,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: widget.isTranscriptVisible ? AppColors.action.withValues(alpha: 0.12) : AppColors.raised2,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: widget.isTranscriptVisible
+                            ? AppColors.action.withValues(alpha: 0.4)
+                            : AppColors.borderControl,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          LucideIcons.fileText,
+                          size: 13,
+                          color: widget.isTranscriptVisible ? AppColors.action : AppColors.ink,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          'Transcript',
+                          style: context.caption.copyWith(
+                            fontWeight: AppFontWeight.w600,
+                            color: widget.isTranscriptVisible ? AppColors.action : AppColors.ink,
+                          ),
+                        ),
+                        const SizedBox(width: 3),
+                        Icon(
+                          widget.isTranscriptVisible ? LucideIcons.chevronUp : LucideIcons.chevronDown,
+                          size: 13,
+                          color: widget.isTranscriptVisible ? AppColors.action : AppColors.inkMuted,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
             ],
           ),
