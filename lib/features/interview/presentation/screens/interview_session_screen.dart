@@ -12,6 +12,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/score_meter.dart';
 import '../../../../core/widgets/surface_card.dart';
 import '../../../../core/widgets/pressable.dart';
+import '../../../../core/widgets/waveform_loader.dart';
 import '../../../recording/presentation/widgets/waveform_animation.dart';
 import '../../../recording/providers/recording_provider.dart';
 import '../../data/models/interview_models.dart';
@@ -224,13 +225,11 @@ class _LoadingView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
-            width: 48,
-            height: 48,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.ink),
-            ),
+          const WaveformLoader.hero(
+            height: 38,
+            barCount: 16,
+            barWidth: 4,
+            barSpacing: 3,
           ),
           SizedBox(height: 20),
           Text(
@@ -438,9 +437,12 @@ class _QuestionView extends ConsumerWidget {
               width: 76,
               height: 76,
               child: Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.ink),
+                child: WaveformLoader.compact(
+                  height: 28,
+                  barCount: 5,
+                  barWidth: 3.5,
+                  barSpacing: 3,
+                  color: AppColors.ink,
                 ),
               ),
             ),
@@ -868,13 +870,11 @@ class _AudioPlayerWidgetState extends State<_AudioPlayerWidget> {
       return const SizedBox(
         height: 44,
         child: Center(
-          child: SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.ink),
-            ),
+          child: WaveformLoader.compact(
+            height: 16,
+            barCount: 4,
+            barWidth: 2.5,
+            color: AppColors.inkMuted,
           ),
         ),
       );

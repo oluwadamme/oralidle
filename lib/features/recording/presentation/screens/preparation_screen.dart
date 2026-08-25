@@ -8,6 +8,7 @@ import '../../data/models/recording_session.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/surface_card.dart';
 import '../../../../core/widgets/pressable.dart';
+import '../../../../core/widgets/waveform_loader.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -358,15 +359,11 @@ class _PreparationScreenState extends State<PreparationScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           _pickingFile
-                              ? const SizedBox(
-                                  width: 16,
+                              ? const WaveformLoader.compact(
                                   height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColors.ink,
-                                    ),
-                                  ),
+                                  barCount: 4,
+                                  barWidth: 2.5,
+                                  color: AppColors.ink,
                                 )
                               : const Icon(
                                   LucideIcons.upload,

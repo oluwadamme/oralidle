@@ -19,6 +19,7 @@ class ProgressLineChart extends StatelessWidget {
           color: AppColors.raised2,
           borderRadius: BorderRadius.circular(12),
         ),
+        padding: EdgeInsets.symmetric(horizontal: 5),
         child: Text(
           'Complete 2+ sessions to see your progress trend',
           style: context.caption.copyWith(color: AppColors.inkMuted),

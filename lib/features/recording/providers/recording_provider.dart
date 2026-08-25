@@ -12,8 +12,6 @@ import '../../../core/services/speech/speech_recognition_service.dart';
 enum RecordingStatus {
   idle,
   recording,
-
-  /// Microphone released, last audio still being transcribed on device.
   finalising,
   stopped,
   error,
@@ -22,8 +20,6 @@ enum RecordingStatus {
 class RecordingState {
   final RecordingStatus status;
 
-  /// Live on-device transcript. Empty where no on-device engine exists (web)
-  /// or while the model is still downloading — the recording is unaffected.
   final String transcript;
   final int elapsedSeconds;
   final String topicId;
@@ -72,20 +68,15 @@ class RecordingNotifier extends StateNotifier<RecordingState> {
   RecordingNotifier({required this._capture, required this._recognition})
     : super(const RecordingState());
 
-  /// Hard cap on a single take, matching the coaching format.
   static const _maxSeconds = 120;
 
   final AudioCaptureService _capture;
   final SpeechRecognitionService _recognition;
   Timer? _timer;
 
-  /// Guards against `stopManually` racing the 120 s auto-stop, which would
-  /// otherwise build two sessions from one recording.
   bool _finalising = false;
 
   Future<void> startRecording(Topic topic) async {
-    // Warm the on-device recogniser in the background; the recording never
-    // waits on it, and works without it.
     unawaited(_recognition.prepare());
 
     final started = await _capture.start();
@@ -155,9 +146,6 @@ class RecordingNotifier extends StateNotifier<RecordingState> {
       return;
     }
 
-    // Treat a burst too short to hold speech as no audio at all, matching the
-    // interview flow — sending 30 ms of noise to Gemini wastes a request and
-    // produces a nonsense analysis.
     final usableAudio = (audio == null || audio.isEmpty) ? null : audio;
 
     if (usableAudio == null && transcript.isEmpty) {
@@ -173,13 +161,10 @@ class RecordingNotifier extends StateNotifier<RecordingState> {
       topicTitle: state.topicTitle,
       topicCategory: state.topicCategory,
       transcript: transcript,
-      // Prefer the measured length of the audio over the wall-clock timer:
-      // it is what the words-per-minute figure is actually divided by.
       durationSeconds: usableAudio?.duration.inSeconds ?? seconds,
-      // Upload form: these bytes go straight to Gemini and are never
-      // played back locally.
-      audioBytes: usableAudio?.uploadBytes,
+      audioBytes: usableAudio?.playbackBytes,
       audioMimeType: usableAudio?.mimeType,
+      uploadBytes: usableAudio?.uploadBytes,
     );
 
     state = state.copyWith(

@@ -21,11 +21,10 @@ class InterviewService {
 
   // Shared generation config — single source of truth to prevent drift between
   // the text-only and audio request paths.
+  // Flash-Lite does not think unless asked to, so no thinking budget is set:
+  // its valid range starts at 512 and there is no zero to request.
   static const _generationConfig = {
     'maxOutputTokens': 4096,
-    // See GeminiService: reasoning tokens are drawn from maxOutputTokens, and
-    // this budget is smaller, so it starves first.
-    'thinkingConfig': {'thinkingBudget': 0},
     'responseMimeType': 'application/json',
     'temperature': 0.7,
   };
@@ -61,17 +60,6 @@ class InterviewService {
     );
   }
 
-  /// Submits an answer and returns the evaluation.
-  ///
-  /// When [audioBytes] is provided the clip is base64-encoded off the UI
-  /// thread and sent to Gemini inline.  Gemini evaluates the audio directly
-  /// (more accurate than any on-device transcript) and returns a
-  /// [transcript] in its response.  That transcript — not the audio bytes —
-  /// is stored in conversation history, so subsequent turns stay compact.
-  ///
-  /// Falls back to the text-only [sttFallback] path when no audio was
-  /// captured or encoding fails.  On web, where there is no on-device
-  /// recogniser, the audio path is the only one that produces a transcript.
   Future<
     ({
       String transcript,

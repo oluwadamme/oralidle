@@ -49,11 +49,225 @@
        crossorigin="anonymous"></script>
 </head>
 <body>
-  <!-- Painted behind the canvas so the first frame is not a white flash
-       against the app's dark theme. -->
   <style>
-    html, body { margin: 0; padding: 0; height: 100%; background-color: #131313; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #16110F;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    .loading-wrapper {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #16110F;
+      z-index: 99999;
+      transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+      user-select: none;
+    }
+
+    .loading-wrapper.loaded {
+      opacity: 0;
+      transform: scale(0.98);
+      pointer-events: none;
+    }
+
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      max-width: 360px;
+      text-align: center;
+    }
+
+    .brand-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 26px;
+    }
+
+    .logo-box {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      background: #221A17;
+      border: 1px solid #3A2D28;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+    }
+
+    .brand-title {
+      color: #F5EFEA;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      margin-bottom: 4px;
+    }
+
+    .brand-tagline {
+      color: #B0A099;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+
+    .waveform-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      height: 72px;
+      padding: 0 12px;
+      margin-bottom: 24px;
+    }
+
+    .waveform-container .bar {
+      width: 4px;
+      height: var(--h, 30px);
+      background-color: var(--c, #FF8A5B);
+      border-radius: 3px;
+      animation: wave 1.2s ease-in-out infinite alternate;
+      animation-delay: calc(var(--i) * 0.06s);
+      box-shadow: 0 0 10px rgba(255, 138, 91, 0.15);
+      transform-origin: center;
+    }
+
+    @keyframes wave {
+      0% {
+        transform: scaleY(0.2);
+        opacity: 0.35;
+      }
+      50% {
+        transform: scaleY(0.65);
+        opacity: 0.75;
+      }
+      100% {
+        transform: scaleY(1);
+        opacity: 1;
+      }
+    }
+
+    .loading-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: #5FD9A4;
+      box-shadow: 0 0 8px #5FD9A4;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.4;
+        transform: scale(0.85);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
+
+    .status-text {
+      color: #9C8B82;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
   </style>
+
+  <div id="loading" class="loading-wrapper">
+    <div class="loading-container">
+      <div class="brand-header">
+        <div class="logo-box">
+          <img src="favicon.png" alt="Oralidle" class="brand-icon" />
+        </div>
+        <div class="brand-title">Oralidle</div>
+        <div class="brand-tagline">Speech &amp; Interview Coach</div>
+      </div>
+
+      <div class="waveform-container">
+        <span class="bar" style="--i: 1; --h: 22px; --c: #58C7D4;"></span>
+        <span class="bar" style="--i: 2; --h: 36px; --c: #58C7D4;"></span>
+        <span class="bar" style="--i: 3; --h: 20px; --c: #58C7D4;"></span>
+        <span class="bar" style="--i: 4; --h: 44px; --c: #5FD9A4;"></span>
+        <span class="bar" style="--i: 5; --h: 28px; --c: #5FD9A4;"></span>
+        <span class="bar" style="--i: 6; --h: 56px; --c: #5FD9A4;"></span>
+        <span class="bar" style="--i: 7; --h: 38px; --c: #FF8A5B;"></span>
+        <span class="bar" style="--i: 8; --h: 64px; --c: #FF8A5B;"></span>
+        <span class="bar" style="--i: 9; --h: 48px; --c: #FFB392;"></span>
+        <span class="bar" style="--i: 10; --h: 68px; --c: #FF8A5B;"></span>
+        <span class="bar" style="--i: 11; --h: 60px; --c: #FF8A5B;"></span>
+        <span class="bar" style="--i: 12; --h: 42px; --c: #FFB392;"></span>
+        <span class="bar" style="--i: 13; --h: 62px; --c: #5FD9A4;"></span>
+        <span class="bar" style="--i: 14; --h: 32px; --c: #5FD9A4;"></span>
+        <span class="bar" style="--i: 15; --h: 52px; --c: #5FD9A4;"></span>
+        <span class="bar" style="--i: 16; --h: 26px; --c: #58C7D4;"></span>
+        <span class="bar" style="--i: 17; --h: 40px; --c: #58C7D4;"></span>
+        <span class="bar" style="--i: 18; --h: 22px; --c: #58C7D4;"></span>
+        <span class="bar" style="--i: 19; --h: 34px; --c: #856F66;"></span>
+        <span class="bar" style="--i: 20; --h: 18px; --c: #856F66;"></span>
+      </div>
+
+      <div class="loading-status">
+        <span class="status-pulse"></span>
+        <span class="status-text">Loading speech coach…</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function hideLoader() {
+      var loader = document.getElementById('loading');
+      if (loader && !loader.classList.contains('loaded')) {
+        loader.classList.add('loaded');
+        setTimeout(function () {
+          if (loader.parentNode) loader.parentNode.removeChild(loader);
+        }, 550);
+      }
+    }
+
+    window.addEventListener('flutter-first-frame', hideLoader);
+
+    var observer = new MutationObserver(function (mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        var added = mutations[i].addedNodes;
+        for (var j = 0; j < added.length; j++) {
+          var tag = added[j].tagName;
+          if (tag === 'FLT-GLASS-PANE' || tag === 'FLUTTER-VIEW' || tag === 'CANVAS') {
+            hideLoader();
+            observer.disconnect();
+            return;
+          }
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  </script>
+
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader

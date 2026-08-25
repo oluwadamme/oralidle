@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../data/models/session_record.dart';
 import '../../data/models/analysis_result.dart';
+import '../widgets/recording_player_card.dart';
 import '../../../history/providers/history_provider.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/text_styles.dart';
@@ -184,6 +185,14 @@ class _WebResults extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            if (record.audioPath != null &&
+                                record.audioPath!.isNotEmpty) ...[
+                              RecordingPlayerCard(
+                                audioPath: record.audioPath!,
+                                fallbackDurationSeconds: record.durationSeconds,
+                              ),
+                              const SizedBox(height: 20),
+                            ],
                             if (r.transcript.isNotEmpty) ...[
                               _SpeechTranscriptSection(
                                 transcript: r.transcript,
@@ -372,6 +381,14 @@ class _MobileResults extends StatelessWidget {
                           textAlign: TextAlign.center,
                         ),
                       ),
+                      if (record.audioPath != null &&
+                          record.audioPath!.isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        RecordingPlayerCard(
+                          audioPath: record.audioPath!,
+                          fallbackDurationSeconds: record.durationSeconds,
+                        ),
+                      ],
                       const SizedBox(height: 24),
                       if (r.transcript.isNotEmpty) ...[
                         _SpeechTranscriptSection(transcript: r.transcript),
@@ -557,18 +574,17 @@ class _KeyInsightsSection extends StatelessWidget {
               if (!hasFillers) ...[
                 const SizedBox(height: 12),
                 const Row(
+                  spacing: 8,
                   children: [
                     Icon(
                       LucideIcons.checkCircle2,
                       size: 14,
                       color: AppColors.positive,
                     ),
-                    SizedBox(width: 6),
-                    Text(
-                      'No filler words detected — excellent!',
-                      style: TextStyle(
-                        color: AppColors.positive,
-                        fontWeight: AppFontWeight.w600,
+                    Flexible(
+                      child: Text(
+                        'No filler words detected — excellent!',
+                        style: TextStyle(color: AppColors.positive, fontWeight: AppFontWeight.w600),
                       ),
                     ),
                   ],

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../constants/app_constants.dart';
 import '../theme/app_spacing.dart';
+import 'waveform_loader.dart';
 
 enum AppButtonSize {
   small(40, IconSize.sm),
@@ -153,12 +154,6 @@ class AppButton extends StatelessWidget {
   }
 }
 
-/// Fills the available width, but only where there is one to fill.
-///
-/// A plain `SizedBox(width: double.infinity)` throws inside an unbounded
-/// parent — a [Row] child, a horizontal scroll view — which turns [expand]
-/// into a footgun that only fires at certain window widths. Shrink-wrapping
-/// instead keeps the button correct wherever it is placed.
 class _Expanded extends StatelessWidget {
   const _Expanded({required this.child});
 
@@ -192,19 +187,15 @@ class _Content extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (busy) {
-      // Laid over the label rather than replacing it, so the button keeps the
-      // width it had before the tap.
-      return Stack(
+     return Stack(
         alignment: Alignment.center,
         children: [
           Opacity(opacity: 0, child: _row(context)),
-          SizedBox(
-            width: size.icon,
-            height: size.icon,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation(foreground),
-            ),
+          WaveformLoader.compact(
+            height: size.icon * 0.85,
+            barCount: 4,
+            barWidth: 2.5,
+            color: foreground,
           ),
         ],
       );
@@ -217,7 +208,6 @@ class _Content extends StatelessWidget {
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
       if (icon != null) ...[
-        // Decorative: the label beside it already carries the meaning.
         ExcludeSemantics(child: Icon(icon, size: size.icon)),
         const SizedBox(width: Space.sm),
       ],
@@ -229,11 +219,6 @@ class _Content extends StatelessWidget {
 }
 
 /// An icon-only control.
-///
-/// [tooltip] is required and non-nullable on purpose. The app previously had
-/// exactly one tooltip in its entire surface area, and every icon-only button
-/// was unlabelled to a screen reader. Making the label impossible to omit is
-/// the only fix that stays fixed.
 class AppIconButton extends StatelessWidget {
   const AppIconButton({
     super.key,
@@ -248,7 +233,6 @@ class AppIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onPressed;
 
-  /// Doubles as the accessible name.
   final String tooltip;
 
   final double size;

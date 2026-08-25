@@ -10,7 +10,7 @@
 // endpoint without the proxy needing to understand either payload.
 
 const UPSTREAM =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
 
 // Vercel rejects request bodies above ~4.5 MB, and Gemini audio payloads are
 // the only thing here that gets close. Checked explicitly so an oversized

@@ -12,7 +12,7 @@ import 'dart:typed_data';
 
 import 'package:widget_overlay_outside/core/services/speech/wav_codec.dart';
 
-const _model = 'gemini-2.5-flash';
+const _model = 'gemini-2.5-flash-lite';
 const _url =
     'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent';
 

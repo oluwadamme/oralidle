@@ -98,6 +98,49 @@ void main() {
         equals('My leadership style relies on empathy and clear goals.'),
       );
       expect(restored.topicTitle, equals('Leadership Style'));
+      expect(restored.audioPath, isNull);
+    });
+
+    test('serializes and deserializes SessionRecord with audioPath', () {
+      final record = SessionRecord(
+        id: 'test-session-audio',
+        topicTitle: 'Project Retrospective',
+        topicCategory: 'Engineering',
+        timestamp: DateTime(2026, 8, 24, 21, 0),
+        durationSeconds: 75,
+        audioPath: '/data/user/0/com.oradile/recordings/test-session-audio.wav',
+        result: const AnalysisResult(
+          scores: SpeechScores(
+            fluency: 88,
+            vocabulary: 85,
+            grammar: 92,
+            coherence: 86,
+            topicRelevance: 90,
+            confidence: 84,
+          ),
+          overallScore: 88,
+          fillerWords: {'like': 1},
+          wpm: 145,
+          strengths: ['Great pacing'],
+          improvements: [],
+          summary: 'Clear and well-paced presentation.',
+          transcript: 'In this sprint we improved our test coverage.',
+        ),
+      );
+
+      final json = record.toJson();
+      expect(
+        json['audio_path'],
+        equals('/data/user/0/com.oradile/recordings/test-session-audio.wav'),
+      );
+
+      final restored = SessionRecord.fromJson(json);
+      expect(
+        restored.audioPath,
+        equals('/data/user/0/com.oradile/recordings/test-session-audio.wav'),
+      );
+      expect(restored.id, equals('test-session-audio'));
+      expect(restored.durationSeconds, equals(75));
     });
   });
 }

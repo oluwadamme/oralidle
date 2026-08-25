@@ -1,5 +1,10 @@
 import 'dart:convert';
+import 'dart:developer' show log;
+import 'dart:io' show Directory, File;
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../features/analysis/data/models/session_record.dart';
 import '../constants/app_constants.dart';
 
@@ -8,6 +13,34 @@ class StorageService {
 
   Future<void> saveSession(SessionRecord session) async {
     await _box.put(session.id, jsonEncode(session.toJson()));
+  }
+
+  Future<String?> saveAudioFile(
+    String id,
+    Uint8List bytes, {
+    String extension = 'wav',
+    String? mimeType,
+  }) async {
+    try {
+      if (kIsWeb) {
+        final mime = mimeType ?? 'audio/${extension.replaceAll('.', '')}';
+        final base64Str = base64Encode(bytes);
+        return 'data:$mime;base64,$base64Str';
+      } else {
+        final docsDir = await getApplicationDocumentsDirectory();
+        final recordingsDir = Directory('${docsDir.path}/recordings');
+        if (!await recordingsDir.exists()) {
+          await recordingsDir.create(recursive: true);
+        }
+        final ext = extension.replaceAll('.', '');
+        final file = File('${recordingsDir.path}/$id.$ext');
+        await file.writeAsBytes(bytes);
+        return file.path;
+      }
+    } catch (e) {
+      log('StorageService: failed to save audio file for session $id: $e');
+      return null;
+    }
   }
 
   List<SessionRecord> getSessions() {
@@ -21,6 +54,22 @@ class StorageService {
   }
 
   Future<void> deleteSession(String id) async {
+    final raw = _box.get(id);
+    if (raw != null) {
+      try {
+        final session = SessionRecord.fromJson(
+          jsonDecode(raw) as Map<String, dynamic>,
+        );
+        if (session.audioPath != null && !kIsWeb && !session.audioPath!.startsWith('data:')) {
+          final file = File(session.audioPath!);
+          if (await file.exists()) {
+            await file.delete();
+          }
+        }
+      } catch (e) {
+        log('StorageService: error deleting audio file for session $id: $e');
+      }
+    }
     await _box.delete(id);
   }
 

@@ -34,33 +34,23 @@ Filler words detected: $fillerSummary
 Transcript:
 "$transcript"
 
-Analyse this speech and return ONLY a JSON object — no markdown, no explanation. Use this exact schema:
-{
-  "scores": {
-    "fluency": <0-100>,
-    "vocabulary": <0-100>,
-    "grammar": <0-100>,
-    "coherence": <0-100>,
-    "topic_relevance": <0-100>,
-    "confidence": <0-100>
-  },
-  "overall_score": <0-100>,
-  "filler_words": { "<word>": <count> },
-  "wpm": ${metrics.wpm},
-  "strengths": ["<string>", ...],
-  "improvements": [{"area": "<string>", "tip": "<actionable advice>"}],
-  "summary": "<2-3 sentence coaching summary>"
-}
+Analyse this speech as an English speech coach. Score every dimension from 0 to
+100, give each improvement an actionable tip, and keep the summary to two or
+three sentences.
 ''';
 
-    final json = await _generate([
-      {'text': userMessage},
-    ]);
+    final json = await _generate(
+      [
+        {'text': userMessage},
+      ],
+      schema: _responseSchema(includeTranscript: false),
+    );
 
     return AnalysisResult.fromJson({
-      ...json,
-      if ((json['transcript'] as String?)?.trim().isEmpty ?? true)
-        'transcript': transcript,
+      ..._normalised(json),
+      'wpm': metrics.wpm,
+      'filler_words': metrics.fillerWords,
+      'transcript': transcript,
     });
   }
 
@@ -90,39 +80,132 @@ Topic the speaker was addressing: "$topic"$duration
 
 Listen to this audio recording. Transcribe the speech, then analyse its quality as an English speech coach.
 
-Return ONLY a JSON object — no markdown, no explanation. Use this exact schema:
-{
-  "transcript": "<strictly verbatim transcription: keep every filler and hesitation actually spoken (um, uh, er, like, you know), keep repeated and restarted words, and do not tidy up the grammar>",
-  "scores": {
-    "fluency": <0-100>,
-    "vocabulary": <0-100>,
-    "grammar": <0-100>,
-    "coherence": <0-100>,
-    "topic_relevance": <0-100>,
-    "confidence": <0-100>
-  },
-  "overall_score": <0-100>,
-  "filler_words": { "<word>": <count> },
-  "wpm": <estimated words per minute>,
-  "strengths": ["<string>", ...],
-  "improvements": [{"area": "<string>", "tip": "<actionable advice>"}],
-  "summary": "<2-3 sentence coaching summary>"
-}
+The transcript must be strictly verbatim: keep every filler and hesitation
+actually spoken (um, uh, er, like, you know), keep repeated and restarted
+words, and do not tidy up the grammar.
+
+Score every dimension from 0 to 100, count each filler word you hear, estimate
+words per minute, give each improvement an actionable tip, and keep the summary
+to two or three sentences.
 ''';
 
-    final json = await _generate([
-      {
-        'inline_data': {
-          'mime_type': mimeType,
-          'data': base64Encode(audioBytes),
+    final json = await _generate(
+      [
+        {
+          'inline_data': {
+            'mime_type': mimeType,
+            'data': base64Encode(audioBytes),
+          },
         },
-      },
-      {'text': prompt},
-    ]);
+        {'text': prompt},
+      ],
+      schema: _responseSchema(includeTranscript: true),
+    );
 
     return AnalysisResult.fromJson(
-      _withMeasuredMetrics(json, durationSeconds: durationSeconds),
+      _withMeasuredMetrics(
+        _normalised(json),
+        durationSeconds: durationSeconds,
+      ),
     );
+  }
+
+  /// A response schema cannot describe an object with arbitrary keys, so
+  /// `filler_words` crosses the wire as a list of pairs and becomes a map here.
+  static Map<String, dynamic> _responseSchema({
+    required bool includeTranscript,
+  }) {
+    const integer = {'type': 'INTEGER'};
+    return {
+      'type': 'OBJECT',
+      'properties': {
+        if (includeTranscript) 'transcript': {'type': 'STRING'},
+        'scores': {
+          'type': 'OBJECT',
+          'properties': {
+            'fluency': integer,
+            'vocabulary': integer,
+            'grammar': integer,
+            'coherence': integer,
+            'topic_relevance': integer,
+            'confidence': integer,
+          },
+          'required': [
+            'fluency',
+            'vocabulary',
+            'grammar',
+            'coherence',
+            'topic_relevance',
+            'confidence',
+          ],
+        },
+        'overall_score': integer,
+        'filler_words': {
+          'type': 'ARRAY',
+          'items': {
+            'type': 'OBJECT',
+            'properties': {
+              'word': {'type': 'STRING'},
+              'count': integer,
+            },
+            'required': ['word', 'count'],
+          },
+        },
+        'wpm': integer,
+        'strengths': {
+          'type': 'ARRAY',
+          'items': {'type': 'STRING'},
+        },
+        'improvements': {
+          'type': 'ARRAY',
+          'items': {
+            'type': 'OBJECT',
+            'properties': {
+              'area': {'type': 'STRING'},
+              'tip': {'type': 'STRING'},
+            },
+            'required': ['area', 'tip'],
+          },
+        },
+        'summary': {'type': 'STRING'},
+      },
+      'required': [
+        if (includeTranscript) 'transcript',
+        'scores',
+        'overall_score',
+        'filler_words',
+        'wpm',
+        'strengths',
+        'improvements',
+        'summary',
+      ],
+    };
+  }
+
+  /// Rebuilds `filler_words` into the `{word: count}` map [AnalysisResult]
+  /// requires, which casts it without a null check.
+  static Map<String, dynamic> _normalised(Map<String, dynamic> json) {
+    final raw = json['filler_words'];
+    final counts = <String, int>{};
+
+    if (raw is List) {
+      for (final entry in raw) {
+        if (entry is! Map) continue;
+        final word = (entry['word'] as String?)?.trim().toLowerCase();
+        final count = (entry['count'] as num?)?.toInt();
+        if (word == null || word.isEmpty || count == null || count <= 0) {
+          continue;
+        }
+        counts[word] = (counts[word] ?? 0) + count;
+      }
+    } else if (raw is Map) {
+      raw.forEach((key, value) {
+        final count = (value as num?)?.toInt();
+        if (count != null && count > 0) counts[key.toString()] = count;
+      });
+    }
+
+    return {...json, 'filler_words': counts};
   }
 
   static Map<String, dynamic> _withMeasuredMetrics(
@@ -143,8 +226,9 @@ Return ONLY a JSON object — no markdown, no explanation. Use this exact schema
   /// Returns the raw map rather than an [AnalysisResult] so callers can
   /// replace fields the model only estimates with values we can measure.
   Future<Map<String, dynamic>> _generate(
-    List<Map<String, dynamic>> parts,
-  ) async {
+    List<Map<String, dynamic>> parts, {
+    required Map<String, dynamic> schema,
+  }) async {
     try {
       final response = await http
           .post(
@@ -164,15 +248,14 @@ Return ONLY a JSON object — no markdown, no explanation. Use this exact schema
                 {'parts': parts},
               ],
               'generationConfig': {
-                'maxOutputTokens': 8192,
+                // A ceiling rather than a target, so it costs nothing to leave
+                // room for a long uploaded answer's verbatim transcript.
+                'maxOutputTokens': 4096,
                 'temperature': 0.4,
-                // Gemini 2.5 reasons before answering, and those tokens come out
-                // of maxOutputTokens. Left on, thinking has consumed ~7.8k of the
-                // 8k budget and truncated the JSON mid-string.
-                'thinkingConfig': {'thinkingBudget': 0},
-                // Guarantees a bare JSON object: without it the model wraps the
-                // response in ```json fences or opens with prose.
+                // Constrained decoding: the model emits the schema's shape
+                // directly, with no fences, preamble or missing fields.
                 'responseMimeType': 'application/json',
+                'responseSchema': schema,
               },
             }),
           )

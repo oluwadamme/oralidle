@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'core/constants/app_constants.dart';
 import 'features/shell/lumina_shell.dart';
 import 'features/home/presentation/screens/home_screen.dart';
@@ -121,7 +122,7 @@ class _RouteNotFound extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
-                Icons.explore_off_rounded,
+                LucideIcons.compass,
                 size: 40,
                 color: AppColors.inkMuted,
               ),
