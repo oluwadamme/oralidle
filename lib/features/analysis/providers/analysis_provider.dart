@@ -53,7 +53,7 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
           if (session.hasAudio) {
             result = await _gemini.analyseAudioFile(
               topic: session.topicTitle,
-              audioBytes: session.audioBytes!,
+              audioBytes: session.analysisBytes!,
               mimeType: session.audioMimeType ?? 'audio/wav',
               durationSeconds: session.durationSeconds > 0
                   ? session.durationSeconds

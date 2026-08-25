@@ -574,18 +574,17 @@ class _KeyInsightsSection extends StatelessWidget {
               if (!hasFillers) ...[
                 const SizedBox(height: 12),
                 const Row(
+                  spacing: 8,
                   children: [
                     Icon(
                       LucideIcons.checkCircle2,
                       size: 14,
                       color: AppColors.positive,
                     ),
-                    SizedBox(width: 6),
-                    Text(
-                      'No filler words detected — excellent!',
-                      style: TextStyle(
-                        color: AppColors.positive,
-                        fontWeight: AppFontWeight.w600,
+                    Flexible(
+                      child: Text(
+                        'No filler words detected — excellent!',
+                        style: TextStyle(color: AppColors.positive, fontWeight: AppFontWeight.w600),
                       ),
                     ),
                   ],

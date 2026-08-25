@@ -5,7 +5,7 @@ abstract final class AiEndpoint {
   static const proxyBase = String.fromEnvironment('API_PROXY_BASE');
 
   static const _googleDirect =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
   static const _proxyPath = '/api/gemini';
 
   static String get localApiKey {
