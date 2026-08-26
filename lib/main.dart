@@ -23,8 +23,6 @@ void main() async {
   await Hive.openBox<String>(AppConstants.hivePendingAudioBox);
   await Hive.openBox<String>(AppConstants.hivePrefsBox);
 
-  // Never awaited for a session: a missing or unreachable project just leaves
-  // the app local-only.
   await SupabaseBootstrap.initialize();
 
   await GemmaSpeechService.initializeRuntime();
