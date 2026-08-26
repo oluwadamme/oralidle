@@ -12,18 +12,11 @@ import '../../../core/services/supabase/remote_store.dart';
 import '../../../core/services/supabase/supabase_bootstrap.dart';
 import '../../../core/services/sync/sync_service.dart';
 
-/// Which verification a pending code belongs to. The two flows use different
-/// OTP types, and picking the wrong one fails verification.
+
 enum LinkFlow {
-  /// The address is being attached to the anonymous user already signed in, so
-  /// the uid is preserved and nothing needs migrating. Verified with
-  /// [OtpType.emailChange].
+
   emailChange,
 
-  /// A direct email sign-in: either this device had no session at all, or the
-  /// address already belongs to an account. Verified with [OtpType.email].
-  /// Whatever sits in the anonymous namespace is claimed by the account
-  /// afterwards — see `SyncService._claimAnonymousData`.
   emailOtp,
 }
 
@@ -44,10 +37,7 @@ class AccountState {
 
   /// True once an email has been verified — the point at which history becomes
   /// reachable from another device.
-  ///
-  /// Reads the server's own `is_anonymous` rather than inferring from the email
-  /// field, which is only populated after confirmation and so can disagree with
-  /// itself mid-flow.
+
   bool get isLinked => isSignedIn && !isAnonymous;
 
   /// Which local namespace this account's rows belong to.
@@ -55,9 +45,7 @@ class AccountState {
 
   /// What the home screen greets you as.
   ///
-  /// First name only: a full one runs past the headline on a narrow screen, and
-  /// this is a friendly greeting rather than an address label. Falls back to
-  /// 'Speaker' for anyone who has not linked an email.
+
   String get greetingName {
     final trimmed = displayName?.trim() ?? '';
     if (trimmed.isEmpty) return 'Speaker';
@@ -99,21 +87,13 @@ class AuthNotifier extends StateNotifier<AccountState> {
 
   /// Adopts a session already persisted on this device. Never creates one.
   ///
-  /// Creating the anonymous user is deliberately *not* done here. The project
-  /// enforces CAPTCHA on every gotrue endpoint — signup included — so a silent
-  /// `signInAnonymously()` at launch is rejected outright with `captcha_failed`,
-  /// and the failure is invisible: no uid, nothing syncs, the outbox just grows.
-  /// The account is created on the first save instead, where there is a
-  /// [BuildContext] to present the challenge from. See [signInAnonymously].
   void restoreSession() => _apply(_client?.auth.currentUser);
 
   /// True when there is data worth syncing but no account to hang it on.
   bool get needsAnonymousSignIn =>
       _client != null && _client.auth.currentUser == null;
 
-  /// Creates the anonymous account, with a token from the CAPTCHA challenge.
-  /// Returns false if the request was rejected, so the caller can leave the
-  /// session local and try again later.
+
   Future<bool> signInAnonymously({required String captchaToken}) async {
     final client = _client;
     if (client == null) return false;
@@ -150,13 +130,7 @@ class AuthNotifier extends StateNotifier<AccountState> {
     if (scopeChanged) _onScopeChanged();
   }
 
-  /// Emails a 6-digit code. Tries to attach the address to the current
-  /// anonymous user first; if it already belongs to an account, falls back to
-  /// signing into that one.
-  ///
-  /// `shouldCreateUser: false` on the fallback matters — without it a transient
-  /// failure on the first call would silently create a *second* account and
-  /// orphan everything recorded so far.
+
   Future<LinkFlow> sendLinkCode({
     required String name,
     required String email,
@@ -165,12 +139,6 @@ class AuthNotifier extends StateNotifier<AccountState> {
     final client = _requireClient();
     _pendingName = name.trim();
 
-    // No session to upgrade. Happens to anyone who taps Sign in before
-    // finishing a session — including every existing user on the launch after
-    // this ships, whose cached history predates any account. `updateUser`
-    // throws AuthSessionMissingException here, so go straight to OTP: one call
-    // creates a new account or signs an existing one in, and spends the single
-    // captcha token exactly once.
     if (client.auth.currentUser == null) {
       await client.auth.signInWithOtp(
         email: email,
@@ -187,13 +155,10 @@ class AuthNotifier extends StateNotifier<AccountState> {
       );
       return LinkFlow.emailChange;
     } on AuthException catch (e) {
-      // Only fall through when the address genuinely belongs to someone. A
-      // network blip used to land here too, and the user — who typed a brand
-      // new address — got told "signups not allowed for otp".
+
       if (!_isEmailAlreadyRegistered(e)) rethrow;
       log('Auth: that address already has an account; signing into it');
-      // updateUser does not consume a captcha token, so the one the sheet
-      // handed us is still good for this call.
+
       await client.auth.signInWithOtp(
         email: email,
         shouldCreateUser: false,
@@ -206,8 +171,6 @@ class AuthNotifier extends StateNotifier<AccountState> {
   static bool _isEmailAlreadyRegistered(AuthException e) {
     const codes = {'email_exists', 'user_already_exists'};
     if (e.code != null) return codes.contains(e.code);
-    // Older gotrue responses carry no code; 422 is what the API returns when
-    // the address is taken, and anything 5xx or connection-level is not.
     return e.statusCode == '422';
   }
 
@@ -233,8 +196,6 @@ class AuthNotifier extends StateNotifier<AccountState> {
     if (name != null && name.isNotEmpty) {
       await _remote?.upsertProfile(userId: user.id, displayName: name);
     }
-    // Pulls this account's history down and, on a device that recorded before
-    // linking, pushes those rows up under the account's uid.
     await _sync?.syncNow();
   }
 

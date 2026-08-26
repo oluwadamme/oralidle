@@ -17,13 +17,8 @@ final syncOutboxProvider = Provider<SyncOutbox>((_) => SyncOutbox());
 
 final appPrefsProvider = Provider<AppPrefs>((_) => AppPrefs());
 
-/// Bumped whenever a sync changes local rows. The history notifiers watch it so
-/// a pull actually reaches the screen — without this they keep serving the list
-/// they read when they were constructed.
 final localDataVersionProvider = StateProvider<int>((_) => 0);
 
-/// Null when Supabase is unconfigured or failed to start, which is what puts
-/// the whole app back on its original Hive-only behaviour.
 final remoteStoreProvider = Provider<RemoteStore?>((_) {
   final client = SupabaseBootstrap.client;
   return client == null ? null : SupabaseRemoteStore(client);
@@ -47,8 +42,7 @@ final analyticsProvider = Provider<AnalyticsService>(
   (ref) => AnalyticsService(ref.watch(remoteStoreProvider)),
 );
 
-/// Surfaces whether a sync is running or has failed, so the UI can offer a
-/// retry rather than leaving the user to guess.
+
 final syncStatusProvider = StreamProvider<SyncStatus>((ref) {
   final sync = ref.watch(syncServiceProvider);
   if (sync == null) return const Stream<SyncStatus>.empty();

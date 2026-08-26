@@ -7,21 +7,9 @@ import '../providers/auth_provider.dart';
 
 /// Creates the anonymous account on the first save, once there is something to
 /// sync.
-///
-/// The project enforces CAPTCHA on every auth endpoint, so the account cannot
-/// be created silently at launch — the challenge needs a [BuildContext].
-/// Deferring it to here means a first-time visitor records and sees their
-/// result before anything is asked of them, and dismissing the challenge simply
-/// leaves the session on the device.
-///
-/// Renders nothing. Mount it on a screen the user reaches after finishing a
-/// session.
 class AnonymousSignInGate extends ConsumerStatefulWidget {
   const AnonymousSignInGate({super.key});
 
-  /// Asked at most once per app run. A user who dismisses the challenge is not
-  /// nagged for the rest of the session; the next launch tries again, and the
-  /// outbox holds their work in the meantime.
   static bool _askedThisRun = false;
 
   @visibleForTesting

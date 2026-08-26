@@ -4,11 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../config/supabase_config.dart';
 
-/// Brings up the Supabase client, or doesn't.
-///
-/// A missing or unreachable project is not an error the user should ever see:
-/// [client] returns null and every caller falls back to Hive-only behaviour.
-/// That is what lets `flutter test` and a keyless local build run untouched.
 abstract final class SupabaseBootstrap {
   static bool _ready = false;
 
