@@ -6,6 +6,8 @@ import '../../data/models/topic.dart';
 import '../../providers/topic_provider.dart';
 import '../widgets/topic_card.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/providers/core_providers.dart';
+import '../../../../core/services/analytics/analytics_service.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/category_badge.dart';
@@ -138,6 +140,12 @@ class TopicSelectionScreen extends ConsumerWidget {
 
   void _navigate(BuildContext context, WidgetRef ref, Topic topic) {
     ref.read(selectedTopicProvider.notifier).state = topic;
+    // Recorded here rather than on completion so the funnel can show topics
+    // people open and then abandon.
+    ref.read(analyticsProvider).track(AnalyticsService.topicSelected, {
+      'topic_id': topic.id,
+      'category': topic.category,
+    });
     context.push(AppRoutes.prepare, extra: topic);
   }
 }

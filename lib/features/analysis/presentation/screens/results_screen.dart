@@ -7,7 +7,10 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../data/models/session_record.dart';
 import '../../data/models/analysis_result.dart';
 import '../widgets/recording_player_card.dart';
+import '../../../auth/presentation/anonymous_signin_gate.dart';
+import '../../../auth/presentation/sync_prompt_banner.dart';
 import '../../../history/providers/history_provider.dart';
+import '../../../../core/providers/core_providers.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -40,9 +43,19 @@ class ResultsScreen extends ConsumerWidget {
   }
 }
 
+/// Either a local copy or one that can be fetched from the bucket — a session
+/// pulled from another device only has the latter.
+bool _hasPlayableAudio(SessionRecord record) =>
+    (record.audioPath ?? '').isNotEmpty ||
+    (record.audioObjectPath ?? '').isNotEmpty;
+
+Future<String> Function(String)? _signedUrlResolver(WidgetRef ref) {
+  return ref.read(remoteStoreProvider)?.signedAudioUrl;
+}
+
 // ── Web two-column layout ─────────────────────────────────────────────────────
 
-class _WebResults extends StatelessWidget {
+class _WebResults extends StatefulWidget {
   final SessionRecord record;
   final WidgetRef ref;
 
@@ -56,7 +69,17 @@ class _WebResults extends StatelessWidget {
   });
 
   @override
+  State<_WebResults> createState() => _WebResultsState();
+}
+
+class _WebResultsState extends State<_WebResults> {
+  bool _showTranscript = false;
+
+  @override
   Widget build(BuildContext context) {
+    final record = widget.record;
+    final ref = widget.ref;
+    final availableWidth = widget.availableWidth;
     final r = record.result;
     final overall = r.overallScore;
 
@@ -115,6 +138,12 @@ class _WebResults extends StatelessWidget {
                         width: 300,
                         child: Column(
                           children: [
+                            const AnonymousSignInGate(),
+                            SyncPromptBanner(
+                              sessionCount: widget.ref
+                                  .watch(historyProvider)
+                                  .length,
+                            ),
                             SurfaceCard(
                               padding: const EdgeInsets.all(24),
                               child: Column(
@@ -185,20 +214,41 @@ class _WebResults extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            if (record.audioPath != null &&
-                                record.audioPath!.isNotEmpty) ...[
+                            if (_hasPlayableAudio(record)) ...[
                               RecordingPlayerCard(
-                                audioPath: record.audioPath!,
+                                audioPath: record.audioPath,
+                                audioObjectPath: record.audioObjectPath,
+                                resolveSignedUrl: _signedUrlResolver(
+                                  widget.ref,
+                                ),
                                 fallbackDurationSeconds: record.durationSeconds,
+                                onToggleTranscript: r.transcript.isNotEmpty
+                                    ? () => setState(() => _showTranscript = !_showTranscript)
+                                    : null,
+                                isTranscriptVisible: _showTranscript,
+                              ),
+                              const SizedBox(height: 20),
+                            ] else if (r.transcript.isNotEmpty) ...[
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: OutlinedButton.icon(
+                                  icon: const Icon(LucideIcons.fileText, size: 16),
+                                  label: const Text('Transcript'),
+                                  onPressed: () => setState(() => _showTranscript = !_showTranscript),
+                                ),
                               ),
                               const SizedBox(height: 20),
                             ],
-                            if (r.transcript.isNotEmpty) ...[
-                              _SpeechTranscriptSection(
-                                transcript: r.transcript,
-                              ),
-                              const SizedBox(height: 20),
-                            ],
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeInOut,
+                              child: _showTranscript && r.transcript.isNotEmpty
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(bottom: 20),
+                                      child: _SpeechTranscriptSection(transcript: r.transcript),
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
                             SurfaceCard(
                               padding: const EdgeInsets.all(24),
                               child: Column(
@@ -311,14 +361,23 @@ class _WebResults extends StatelessWidget {
 
 // ── Mobile single-column layout ───────────────────────────────────────────────
 
-class _MobileResults extends StatelessWidget {
+class _MobileResults extends StatefulWidget {
   final SessionRecord record;
   final WidgetRef ref;
 
   const _MobileResults({required this.record, required this.ref});
 
   @override
+  State<_MobileResults> createState() => _MobileResultsState();
+}
+
+class _MobileResultsState extends State<_MobileResults> {
+  bool _showTranscript = false;
+
+  @override
   Widget build(BuildContext context) {
+    final record = widget.record;
+    final ref = widget.ref;
     final r = record.result;
     final overall = r.overallScore;
 
@@ -358,6 +417,10 @@ class _MobileResults extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const AnonymousSignInGate(),
+                      SyncPromptBanner(
+                        sessionCount: widget.ref.watch(historyProvider).length,
+                      ),
                       ScoreMeter(
                         score: overall,
                         size: ScoreMeterSize.hero,
@@ -381,19 +444,40 @@ class _MobileResults extends StatelessWidget {
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      if (record.audioPath != null &&
-                          record.audioPath!.isNotEmpty) ...[
+                      if (_hasPlayableAudio(record)) ...[
                         const SizedBox(height: 20),
                         RecordingPlayerCard(
-                          audioPath: record.audioPath!,
+                          audioPath: record.audioPath,
+                          audioObjectPath: record.audioObjectPath,
+                          resolveSignedUrl: _signedUrlResolver(widget.ref),
                           fallbackDurationSeconds: record.durationSeconds,
+                          onToggleTranscript: r.transcript.isNotEmpty
+                              ? () => setState(() => _showTranscript = !_showTranscript)
+                              : null,
+                          isTranscriptVisible: _showTranscript,
+                        ),
+                      ] else if (r.transcript.isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: OutlinedButton.icon(
+                            icon: const Icon(LucideIcons.fileText, size: 16),
+                            label: const Text('Transcript'),
+                            onPressed: () => setState(() => _showTranscript = !_showTranscript),
+                          ),
                         ),
                       ],
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                        child: _showTranscript && r.transcript.isNotEmpty
+                            ? Padding(
+                                padding: const EdgeInsets.only(top: 20),
+                                child: _SpeechTranscriptSection(transcript: r.transcript),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
                       const SizedBox(height: 24),
-                      if (r.transcript.isNotEmpty) ...[
-                        _SpeechTranscriptSection(transcript: r.transcript),
-                        const SizedBox(height: 24),
-                      ],
                       Text(
                         'Performance Breakdown',
                         style: Theme.of(context).textTheme.titleMedium,

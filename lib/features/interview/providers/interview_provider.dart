@@ -9,6 +9,8 @@ import '../data/models/interview_models.dart';
 import '../data/repositories/interview_repository.dart';
 import '../services/interview_service.dart';
 import '../../../core/config/ai_endpoint.dart';
+import '../../../core/providers/core_providers.dart';
+import '../../../core/services/analytics/analytics_service.dart';
 import '../../../core/services/speech/audio_capture_service.dart';
 import '../../../core/services/speech/speech_providers.dart';
 import '../../../core/services/speech/speech_recognition_service.dart';
@@ -171,6 +173,14 @@ class InterviewNotifier extends StateNotifier<InterviewState> {
     required int questionCount,
     String? customCvContent,
   }) async {
+    _ref
+        .read(analyticsProvider)
+        .track(AnalyticsService.interviewStarted, {
+          'mode': mode.name,
+          'question_count': questionCount,
+          'custom_cv': customCvContent != null,
+        });
+
     // Close and release any service from a prior session or failed attempt
     _timer?.cancel();
     _timer = null;
@@ -414,6 +424,13 @@ class InterviewNotifier extends StateNotifier<InterviewState> {
         );
         try {
           await _repository.save(saved);
+          _ref
+              .read(analyticsProvider)
+              .track(AnalyticsService.interviewCompleted, {
+                'mode': saved.mode.name,
+                'question_count': saved.targetQuestions,
+                'turns_answered': saved.turns.length,
+              });
           if (!mounted) return;
           _ref.read(interviewHistoryProvider.notifier).refresh();
         } catch (e) {

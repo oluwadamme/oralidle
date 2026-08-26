@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../providers/home_provider.dart';
+import '../../../auth/presentation/sync_status_tile.dart';
+import '../../../auth/providers/auth_provider.dart';
 import '../../../history/presentation/widgets/session_tile.dart';
 import '../../../history/presentation/widgets/progress_line_chart.dart';
 import '../../../history/providers/history_provider.dart';
@@ -34,6 +36,7 @@ class HomeScreen extends ConsumerWidget {
         ? 'Good afternoon'
         : 'Good evening';
     final level = _levelTitle(allSessions.length);
+    final name = ref.watch(authProvider).greetingName;
 
     return Scaffold(
       body: LayoutBuilder(
@@ -42,6 +45,7 @@ class HomeScreen extends ConsumerWidget {
             return _WebHome(
               availableWidth: constraints.maxWidth,
               greeting: greeting,
+              name: name,
               level: level,
               streak: streak,
               allSessions: allSessions,
@@ -50,6 +54,7 @@ class HomeScreen extends ConsumerWidget {
           }
           return _MobileHome(
             greeting: greeting,
+            name: name,
             level: level,
             streak: streak,
             allSessions: allSessions,
@@ -74,6 +79,7 @@ class _WebHome extends ConsumerWidget {
   /// Width of the content area, excluding the shell's sidebar.
   final double availableWidth;
   final String greeting;
+  final String name;
   final String level;
   final int streak;
   final List<SessionRecord> allSessions;
@@ -82,6 +88,7 @@ class _WebHome extends ConsumerWidget {
   const _WebHome({
     required this.availableWidth,
     required this.greeting,
+    required this.name,
     required this.level,
     required this.streak,
     required this.allSessions,
@@ -135,7 +142,7 @@ class _WebHome extends ConsumerWidget {
                               ?.copyWith(color: AppColors.inkMuted),
                         ),
                         Text(
-                          'Speaker!',
+                          '$name!',
                           style: Theme.of(
                             context,
                           ).textTheme.headlineLarge?.copyWith(height: 1.1),
@@ -143,6 +150,8 @@ class _WebHome extends ConsumerWidget {
                       ],
                     ),
                     const Spacer(),
+                    const SyncStatusTile(),
+                    const SizedBox(width: Space.sm),
                     if (streak > 0)
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -581,6 +590,7 @@ class _StatRow extends StatelessWidget {
 
 class _MobileHome extends ConsumerWidget {
   final String greeting;
+  final String name;
   final String level;
   final int streak;
   final List<SessionRecord> allSessions;
@@ -588,6 +598,7 @@ class _MobileHome extends ConsumerWidget {
 
   const _MobileHome({
     required this.greeting,
+    required this.name,
     required this.level,
     required this.streak,
     required this.allSessions,
@@ -620,7 +631,7 @@ class _MobileHome extends ConsumerWidget {
                                       ?.copyWith(color: AppColors.inkMuted),
                                 ),
                                 Text(
-                                  'Speaker!',
+                                  '$name!',
                                   style: Theme.of(context)
                                       .textTheme
                                       .headlineLarge
@@ -629,10 +640,25 @@ class _MobileHome extends ConsumerWidget {
                               ],
                             ),
                           ),
+                          // Top-right is where people look for their account.
+                          // The level moves down to the chip row below, so this
+                          // row holds two items instead of three and stops
+                          // running out of width at 1.5x text.
+                          const SyncStatusTile(),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      // Wraps rather than sharing a Row: the streak copy and
+                      // the sync pill together overflow 390px at 1.5x text.
+                      Wrap(
+                        spacing: Space.sm,
+                        runSpacing: Space.sm,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
+                              horizontal: 10,
+                              vertical: 5,
                             ),
                             decoration: BoxDecoration(
                               borderRadius: Radii.pillAll,
@@ -649,41 +675,29 @@ class _MobileHome extends ConsumerWidget {
                               ),
                             ),
                           ),
+                          if (streak > 0)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                borderRadius: Radii.pillAll,
+                                color: AppColors.caution.withValues(alpha: 0.12),
+                                border: Border.all(
+                                  color: AppColors.caution.withValues(alpha: 0.3)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(LucideIcons.flame, color: AppColors.caution, size: 15),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '$streak-day streak — keep it up!',
+                                    style: const TextStyle(fontWeight: AppFontWeight.w600, color: AppColors.caution),
+                                  ),
+                                ],
+                              ),
+                            ),
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      if (streak > 0)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: Radii.pillAll,
-                            color: AppColors.caution.withValues(alpha: 0.12),
-                            border: Border.all(
-                              color: AppColors.caution.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                LucideIcons.flame,
-                                color: AppColors.caution,
-                                size: 15,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$streak-day streak — keep it up!',
-                                style: const TextStyle(
-                                  fontWeight: AppFontWeight.w600,
-                                  color: AppColors.caution,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       const SizedBox(height: 28),
                       AppButton.primary(
                         expand: true,
