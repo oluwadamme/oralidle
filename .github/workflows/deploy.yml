@@ -83,7 +83,15 @@ jobs:
           test -f .vercel/output/static/main.dart.js \
             || { echo "::error::Build output is missing main.dart.js."; exit 1; }
 
-          if grep -rlE '(AIza[0-9A-Za-z_-]{20,}|sk-ant-)' .vercel/output/static; then
+          # The Supabase publishable key is expected in the bundle — it is
+          # public by design and RLS is what protects the data. sb_secret_ is
+          # the one that must never get near a --dart-define.
+          #
+          # Key material is required after the prefix, not just the prefix:
+          # supabase_flutter compiles `startsWith("sb_secret_")` into the bundle
+          # for its own key-type check, so matching the bare prefix fails every
+          # build on the library's own source.
+          if grep -rlE '(AIza[0-9A-Za-z_-]{20,}|sk-ant-|sb_secret_[A-Za-z0-9_-]{10,})' .vercel/output/static; then
             echo "::error::An API key is present in the web bundle. Refusing to deploy."
             exit 1
           fi

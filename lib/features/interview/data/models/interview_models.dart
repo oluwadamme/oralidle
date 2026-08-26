@@ -210,6 +210,17 @@ class CompletedInterview {
     'timestamp': timestamp.toIso8601String(),
   };
 
+  /// The same interview under a new id, for a device that has switched
+  /// accounts. See [SessionRecord.rekeyed].
+  CompletedInterview rekeyed(String newId) => CompletedInterview(
+    id: newId,
+    mode: mode,
+    targetQuestions: targetQuestions,
+    turns: turns,
+    evaluation: evaluation,
+    timestamp: timestamp,
+  );
+
   int get averageContentScore {
     if (turns.isEmpty) return 0;
     return turns

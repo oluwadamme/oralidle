@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "flutter pub get",
-  "buildCommand": "flutter build web --release",
+  "buildCommand": "flutter build web --release --dart-define=SUPABASE_URL=$SUPABASE_URL --dart-define=SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY --dart-define=HCAPTCHA_SITE_KEY=$HCAPTCHA_SITE_KEY",
   "outputDirectory": "build/web",
   "git": {
     "deploymentEnabled": false

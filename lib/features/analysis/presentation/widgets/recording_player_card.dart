@@ -12,14 +12,25 @@ import '../../../../core/widgets/surface_card.dart';
 import '../../../../core/widgets/waveform_loader.dart';
 
 class RecordingPlayerCard extends StatefulWidget {
-  final String audioPath;
+  /// Local copy — a file path on native, a `data:` URI on web. Absent for a
+  /// session that was pulled from another device.
+  final String? audioPath;
+
+  /// Key of the object in the `recordings` bucket. Played through
+  /// [resolveSignedUrl] when there is no usable local copy.
+  final String? audioObjectPath;
+
+  final Future<String> Function(String objectPath)? resolveSignedUrl;
+
   final int? fallbackDurationSeconds;
   final VoidCallback? onToggleTranscript;
   final bool isTranscriptVisible;
 
   const RecordingPlayerCard({
     super.key,
-    required this.audioPath,
+    this.audioPath,
+    this.audioObjectPath,
+    this.resolveSignedUrl,
     this.fallbackDurationSeconds,
     this.onToggleTranscript,
     this.isTranscriptVisible = false,
@@ -86,30 +97,37 @@ class _RecordingPlayerCardState extends State<RecordingPlayerCard> {
 
   Future<void> _loadSource() async {
     try {
-      final path = widget.audioPath.trim();
-      if (path.isEmpty) {
-        if (mounted) setState(() => _hasError = true);
+      if (await _loadLocal() || await _loadRemote()) {
+        if (mounted) setState(() => _isReady = true);
         return;
       }
-
-      if (path.startsWith('data:')) {
-        await _player.setSource(UrlSource(path));
-      } else if (!kIsWeb) {
-        final file = File(path);
-        if (!await file.exists()) {
-          if (mounted) setState(() => _hasError = true);
-          return;
-        }
-        await _player.setSource(DeviceFileSource(path));
-      } else {
-        await _player.setSource(UrlSource(path));
-      }
-
-      if (mounted) setState(() => _isReady = true);
+      if (mounted) setState(() => _hasError = true);
     } catch (e) {
       log('RecordingPlayerCard: loadSource error: $e');
       if (mounted) setState(() => _hasError = true);
     }
+  }
+
+  Future<bool> _loadLocal() async {
+    final path = widget.audioPath?.trim() ?? '';
+    if (path.isEmpty) return false;
+
+    if (path.startsWith('data:') || kIsWeb) {
+      await _player.setSource(UrlSource(path));
+      return true;
+    }
+    // A pulled row can name a path that belongs to a different device.
+    if (!await File(path).exists()) return false;
+    await _player.setSource(DeviceFileSource(path));
+    return true;
+  }
+
+  Future<bool> _loadRemote() async {
+    final objectPath = widget.audioObjectPath;
+    final resolve = widget.resolveSignedUrl;
+    if (objectPath == null || resolve == null) return false;
+    await _player.setSource(UrlSource(await resolve(objectPath)));
+    return true;
   }
 
   Future<void> _togglePlay() async {
@@ -117,17 +135,10 @@ class _RecordingPlayerCardState extends State<RecordingPlayerCard> {
       await _player.setVolume(1.0);
       if (_playerState == PlayerState.playing) {
         await _player.pause();
-      } else if (_playerState == PlayerState.paused) {
-        await _player.resume();
       } else {
-        final path = widget.audioPath.trim();
-        if (path.startsWith('data:')) {
-          await _player.play(UrlSource(path));
-        } else if (!kIsWeb) {
-          await _player.play(DeviceFileSource(path));
-        } else {
-          await _player.play(UrlSource(path));
-        }
+        // _loadSource has already resolved and set the source, local or
+        // signed-URL, so there is nothing to re-derive here.
+        await _player.resume();
       }
     } catch (e) {
       log('RecordingPlayerCard: togglePlay error: $e');

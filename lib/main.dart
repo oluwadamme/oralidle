@@ -7,6 +7,8 @@ import 'core/config/url_strategy.dart';
 import 'core/constants/app_constants.dart';
 import 'core/services/ad_service.dart';
 import 'core/services/speech/gemma_speech_service.dart';
+import 'core/services/supabase/supabase_bootstrap.dart';
+import 'core/services/sync/sync_coordinator.dart';
 import 'core/theme/app_theme.dart';
 import 'router.dart';
 
@@ -17,6 +19,13 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox<String>(AppConstants.hiveSessionsBox);
   await Hive.openBox<String>(AppConstants.hiveInterviewsBox);
+  await Hive.openBox<String>(AppConstants.hiveOutboxBox);
+  await Hive.openBox<String>(AppConstants.hivePendingAudioBox);
+  await Hive.openBox<String>(AppConstants.hivePrefsBox);
+
+  // Never awaited for a session: a missing or unreachable project just leaves
+  // the app local-only.
+  await SupabaseBootstrap.initialize();
 
   await GemmaSpeechService.initializeRuntime();
   await AdService.initialize();
@@ -29,11 +38,13 @@ class SpeechCoachApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Oralidle',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
-      routerConfig: appRouter,
+    return SyncCoordinator(
+      child: MaterialApp.router(
+        title: 'Oralidle',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.dark,
+        routerConfig: appRouter,
+      ),
     );
   }
 }

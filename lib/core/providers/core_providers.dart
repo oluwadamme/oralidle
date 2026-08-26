@@ -1,0 +1,70 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../features/interview/data/repositories/interview_repository.dart';
+import '../../features/interview/data/repositories/interview_repository_impl.dart';
+import '../services/analytics/analytics_service.dart';
+import '../services/app_prefs.dart';
+import '../services/storage_scope.dart';
+import '../services/storage_service.dart';
+import '../services/supabase/remote_store.dart';
+import '../services/supabase/supabase_bootstrap.dart';
+import '../services/sync/sync_outbox.dart';
+import '../services/sync/sync_service.dart';
+
+final storageScopeProvider = Provider<StorageScope>((_) => StorageScope());
+
+final syncOutboxProvider = Provider<SyncOutbox>((_) => SyncOutbox());
+
+final appPrefsProvider = Provider<AppPrefs>((_) => AppPrefs());
+
+/// Bumped whenever a sync changes local rows. The history notifiers watch it so
+/// a pull actually reaches the screen — without this they keep serving the list
+/// they read when they were constructed.
+final localDataVersionProvider = StateProvider<int>((_) => 0);
+
+/// Null when Supabase is unconfigured or failed to start, which is what puts
+/// the whole app back on its original Hive-only behaviour.
+final remoteStoreProvider = Provider<RemoteStore?>((_) {
+  final client = SupabaseBootstrap.client;
+  return client == null ? null : SupabaseRemoteStore(client);
+});
+
+final storageServiceProvider = Provider<StorageService>(
+  (ref) => StorageService(
+    ref.watch(storageScopeProvider),
+    ref.watch(syncOutboxProvider),
+  ),
+);
+
+final interviewRepositoryProvider = Provider<InterviewRepository>(
+  (ref) => InterviewRepositoryImpl(
+    ref.watch(storageScopeProvider),
+    ref.watch(syncOutboxProvider),
+  ),
+);
+
+final analyticsProvider = Provider<AnalyticsService>(
+  (ref) => AnalyticsService(ref.watch(remoteStoreProvider)),
+);
+
+/// Surfaces whether a sync is running or has failed, so the UI can offer a
+/// retry rather than leaving the user to guess.
+final syncStatusProvider = StreamProvider<SyncStatus>((ref) {
+  final sync = ref.watch(syncServiceProvider);
+  if (sync == null) return const Stream<SyncStatus>.empty();
+  return sync.status;
+});
+
+final syncServiceProvider = Provider<SyncService?>((ref) {
+  final remote = ref.watch(remoteStoreProvider);
+  if (remote == null) return null;
+  return SyncService(
+    remote: remote,
+    outbox: ref.watch(syncOutboxProvider),
+    storage: ref.watch(storageServiceProvider),
+    interviews: ref.watch(interviewRepositoryProvider),
+    prefs: ref.watch(appPrefsProvider),
+    scope: ref.watch(storageScopeProvider),
+  )..onLocalDataChanged = () =>
+      ref.read(localDataVersionProvider.notifier).state++;
+});

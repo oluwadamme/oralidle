@@ -1,14 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/core_providers.dart';
 import '../../../core/services/speech/mic_permission.dart';
 import '../data/models/interview_models.dart';
 import '../data/repositories/interview_repository.dart';
-import '../data/repositories/interview_repository_impl.dart';
 
-// ── Repository ─────────────────────────────────────────────────────────────
-
-final interviewRepositoryProvider = Provider<InterviewRepository>(
-  (_) => InterviewRepositoryImpl(),
-);
+export '../../../core/providers/core_providers.dart'
+    show interviewRepositoryProvider;
 
 // ── Interview history ───────────────────────────────────────────────────────
 
@@ -30,9 +27,12 @@ class InterviewHistoryNotifier extends StateNotifier<List<CompletedInterview>> {
 }
 
 final interviewHistoryProvider =
-    StateNotifierProvider<InterviewHistoryNotifier, List<CompletedInterview>>(
-      (ref) => InterviewHistoryNotifier(ref.watch(interviewRepositoryProvider)),
-    );
+    StateNotifierProvider<InterviewHistoryNotifier, List<CompletedInterview>>((
+      ref,
+    ) {
+      ref.watch(localDataVersionProvider);
+      return InterviewHistoryNotifier(ref.watch(interviewRepositoryProvider));
+    });
 
 // ── Microphone permission ───────────────────────────────────────────────────
 //

@@ -19,10 +19,38 @@ class _FakeRepository implements InterviewRepository {
   Future<void> save(CompletedInterview interview) async => saved.add(interview);
 
   @override
-  List<CompletedInterview> getAll() => saved;
+  List<CompletedInterview> getAll({String? scope}) => saved;
 
   @override
   Future<void> delete(String id) async {}
+
+  @override
+  Future<void> forget(String id) async =>
+      saved.removeWhere((i) => i.id == id);
+
+  @override
+  Future<void> cacheFromRemote(CompletedInterview interview) async =>
+      saved.add(interview);
+
+  @override
+  Future<void> rekey(
+    String oldId,
+    CompletedInterview updated, {
+    String? scope,
+  }) async {
+    saved.removeWhere((i) => i.id == oldId);
+    saved.add(updated);
+  }
+
+  @override
+  Future<void> claimFromAnonymous(
+    String anonymousId,
+    CompletedInterview updated,
+    String toScope,
+  ) async {
+    saved.removeWhere((i) => i.id == anonymousId);
+    saved.add(updated);
+  }
 }
 
 CapturedAudio _audio() =>

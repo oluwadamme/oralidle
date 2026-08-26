@@ -7,7 +7,10 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../data/models/session_record.dart';
 import '../../data/models/analysis_result.dart';
 import '../widgets/recording_player_card.dart';
+import '../../../auth/presentation/anonymous_signin_gate.dart';
+import '../../../auth/presentation/sync_prompt_banner.dart';
 import '../../../history/providers/history_provider.dart';
+import '../../../../core/providers/core_providers.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -38,6 +41,16 @@ class ResultsScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Either a local copy or one that can be fetched from the bucket — a session
+/// pulled from another device only has the latter.
+bool _hasPlayableAudio(SessionRecord record) =>
+    (record.audioPath ?? '').isNotEmpty ||
+    (record.audioObjectPath ?? '').isNotEmpty;
+
+Future<String> Function(String)? _signedUrlResolver(WidgetRef ref) {
+  return ref.read(remoteStoreProvider)?.signedAudioUrl;
 }
 
 // ── Web two-column layout ─────────────────────────────────────────────────────
@@ -125,6 +138,12 @@ class _WebResultsState extends State<_WebResults> {
                         width: 300,
                         child: Column(
                           children: [
+                            const AnonymousSignInGate(),
+                            SyncPromptBanner(
+                              sessionCount: widget.ref
+                                  .watch(historyProvider)
+                                  .length,
+                            ),
                             SurfaceCard(
                               padding: const EdgeInsets.all(24),
                               child: Column(
@@ -195,10 +214,13 @@ class _WebResultsState extends State<_WebResults> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            if (record.audioPath != null &&
-                                record.audioPath!.isNotEmpty) ...[
+                            if (_hasPlayableAudio(record)) ...[
                               RecordingPlayerCard(
-                                audioPath: record.audioPath!,
+                                audioPath: record.audioPath,
+                                audioObjectPath: record.audioObjectPath,
+                                resolveSignedUrl: _signedUrlResolver(
+                                  widget.ref,
+                                ),
                                 fallbackDurationSeconds: record.durationSeconds,
                                 onToggleTranscript: r.transcript.isNotEmpty
                                     ? () => setState(() => _showTranscript = !_showTranscript)
@@ -395,6 +417,10 @@ class _MobileResultsState extends State<_MobileResults> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const AnonymousSignInGate(),
+                      SyncPromptBanner(
+                        sessionCount: widget.ref.watch(historyProvider).length,
+                      ),
                       ScoreMeter(
                         score: overall,
                         size: ScoreMeterSize.hero,
@@ -418,11 +444,12 @@ class _MobileResultsState extends State<_MobileResults> {
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      if (record.audioPath != null &&
-                          record.audioPath!.isNotEmpty) ...[
+                      if (_hasPlayableAudio(record)) ...[
                         const SizedBox(height: 20),
                         RecordingPlayerCard(
-                          audioPath: record.audioPath!,
+                          audioPath: record.audioPath,
+                          audioObjectPath: record.audioObjectPath,
+                          resolveSignedUrl: _signedUrlResolver(widget.ref),
                           fallbackDurationSeconds: record.durationSeconds,
                           onToggleTranscript: r.transcript.isNotEmpty
                               ? () => setState(() => _showTranscript = !_showTranscript)
