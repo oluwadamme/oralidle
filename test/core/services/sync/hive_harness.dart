@@ -16,6 +16,7 @@ class HiveHarness {
     AppConstants.hiveOutboxBox,
     AppConstants.hivePendingAudioBox,
     AppConstants.hivePrefsBox,
+    AppConstants.hiveEventsBox,
   ];
 
   Future<void> setUp() async {

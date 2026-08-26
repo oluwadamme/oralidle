@@ -424,6 +424,9 @@ class InterviewNotifier extends StateNotifier<InterviewState> {
         );
         try {
           await _repository.save(saved);
+          unawaited(
+            _ref.read(syncServiceProvider)?.syncNow(),
+          );
           _ref
               .read(analyticsProvider)
               .track(AnalyticsService.interviewCompleted, {

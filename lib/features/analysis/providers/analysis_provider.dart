@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' show log;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ import '../../../core/services/storage_service.dart';
 import '../../../core/services/storage_scope.dart';
 import '../../../core/services/supabase/remote_store.dart';
 import '../../../core/services/sync/sync_outbox.dart';
+import '../../../core/services/sync/sync_service.dart';
 import '../../../core/utils/speech_analyser.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -28,6 +30,7 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
     this._analytics,
     this._remote,
     this._scope,
+    this._sync,
   ) : super(const AsyncValue.data(null));
 
   final GeminiService _gemini;
@@ -37,6 +40,7 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
   final AnalyticsService _analytics;
   final RemoteStore? _remote;
   final StorageScope _scope;
+  final SyncService? _sync;
 
   Future<void> analyse(RecordingSession session) async {
     state = const AsyncValue.loading();
@@ -143,6 +147,12 @@ class AnalysisNotifier extends StateNotifier<AsyncValue<SessionRecord?>> {
       await _publishAudio(sessionId, session);
       _trackCompletion(session);
 
+      // Finishing a session was not a sync trigger, so a row waited in the
+      // outbox for a relaunch, a reconnect or a manual tap — which reads as
+      // "it saved but never uploaded". Not awaited: the results screen should
+      // not wait on the network.
+      unawaited(_sync?.syncNow() ?? Future<void>.value());
+
       if (mounted) {
         state = AsyncValue.data(record);
       }
@@ -245,5 +255,6 @@ final analysisProvider =
         ref.watch(analyticsProvider),
         ref.watch(remoteStoreProvider),
         ref.watch(storageScopeProvider),
+        ref.watch(syncServiceProvider),
       );
     });

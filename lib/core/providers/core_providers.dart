@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/interview/data/repositories/interview_repository.dart';
 import '../../features/interview/data/repositories/interview_repository_impl.dart';
 import '../services/analytics/analytics_service.dart';
+import '../services/analytics/event_queue.dart';
 import '../services/app_prefs.dart';
 import '../services/storage_scope.dart';
 import '../services/storage_service.dart';
@@ -38,8 +39,10 @@ final interviewRepositoryProvider = Provider<InterviewRepository>(
   ),
 );
 
+final eventQueueProvider = Provider<EventQueue>((_) => EventQueue());
+
 final analyticsProvider = Provider<AnalyticsService>(
-  (ref) => AnalyticsService(ref.watch(remoteStoreProvider)),
+  (ref) => AnalyticsService(ref.watch(eventQueueProvider)),
 );
 
 
@@ -59,6 +62,7 @@ final syncServiceProvider = Provider<SyncService?>((ref) {
     interviews: ref.watch(interviewRepositoryProvider),
     prefs: ref.watch(appPrefsProvider),
     scope: ref.watch(storageScopeProvider),
+    events: ref.watch(eventQueueProvider),
   )..onLocalDataChanged = () =>
       ref.read(localDataVersionProvider.notifier).state++;
 });

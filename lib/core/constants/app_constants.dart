@@ -13,16 +13,13 @@ class AppConstants {
 
   static const String hivePendingAudioBox = 'pending_audio';
 
-  /// Small key/value scratch space — the sync-prompt counter lives here.
   static const String hivePrefsBox = 'app_prefs';
 
-  /// Ceiling on [hivePendingAudioBox]. Past this the oldest pending audio is
-  /// dropped: the session row still syncs, only cloud playback is lost. Better
-  /// than letting a long offline stretch fill the user's disk.
+  static const String hiveEventsBox = 'analytics_events';
+
+  static const int maxQueuedEvents = 500; 
   static const int pendingAudioBudgetBytes = 50 * 1024 * 1024;
 
-  /// A cloud upload is skipped above this size. Matches the bucket's own limit
-  /// in `supabase/migrations/20260825130100_storage_recordings.sql`.
   static const int maxUploadBytes = 10 * 1024 * 1024;
 
   /// Sessions completed before the "sync across devices" banner is offered,

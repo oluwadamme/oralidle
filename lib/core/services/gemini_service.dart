@@ -250,8 +250,9 @@ to two or three sentences.
               'generationConfig': {
                 // A ceiling rather than a target, so it costs nothing to leave
                 // room for a long uploaded answer's verbatim transcript.
-                'maxOutputTokens': 4096,
+                'maxOutputTokens': 8192,
                 'temperature': 0.4,
+                'thinkingConfig': {'thinkingBudget': 0},
                 // Constrained decoding: the model emits the schema's shape
                 // directly, with no fences, preamble or missing fields.
                 'responseMimeType': 'application/json',
@@ -279,14 +280,33 @@ to two or three sentences.
 
       final finishReason = candidate['finishReason'] as String? ?? 'STOP';
       if (finishReason == 'MAX_TOKENS') {
+        final usage = body['usageMetadata'] as Map<String, dynamic>?;
+        log(
+          'Gemini hit MAX_TOKENS — '
+          'prompt: ${usage?['promptTokenCount']}, '
+          'thoughts: ${usage?['thoughtsTokenCount']}, '
+          'answer: ${usage?['candidatesTokenCount']}, '
+          'total: ${usage?['totalTokenCount']}',
+        );
         throw Exception(
           'The AI response was cut off before it finished. Please try again '
           'with a shorter recording.',
         );
       }
+      final contentParts =
+          (candidate['content'] as Map<String, dynamic>?)?['parts'];
+      if (contentParts is! List || contentParts.isEmpty) {
+        log('Gemini returned no content. finishReason=$finishReason');
+        throw Exception(
+          finishReason == 'SAFETY' || finishReason == 'PROHIBITED_CONTENT'
+              ? 'The recording could not be analysed. Please try a different '
+                    'topic.'
+              : 'The AI returned an empty response. Please try again.',
+        );
+      }
 
       final text =
-          (candidate['content']['parts'] as List).first['text'] as String;
+          (contentParts.first as Map<String, dynamic>)['text'] as String;
       return _decodeJsonObject(text);
     } catch (e, st) {
       log('GeminiService error: $e\n$st');
