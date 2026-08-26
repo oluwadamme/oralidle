@@ -64,13 +64,76 @@ jobs:
       # Flutter lives on this runner, so the web build happens here and Vercel
       # only receives the finished output — it never needs a Flutter toolchain.
       - name: Build
-        run: >-
-          vercel build
-          ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
-          --token=${{ secrets.VERCEL_TOKEN }}
+        run: |
+          set -euo pipefail
+          envfile=$(ls .vercel/.env.*.local 2>/dev/null | head -1 || true)
+          if [ -z "$envfile" ]; then
+            echo "::error::vercel pull produced no env file — nothing to build with."
+            exit 1
+          fi
+          echo "Sourcing $envfile"
+          set -a
+          # shellcheck disable=SC1090
+          . "$envfile"
+          set +a
+          vercel build \
+            ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} \
+            --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Assert the build carries its configuration
+        run: |
+          set -euo pipefail
+          envfile=$(ls .vercel/.env.*.local 2>/dev/null | head -1 || true)
+          [ -n "$envfile" ] || { echo "::error::No pulled env file to check against."; exit 1; }
+          set -a
+          # shellcheck disable=SC1090
+          . "$envfile"
+          set +a
+
+          bundle=.vercel/output/static/main.dart.js
+
+          # Checks that each configured value is literally in the bundle, rather
+          # than matching a pattern. Patterns match the app's own source: the
+          # hCaptcha *test* sitekey is a `const` in HCaptchaConfig and so is
+          # compiled in whether or not it is the one in use, and
+          # supabase_flutter compiles the `sb_publishable_` prefix in for its
+          # own key-type check. Both would pass a pattern test on a bundle with
+          # no configuration at all.
+          target=${{ github.ref == 'refs/heads/main' && 'Production' || 'Preview' }}
+
+          missing=0
+          for var in SUPABASE_URL SUPABASE_PUBLISHABLE_KEY HCAPTCHA_SITE_KEY; do
+            value="${!var:-}"
+            if [ -n "$value" ]; then
+              grep -qF "$value" "$bundle" \
+                || { echo "::error::$var is set but did not reach the bundle — check the --dart-define in vercel.json."; exit 1; }
+              echo "$var reached the bundle."
+              continue
+            fi
+
+            missing=1
+            # A Sensitive variable comes back named but valueless, which is
+            # indistinguishable from unset unless you look for the name.
+            if grep -qE "^${var}=" "$envfile"; then
+              echo "::error::$var is marked Sensitive on Vercel, so vercel pull returns it empty. These three are compiled into the public bundle anyway — unmark Sensitive for $target."
+            else
+              echo "::error::$var is not set for the $target environment on the Vercel project."
+            fi
+          done
+
+          if [ $missing -eq 1 ]; then
+            echo
+            echo "Vercel > Settings > Environment Variables, or:"
+            echo "  vercel env rm <NAME> && vercel env add <NAME>   # leave Sensitive unticked"
+            echo
+            echo "GEMINI_API_KEY and ALLOWED_ORIGIN should stay Sensitive — they are"
+            echo "read at runtime by api/gemini.js, where Sensitive works fine. Only"
+            echo "build-time values are affected."
+            exit 1
+          fi
 
       # A bundled key would defeat the whole proxy. Cheap to check, and the
       # failure mode is silent otherwise.
