@@ -102,16 +102,31 @@ jobs:
           # supabase_flutter compiles the `sb_publishable_` prefix in for its
           # own key-type check. Both would pass a pattern test on a bundle with
           # no configuration at all.
+          target=${{ github.ref == 'refs/heads/main' && 'Production' || 'Preview' }}
+
+          missing=0
           for var in SUPABASE_URL SUPABASE_PUBLISHABLE_KEY HCAPTCHA_SITE_KEY; do
             value="${!var:-}"
             if [ -z "$value" ]; then
-              echo "::error::$var is not set on the Vercel project for this environment."
-              exit 1
+              echo "::error::$var is not set for the $target environment on the Vercel project."
+              missing=1
+              continue
             fi
             grep -qF "$value" "$bundle" \
               || { echo "::error::$var is set but did not reach the bundle — check the --dart-define in vercel.json."; exit 1; }
             echo "$var reached the bundle."
           done
+
+          if [ $missing -eq 1 ]; then
+            # Names only, never values. Distinguishes "set for the other
+            # environment" from "marked Sensitive", which vercel pull omits
+            # everywhere and which otherwise looks identical.
+            echo "Variables $target actually returned:"
+            grep -oE '^[A-Za-z_][A-Za-z0-9_]*' "$envfile" | sort | sed 's/^/  - /'
+            echo "Set the missing ones for $target in Vercel > Settings > Environment Variables."
+            echo "They must not be marked Sensitive — vercel pull cannot read those back."
+            exit 1
+          fi
 
       # A bundled key would defeat the whole proxy. Cheap to check, and the
       # failure mode is silent otherwise.
