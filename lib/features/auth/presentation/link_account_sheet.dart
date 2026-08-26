@@ -18,8 +18,6 @@ enum _Step { details, code }
 class LinkAccountSheet extends ConsumerStatefulWidget {
   const LinkAccountSheet({super.key, this.requestCaptcha});
 
-  /// Overridden in tests: the real challenge needs a platform view, which a
-  /// widget test cannot render.
   final Future<String?> Function(BuildContext context)? requestCaptcha;
 
   static Future<bool?> show(BuildContext context) {
@@ -114,9 +112,7 @@ class _LinkAccountSheetState extends ConsumerState<LinkAccountSheet> {
             token: code,
             flow: _flow!,
           );
-      // Confirms the entry so the browser or OS offers to remember the
-      // address for next time — the half of autofill that only works if the
-      // context is closed explicitly.
+
       TextInput.finishAutofillContext();
       if (!mounted) return;
       Navigator.of(context).pop(true);
@@ -232,8 +228,6 @@ class _LinkAccountSheetState extends ConsumerState<LinkAccountSheet> {
   }
 
   List<Widget> _detailsFields() => [
-    // The group is what actually arms autofill — hints on their own are inert
-    // without one, which is why nothing was ever being offered.
     AutofillGroup(
       child: Form(
         key: _formKey,
@@ -282,9 +276,6 @@ class _LinkAccountSheetState extends ConsumerState<LinkAccountSheet> {
 
   /// A tappable correction for a mistyped domain.
   ///
-  /// Never rewrites the address silently — the user could genuinely be at an
-  /// unusual domain, and a code sent somewhere they cannot read is the exact
-  /// failure this is trying to avoid.
   Widget _didYouMean(String corrected) => Align(
     alignment: Alignment.centerLeft,
     child: Padding(
@@ -308,9 +299,6 @@ class _LinkAccountSheetState extends ConsumerState<LinkAccountSheet> {
     if (next != _suggestion) setState(() => _suggestion = next);
   }
 
-  /// Lower-cased so the address shown on the code step matches what the server
-  /// stored, and so `Me@Gmail.com` and `me@gmail.com` are not read as two
-  /// different accounts.
   static String _normalise(String raw) => raw.trim().toLowerCase();
 
   Widget _codeField() => TextField(
