@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../features/interview/data/repositories/interview_repository.dart';
 import '../../constants/app_constants.dart';
+import '../analytics/event_queue.dart';
 import '../app_prefs.dart';
 import '../storage_scope.dart';
 import '../storage_service.dart';
@@ -28,6 +29,7 @@ class SyncService {
     required this.interviews,
     required this.prefs,
     required this.scope,
+    required this.events,
   });
 
   final RemoteStore remote;
@@ -36,6 +38,7 @@ class SyncService {
   final InterviewRepository interviews;
   final AppPrefs prefs;
   final StorageScope scope;
+  final EventQueue events;
 
   bool _running = false;
   bool _rerunRequested = false;
@@ -64,6 +67,7 @@ class SyncService {
       changed = await _rekeyReownedRows(scope, userId) || changed;
       await backfillIfNeeded(scope, userId);
       await _push(scope, userId);
+      await _flushEvents(userId);
       changed = await _pull() || changed;
       _emit(SyncStatus.idle);
     } catch (e) {
@@ -232,6 +236,34 @@ class SyncService {
       return;
     }
     await remote.upsertInterview(matches.first, userId);
+  }
+
+  /// Sends queued analytics.
+  ///
+  /// `user_id` is stamped now rather than at capture: most events happen before
+  /// an account exists, and the RLS policy requires the row to match the caller.
+  /// They belong to whichever account this device ends up on, which is the same
+  /// rule the anonymous session rows follow.
+  ///
+  /// Failures are swallowed. Analytics must never be the reason a sync reports
+  /// an error to the user, and the events stay queued for the next attempt.
+  Future<void> _flushEvents(String userId) async {
+    final pending = events.pending();
+    if (pending.isEmpty) return;
+    try {
+      await remote.insertEvents([
+        for (final event in pending)
+          {
+            'user_id': userId,
+            'name': event.name,
+            'props': event.props,
+            'created_at': event.createdAt.toUtc().toIso8601String(),
+          },
+      ]);
+      await events.remove(pending.map((e) => e.key));
+    } catch (e) {
+      log('SyncService: event flush failed, staying queued: $e');
+    }
   }
 
   /// True when anything landed locally, so the history notifiers know to

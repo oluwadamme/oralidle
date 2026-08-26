@@ -173,6 +173,24 @@ class _LinkAccountSheetState extends ConsumerState<LinkAccountSheet> {
                   : 'We sent a 6-digit code to ${_normalise(_emailController.text)}.',
               style: context.body.copyWith(color: AppColors.inkMuted),
             ),
+            if (_step == _Step.code) ...[
+              const SizedBox(height: Space.md),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(LucideIcons.info, size: IconSize.sm, color: AppColors.caution),
+                  const SizedBox(width: Space.sm),
+                  Expanded(
+                    child: Text(
+                      'Not there after a minute? Check your spam or junk '
+                      'folder — and mark it as not spam so the next one '
+                      'arrives properly.',
+                      style: context.caption.copyWith(color: AppColors.inkMuted),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: Space.xl),
             if (_step == _Step.details) ..._detailsFields() else _codeField(),
             if (_error != null) ...[

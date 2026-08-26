@@ -34,8 +34,6 @@ abstract final class SupabaseConfig {
 
   static const audioBucket = 'recordings';
 
-  /// Long enough to replay a two-minute take several times, short enough that a
-  /// leaked link expires.
   static const signedUrlTtl = Duration(hours: 1);
 
   static String _resolve(String define, String envKey) {

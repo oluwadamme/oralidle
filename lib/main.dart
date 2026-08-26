@@ -22,6 +22,7 @@ void main() async {
   await Hive.openBox<String>(AppConstants.hiveOutboxBox);
   await Hive.openBox<String>(AppConstants.hivePendingAudioBox);
   await Hive.openBox<String>(AppConstants.hivePrefsBox);
+  await Hive.openBox<String>(AppConstants.hiveEventsBox);
 
   await SupabaseBootstrap.initialize();
 

@@ -157,12 +157,9 @@ class FakeRemoteStore implements RemoteStore {
   }
 
   @override
-  Future<void> insertEvent({
-    required String userId,
-    required String name,
-    required Map<String, Object?> props,
-  }) async {
-    events.add({'user_id': userId, 'name': name, 'props': props});
+  Future<void> insertEvents(List<Map<String, Object?>> rows) async {
+    _guard();
+    events.addAll(rows);
   }
 }
 

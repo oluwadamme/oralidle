@@ -1,26 +1,29 @@
+import 'dart:async';
 import 'dart:developer' show log;
 
-import '../supabase/remote_store.dart';
+import 'event_queue.dart';
 
-/// Fire-and-forget product analytics.
+/// Records product analytics.
 ///
-/// Never throws and never blocks a user action — a dropped event is always
-/// preferable to a failed recording. Events are not queued offline for the same
-/// reason: they are aggregate signal, not user data.
+/// Writes to [EventQueue] rather than the network: an event fired before the
+/// anonymous account exists — which is every event on a first visit — used to
+/// be dropped on the floor. `SyncService` flushes the queue.
+///
+/// Never throws and never blocks a user action. A dropped event is always
+/// preferable to a failed recording.
 ///
 /// `props` must never carry a filename, a transcript, or CV content.
 class AnalyticsService {
-  AnalyticsService(this._remote);
+  AnalyticsService(this._queue);
 
-  final RemoteStore? _remote;
+  final EventQueue _queue;
 
   void track(String name, [Map<String, Object?> props = const {}]) {
-    final remote = _remote;
-    final userId = remote?.currentUserId;
-    if (remote == null || userId == null) return;
-    remote
-        .insertEvent(userId: userId, name: name, props: props)
-        .catchError((Object e) => log('Analytics: dropped "$name": $e'));
+    unawaited(
+      _queue
+          .add(name, props)
+          .catchError((Object e) => log('Analytics: dropped "$name": $e')),
+    );
   }
 
   static const topicSelected = 'topic_selected';

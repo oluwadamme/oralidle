@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:widget_overlay_outside/core/constants/app_constants.dart';
+import 'package:widget_overlay_outside/core/services/analytics/event_queue.dart';
 import 'package:widget_overlay_outside/core/services/app_prefs.dart';
 import 'package:widget_overlay_outside/core/services/storage_scope.dart';
 import 'package:widget_overlay_outside/core/services/storage_service.dart';
@@ -21,12 +23,14 @@ void main() {
   late InterviewRepositoryImpl interviews;
   late SyncService sync;
   late StorageScope scope;
+  late EventQueue eventQueue;
 
   setUp(() async {
     await harness.setUp();
     remote = FakeRemoteStore();
     outbox = SyncOutbox();
     scope = StorageScope();
+    eventQueue = EventQueue();
     storage = StorageService(scope, outbox);
     interviews = InterviewRepositoryImpl(scope, outbox);
     sync = SyncService(
@@ -36,6 +40,7 @@ void main() {
       interviews: interviews,
       prefs: AppPrefs(),
       scope: scope,
+      events: eventQueue,
     );
   });
 
@@ -181,6 +186,76 @@ void main() {
       await sync.syncNow();
 
       expect(outbox.isEmpty, isTrue);
+    });
+  });
+
+  group('analytics events', () {
+    test('queued while signed out, sent once an account exists', () async {
+      // The gap this closes: events used to go straight to the network and be
+      // dropped when there was no account — which is every event before the
+      // first save, so the top of the funnel was invisible.
+      remote.currentUserId = null;
+      await eventQueue.add('topic_selected', {'topic_id': 'remote-work'});
+      await eventQueue.add('recording_completed', {'duration_seconds': 65});
+
+      await sync.syncNow();
+      expect(remote.events, isEmpty);
+      expect(eventQueue.length, 2);
+
+      remote.currentUserId = 'user-1';
+      await sync.syncNow();
+
+      expect(remote.events, hasLength(2));
+      expect(eventQueue.isEmpty, isTrue);
+      expect(remote.events.first['name'], 'topic_selected');
+      expect(remote.events.first['user_id'], 'user-1');
+    });
+
+    test('the capture time is kept, not the flush time', () async {
+      await eventQueue.add('topic_selected', const {});
+      final captured = eventQueue.pending().single.createdAt;
+
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      await sync.syncNow();
+
+      expect(
+        DateTime.parse(remote.events.single['created_at']! as String),
+        captured.toUtc(),
+        reason: 'an offline backlog must not collapse onto one timestamp',
+      );
+    });
+
+    test('a failed flush keeps them queued', () async {
+      await eventQueue.add('topic_selected', const {});
+      remote.failWrites = true;
+
+      await sync.syncNow();
+      expect(eventQueue.length, 1);
+
+      remote.failWrites = false;
+      await sync.syncNow();
+      expect(eventQueue.isEmpty, isTrue);
+      expect(remote.events, hasLength(1));
+    });
+
+    test('a failed flush does not fail the row sync', () async {
+      await storage.saveSession(fakeSession(id: 'a'));
+      await eventQueue.add('topic_selected', const {});
+
+      await sync.syncNow();
+
+      // Rows and events drain independently; analytics must never be the
+      // reason a user's session fails to upload.
+      expect(remote.sessions.keys, ['a']);
+    });
+
+    test('the queue is capped so it cannot grow without bound', () async {
+      for (var i = 0; i < AppConstants.maxQueuedEvents + 25; i++) {
+        await eventQueue.add('topic_selected', {'i': i});
+      }
+      expect(eventQueue.length, AppConstants.maxQueuedEvents);
+      // Oldest go first, so the most recent behaviour survives.
+      expect(eventQueue.pending().first.props['i'], greaterThan(0));
     });
   });
 

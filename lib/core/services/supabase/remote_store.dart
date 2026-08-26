@@ -42,11 +42,9 @@ abstract interface class RemoteStore {
   Future<String> signedAudioUrl(String objectPath);
 
   Future<void> upsertProfile({required String userId, String? displayName});
-  Future<void> insertEvent({
-    required String userId,
-    required String name,
-    required Map<String, Object?> props,
-  });
+  /// Batched: an offline stretch drains as one request rather than one per
+  /// event. Rows are pre-shaped by the caller.
+  Future<void> insertEvents(List<Map<String, Object?>> rows);
 }
 
 /// Maps models to rows and back, and nothing else. Deciding *when* to call any
@@ -221,15 +219,8 @@ class SupabaseRemoteStore implements RemoteStore {
   }
 
   @override
-  Future<void> insertEvent({
-    required String userId,
-    required String name,
-    required Map<String, Object?> props,
-  }) async {
-    await _client.from('events').insert({
-      'user_id': userId,
-      'name': name,
-      'props': props,
-    });
+  Future<void> insertEvents(List<Map<String, Object?>> rows) async {
+    if (rows.isEmpty) return;
+    await _client.from('events').insert(rows);
   }
 }
