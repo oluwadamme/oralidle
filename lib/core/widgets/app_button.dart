@@ -187,7 +187,7 @@ class _Content extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (busy) {
-     return Stack(
+      return Stack(
         alignment: Alignment.center,
         children: [
           Opacity(opacity: 0, child: _row(context)),
@@ -195,7 +195,7 @@ class _Content extends StatelessWidget {
             height: size.icon * 0.85,
             barCount: 4,
             barWidth: 2.5,
-            color: foreground,
+            color: AppColors.accent,
           ),
         ],
       );
