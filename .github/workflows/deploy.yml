@@ -107,24 +107,31 @@ jobs:
           missing=0
           for var in SUPABASE_URL SUPABASE_PUBLISHABLE_KEY HCAPTCHA_SITE_KEY; do
             value="${!var:-}"
-            if [ -z "$value" ]; then
-              echo "::error::$var is not set for the $target environment on the Vercel project."
-              missing=1
+            if [ -n "$value" ]; then
+              grep -qF "$value" "$bundle" \
+                || { echo "::error::$var is set but did not reach the bundle — check the --dart-define in vercel.json."; exit 1; }
+              echo "$var reached the bundle."
               continue
             fi
-            grep -qF "$value" "$bundle" \
-              || { echo "::error::$var is set but did not reach the bundle — check the --dart-define in vercel.json."; exit 1; }
-            echo "$var reached the bundle."
+
+            missing=1
+            # A Sensitive variable comes back named but valueless, which is
+            # indistinguishable from unset unless you look for the name.
+            if grep -qE "^${var}=" "$envfile"; then
+              echo "::error::$var is marked Sensitive on Vercel, so vercel pull returns it empty. These three are compiled into the public bundle anyway — unmark Sensitive for $target."
+            else
+              echo "::error::$var is not set for the $target environment on the Vercel project."
+            fi
           done
 
           if [ $missing -eq 1 ]; then
-            # Names only, never values. Distinguishes "set for the other
-            # environment" from "marked Sensitive", which vercel pull omits
-            # everywhere and which otherwise looks identical.
-            echo "Variables $target actually returned:"
-            grep -oE '^[A-Za-z_][A-Za-z0-9_]*' "$envfile" | sort | sed 's/^/  - /'
-            echo "Set the missing ones for $target in Vercel > Settings > Environment Variables."
-            echo "They must not be marked Sensitive — vercel pull cannot read those back."
+            echo
+            echo "Vercel > Settings > Environment Variables, or:"
+            echo "  vercel env rm <NAME> && vercel env add <NAME>   # leave Sensitive unticked"
+            echo
+            echo "GEMINI_API_KEY and ALLOWED_ORIGIN should stay Sensitive — they are"
+            echo "read at runtime by api/gemini.js, where Sensitive works fine. Only"
+            echo "build-time values are affected."
             exit 1
           fi
 
